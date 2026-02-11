@@ -1,0 +1,40 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "out": "docs/api-reference",
+  "plugin": ["typedoc-plugin-markdown"],
+  "exclude": [
+    "**/node_modules/**",
+    "**/.next/**",
+    "**/dist/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "**/middleware.ts"
+  ],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeExternals": true,
+  "readme": "none",
+  "categorizeByGroup": true,
+  "categoryOrder": [
+    "Hooks",
+    "API Routes",
+    "Components",
+    "Utilities",
+    "Types",
+    "*"
+  ],
+  "sort": ["source-order"],
+  "treatWarningsAsErrors": false,
+  "skipErrorChecking": true,
+  "validation": {
+    "notExported": false,
+    "invalidLink": false,
+    "notDocumented": false
+  },
+  "includeVersion": true,
+  "tsconfig": "./tsconfig.json"
+}

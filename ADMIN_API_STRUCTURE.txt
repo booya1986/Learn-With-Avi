@@ -1,0 +1,318 @@
+ADMIN API STRUCTURE
+===================
+
+📁 /src/app/api/admin/
+│
+├── 🎬 youtube/
+│   └── validate/
+│       └── route.ts
+│           └── POST - Validate YouTube URL & fetch metadata
+│
+├── 📚 courses/
+│   ├── route.ts
+│   │   ├── GET  - List all courses (with filters)
+│   │   └── POST - Create new course
+│   │
+│   └── [id]/
+│       ├── route.ts
+│       │   ├── GET    - Get single course with videos
+│       │   ├── PUT    - Update course
+│       │   └── DELETE - Delete course (cascade)
+│       │
+│       └── reorder/
+│           └── route.ts
+│               └── POST - Reorder videos in course
+│
+├── 🎥 videos/
+│   ├── route.ts
+│   │   ├── GET  - List all videos (with filters)
+│   │   └── POST - Create new video with chapters
+│   │
+│   └── [id]/
+│       └── route.ts
+│           ├── GET    - Get single video with chapters
+│           ├── PUT    - Update video (replace chapters)
+│           └── DELETE - Delete video (cascade)
+│
+└── 📝 transcripts/
+    └── route.ts
+        ├── POST - Create transcript with chunks
+        └── PUT  - Update transcript (replace chunks)
+
+
+DATABASE RELATIONSHIPS
+======================
+
+┌─────────────┐         ┌─────────────┐         ┌─────────────┐
+│   Course    │────────▶│    Video    │────────▶│   Chapter   │
+│             │ 1    ∞  │             │ 1    ∞  │             │
+│  id         │         │  id         │         │  id         │
+│  title      │         │  youtubeId  │         │  title      │
+│  difficulty │         │  title      │         │  startTime  │
+│  published  │         │  duration   │         │  endTime    │
+│  order      │         │  published  │         │  order      │
+└─────────────┘         │  order      │         └─────────────┘
+                        │  courseId   │
+                        └──────┬──────┘
+                               │ 1
+                               │
+                               │ 0..1
+                        ┌──────▼──────┐         ┌─────────────────┐
+                        │ Transcript  │────────▶│ TranscriptChunk │
+                        │             │ 1    ∞  │                 │
+                        │  id         │         │  id             │
+                        │  source     │         │  text           │
+                        │  language   │         │  startTime      │
+                        │  videoId    │         │  endTime        │
+                        └─────────────┘         │  order          │
+                                                └─────────────────┘
+
+
+API WORKFLOW EXAMPLES
+=====================
+
+1. CREATE FULL COURSE WITH VIDEO
+   ─────────────────────────────────
+   
+   Step 1: Validate YouTube URL
+   POST /api/admin/youtube/validate
+   Body: { "url": "https://youtube.com/watch?v=abc123" }
+   ↓
+   Returns: { "valid": true, "metadata": {...} }
+   
+   Step 2: Create Course
+   POST /api/admin/courses
+   Body: { "title": "Python Basics", "difficulty": "beginner" }
+   ↓
+   Returns: { "id": "course-123", ... }
+   
+   Step 3: Create Video
+   POST /api/admin/videos
+   Body: {
+     "youtubeId": "abc123",
+     "title": "...",
+     "duration": 3600,
+     "courseId": "course-123",
+     "chapters": [...]
+   }
+   ↓
+   Returns: { "id": "video-456", ... }
+   
+   Step 4: Add Transcript
+   POST /api/admin/transcripts
+   Body: {
+     "videoId": "video-456",
+     "chunks": [...]
+   }
+   ↓
+   Returns: { "id": "transcript-789", ... }
+
+
+2. UPDATE VIDEO ORDER IN COURSE
+   ─────────────────────────────────
+   
+   Step 1: Get Course with Videos
+   GET /api/admin/courses/course-123
+   ↓
+   Returns: { "id": "course-123", "videos": [...] }
+   
+   Step 2: Reorder Videos
+   POST /api/admin/courses/course-123/reorder
+   Body: { "videoIds": ["video-3", "video-1", "video-2"] }
+   ↓
+   Returns: { "success": true, "updatedCount": 3 }
+
+
+3. SEARCH AND FILTER
+   ─────────────────────────────────
+   
+   Search Published Courses
+   GET /api/admin/courses?search=python&published=true
+   ↓
+   Returns: [{ "id": "...", "title": "Python...", ... }]
+   
+   Get Videos for Specific Course
+   GET /api/admin/videos?courseId=course-123
+   ↓
+   Returns: [{ "id": "...", "title": "...", "course": {...} }]
+
+
+AUTHENTICATION FLOW
+===================
+
+1. User → Login Page (/admin/login)
+   ↓
+2. Submit Credentials → NextAuth
+   ↓
+3. NextAuth → Validates with Database
+   ↓
+4. Creates Session → HTTP-only Cookie
+   ↓
+5. All API Requests → Include Cookie Automatically
+   ↓
+6. API Routes → Validate Session with getServerSession()
+
+
+VALIDATION LAYERS
+=================
+
+Request
+  ↓
+┌─────────────────────────┐
+│ 1. Authentication Check │ ← getServerSession()
+│    (401 if no session)  │
+└────────┬────────────────┘
+         ↓
+┌─────────────────────────┐
+│ 2. Zod Schema           │ ← Request body validation
+│    Validation           │   (400 if invalid)
+└────────┬────────────────┘
+         ↓
+┌─────────────────────────┐
+│ 3. Business Logic       │ ← Check resource exists
+│    Validation           │   (404 if not found)
+└────────┬────────────────┘
+         ↓
+┌─────────────────────────┐
+│ 4. Database Operation   │ ← Prisma transaction
+│    (with transaction)   │   (500 if error)
+└────────┬────────────────┘
+         ↓
+Response (200/201)
+
+
+ERROR HANDLING
+==============
+
+┌──────────────────┐
+│  Try Block       │
+│  ↓               │
+│  API Logic       │
+│  ↓               │
+│  Success         │
+└──────────────────┘
+         │
+         ↓ (on error)
+┌──────────────────┐
+│  Catch Block     │
+│  ↓               │
+│  Log Error       │ ← console.error()
+│  ↓               │
+│  Sanitize Error  │ ← Remove sensitive data
+│  ↓               │
+│  Return JSON     │ ← { "error": "..." }
+└──────────────────┘
+
+
+TRANSACTION EXAMPLES
+====================
+
+Create Video with Chapters:
+┌──────────────────────────┐
+│ START TRANSACTION        │
+│  ↓                       │
+│  1. Create Video         │ ← prisma.video.create()
+│  ↓                       │
+│  2. Create Chapters      │ ← prisma.chapter.createMany()
+│  ↓                       │
+│  3. Fetch with Relations │ ← prisma.video.findUnique()
+│  ↓                       │
+│ COMMIT TRANSACTION       │
+└──────────────────────────┘
+         ↓
+If any step fails → ROLLBACK (all or nothing)
+
+
+CASCADE DELETE BEHAVIOR
+========================
+
+Delete Course
+    ↓
+    └─→ Delete all Videos
+            ↓
+            ├─→ Delete all Chapters
+            └─→ Delete Transcript
+                    ↓
+                    └─→ Delete all TranscriptChunks
+
+(Defined in Prisma schema with "onDelete: Cascade")
+
+
+HTTP STATUS CODES GUIDE
+========================
+
+2xx SUCCESS
+  200 OK          - GET, PUT successful
+  201 Created     - POST successful
+
+4xx CLIENT ERROR
+  400 Bad Request - Invalid input, validation failed
+  401 Unauthorized - Not logged in
+  404 Not Found   - Resource doesn't exist
+  409 Conflict    - Duplicate resource (e.g., YouTube ID)
+
+5xx SERVER ERROR
+  500 Internal Server Error - Unexpected error
+
+
+TESTING CHECKLIST
+=================
+
+✅ YouTube Integration
+  □ Valid YouTube URL
+  □ Invalid YouTube URL
+  □ Missing API key handling
+
+✅ Courses
+  □ Create course
+  □ List courses
+  □ List with filters (search, published)
+  □ Get single course
+  □ Update course
+  □ Delete course (verify cascade)
+
+✅ Videos
+  □ Create video with chapters
+  □ Create with duplicate YouTube ID (expect 409)
+  □ List videos
+  □ List with filters (courseId, search, published)
+  □ Get single video
+  □ Update video
+  □ Update chapters (verify replacement)
+  □ Reorder videos in course
+  □ Delete video (verify cascade)
+
+✅ Transcripts
+  □ Create transcript with chunks
+  □ Create duplicate transcript (expect 409)
+  □ Update transcript
+  □ Update chunks (verify replacement)
+
+✅ Authentication
+  □ All routes return 401 without session
+  □ All routes work with valid session
+
+✅ Edge Cases
+  □ Update with no fields
+  □ Delete non-existent resource
+  □ Reference non-existent foreign key
+  □ Reorder with invalid video IDs
+
+
+PERFORMANCE NOTES
+=================
+
+Optimized Queries:
+  - Use `include` to eager load relations
+  - Avoid N+1 queries
+  - Indexes on: courseId, youtubeId, published
+
+Transactions:
+  - Multi-step operations are atomic
+  - Rollback on failure
+
+Future Enhancements:
+  - Add pagination (limit/offset)
+  - Add Redis caching
+  - Add full-text search
+  - Add rate limiting per user

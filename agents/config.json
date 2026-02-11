@@ -1,0 +1,362 @@
+{
+  "version": "1.0.0",
+  "project": "LearnWithAvi",
+  "description": "Multi-agent system for AI-powered interactive learning platform",
+
+  "orchestrator": {
+    "name": "Project Manager AI",
+    "role": "orchestrator",
+    "model": "claude-sonnet-4-5",
+    "capabilities": [
+      "task_delegation",
+      "coordination",
+      "progress_tracking",
+      "dependency_management",
+      "conflict_resolution"
+    ],
+    "description": "Primary orchestrator that receives user requests, analyzes them, and delegates to specialized sub-agents based on task type and dependencies",
+    "config_path": "/agents/orchestrator/ORCHESTRATOR.md"
+  },
+
+  "sub_agents": [
+    {
+      "id": "frontend-engineer",
+      "name": "Frontend Engineer",
+      "priority": "high",
+      "status": "active",
+      "model": "claude-sonnet-4-5",
+      "technologies": [
+        "React 19",
+        "Next.js 16",
+        "TypeScript 5",
+        "Tailwind CSS 4",
+        "shadcn/ui",
+        "React Hooks",
+        "Server Components"
+      ],
+      "skill_path": "/skills/frontend-engineer/SKILL.md",
+      "keywords": [
+        "component",
+        "UI",
+        "styling",
+        "responsive",
+        "frontend",
+        "client",
+        "hooks",
+        "state",
+        "rendering",
+        "layout",
+        "CSS",
+        "mobile",
+        "accessibility",
+        "a11y"
+      ]
+    },
+    {
+      "id": "backend-engineer",
+      "name": "Backend Engineer",
+      "priority": "high",
+      "status": "active",
+      "model": "claude-sonnet-4-5",
+      "technologies": [
+        "Next.js API Routes",
+        "Node.js",
+        "TypeScript",
+        "PostgreSQL",
+        "Prisma",
+        "Server-Sent Events",
+        "REST API"
+      ],
+      "skill_path": "/skills/backend-engineer/SKILL.md",
+      "keywords": [
+        "API",
+        "backend",
+        "server",
+        "database",
+        "authentication",
+        "authorization",
+        "endpoint",
+        "route",
+        "middleware",
+        "SSE",
+        "streaming",
+        "Prisma",
+        "PostgreSQL"
+      ]
+    },
+    {
+      "id": "rag-pipeline-specialist",
+      "name": "RAG Pipeline Specialist",
+      "priority": "medium-high",
+      "status": "active",
+      "model": "claude-sonnet-4-5",
+      "technologies": [
+        "ChromaDB",
+        "OpenAI Embeddings",
+        "Claude AI",
+        "Vector Search",
+        "Semantic Search",
+        "LangChain Patterns"
+      ],
+      "skill_path": "/skills/rag-pipeline-optimizer/SKILL.md",
+      "keywords": [
+        "RAG",
+        "embeddings",
+        "vector",
+        "ChromaDB",
+        "search",
+        "semantic",
+        "retrieval",
+        "context",
+        "chunks",
+        "rerank",
+        "hybrid search",
+        "AI quality"
+      ]
+    },
+    {
+      "id": "product-manager",
+      "name": "Product Manager",
+      "priority": "medium",
+      "status": "active",
+      "model": "claude-sonnet-4-5",
+      "technologies": [
+        "Agile",
+        "Scrum",
+        "RICE Framework",
+        "MoSCoW Method",
+        "User Stories",
+        "OKRs"
+      ],
+      "skill_path": "/skills/product-manager/SKILL.md",
+      "keywords": [
+        "requirements",
+        "feature",
+        "prioritize",
+        "roadmap",
+        "user story",
+        "acceptance criteria",
+        "PRD",
+        "backlog",
+        "sprint",
+        "planning",
+        "metrics",
+        "KPI"
+      ]
+    },
+    {
+      "id": "ui-ux-designer",
+      "name": "UI/UX Designer",
+      "priority": "medium",
+      "status": "active",
+      "model": "claude-sonnet-4-5",
+      "technologies": [
+        "User Experience Design",
+        "Interface Design",
+        "WCAG 2.1",
+        "Responsive Design",
+        "Design Systems",
+        "Accessibility"
+      ],
+      "skill_path": "/skills/ui-ux-designer/SKILL.md",
+      "keywords": [
+        "UX",
+        "design",
+        "accessibility",
+        "WCAG",
+        "user flow",
+        "wireframe",
+        "mockup",
+        "interaction",
+        "usability",
+        "RTL",
+        "Hebrew",
+        "responsive design"
+      ]
+    },
+    {
+      "id": "devops-engineer",
+      "name": "DevOps Engineer",
+      "priority": "low-medium",
+      "status": "active",
+      "model": "claude-sonnet-4-5",
+      "technologies": [
+        "Vercel",
+        "Docker",
+        "GitHub Actions",
+        "CI/CD",
+        "Monitoring",
+        "Redis",
+        "Infrastructure as Code"
+      ],
+      "skill_path": "/skills/devops-engineer/SKILL.md",
+      "keywords": [
+        "deployment",
+        "CI/CD",
+        "infrastructure",
+        "monitoring",
+        "DevOps",
+        "production",
+        "build",
+        "pipeline",
+        "Docker",
+        "environment",
+        "scaling",
+        "performance monitoring"
+      ]
+    },
+    {
+      "id": "qa-engineer",
+      "name": "QA Engineer",
+      "priority": "low",
+      "status": "active",
+      "model": "claude-haiku",
+      "technologies": [
+        "Vitest",
+        "Playwright",
+        "Testing Library",
+        "Jest",
+        "E2E Testing",
+        "Integration Testing"
+      ],
+      "skill_path": "/skills/qa-engineer/SKILL.md",
+      "keywords": [
+        "test",
+        "testing",
+        "QA",
+        "quality",
+        "bug",
+        "E2E",
+        "integration test",
+        "unit test",
+        "coverage",
+        "automation",
+        "regression"
+      ]
+    },
+    {
+      "id": "technical-writer",
+      "name": "Technical Writer",
+      "priority": "medium",
+      "status": "active",
+      "model": "claude-sonnet-4-5",
+      "technologies": [
+        "Markdown",
+        "TSDoc",
+        "JSDoc",
+        "API Documentation",
+        "README",
+        "Technical Writing"
+      ],
+      "skill_path": "/skills/technical-writer/SKILL.md",
+      "keywords": [
+        "documentation",
+        "document",
+        "docs",
+        "README",
+        "API reference",
+        "JSDoc",
+        "TSDoc",
+        "comments",
+        "guide",
+        "tutorial",
+        "walkthrough",
+        "explain code",
+        "developer guide",
+        "technical writing"
+      ]
+    }
+  ],
+
+  "delegation_rules": {
+    "description": "Rules for the orchestrator to delegate tasks to sub-agents",
+    "rules": [
+      {
+        "condition": "UI component OR styling OR responsive OR frontend visual",
+        "agents": ["frontend-engineer"],
+        "execution": "single"
+      },
+      {
+        "condition": "API endpoint OR database OR authentication OR server logic",
+        "agents": ["backend-engineer"],
+        "execution": "single"
+      },
+      {
+        "condition": "ChromaDB OR embeddings OR RAG OR search quality OR semantic",
+        "agents": ["rag-pipeline-specialist"],
+        "execution": "single"
+      },
+      {
+        "condition": "Requirements OR prioritization OR roadmap OR feature planning",
+        "agents": ["product-manager"],
+        "execution": "single"
+      },
+      {
+        "condition": "UX OR accessibility OR design OR user flow",
+        "agents": ["ui-ux-designer"],
+        "execution": "single"
+      },
+      {
+        "condition": "Deployment OR CI/CD OR infrastructure OR monitoring",
+        "agents": ["devops-engineer"],
+        "execution": "single"
+      },
+      {
+        "condition": "Testing OR quality assurance OR bug verification",
+        "agents": ["qa-engineer"],
+        "execution": "single"
+      },
+      {
+        "condition": "Documentation OR document OR JSDoc OR TSDoc OR API reference OR README OR guide",
+        "agents": ["technical-writer"],
+        "execution": "single"
+      },
+      {
+        "condition": "New feature spanning frontend AND backend",
+        "agents": ["product-manager", "backend-engineer", "frontend-engineer", "qa-engineer", "technical-writer"],
+        "execution": "sequential"
+      },
+      {
+        "condition": "Performance issue across stack",
+        "agents": ["backend-engineer", "frontend-engineer", "devops-engineer"],
+        "execution": "parallel_then_coordinate"
+      },
+      {
+        "condition": "New API endpoint implementation",
+        "agents": ["backend-engineer", "technical-writer"],
+        "execution": "sequential"
+      },
+      {
+        "condition": "New component development",
+        "agents": ["frontend-engineer", "technical-writer"],
+        "execution": "sequential"
+      }
+    ]
+  },
+
+  "coordination_patterns": {
+    "sequential": {
+      "description": "Execute agents one after another, passing context",
+      "use_when": "Tasks have dependencies (e.g., API must be built before UI)"
+    },
+    "parallel": {
+      "description": "Execute agents simultaneously for independent tasks",
+      "use_when": "Tasks are independent (e.g., fix frontend bug + optimize backend)"
+    },
+    "parallel_then_coordinate": {
+      "description": "Execute agents in parallel, then coordinate findings",
+      "use_when": "Multiple perspectives needed (e.g., performance analysis)"
+    },
+    "iterative": {
+      "description": "Execute agent, review, refine, repeat",
+      "use_when": "Exploratory or research tasks"
+    }
+  },
+
+  "escalation_policy": {
+    "user_clarification_needed": "Use AskUserQuestion tool",
+    "agent_blocked": "Coordinate with blocking agent to resolve",
+    "out_of_scope": "Inform user and suggest alternatives",
+    "conflicting_requirements": "Escalate to Product Manager agent"
+  }
+}

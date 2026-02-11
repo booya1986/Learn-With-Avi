@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// COURSE & VIDEO MODELS
+// ==========================================
+
+model Course {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @db.Text
+  difficulty  String   // 'beginner' | 'intermediate' | 'advanced'
+  topics      String[] // Array of topic strings
+  thumbnail   String
+  order       Int      @default(0)
+  published   Boolean  @default(false)
+  videos      Video[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([published])
+  @@index([order])
+}
+
+model Video {
+  id          String   @id @default(cuid())
+  youtubeId   String   @unique
+  title       String
+  description String   @db.Text
+  duration    Int      // Duration in seconds
+  thumbnail   String
+  topic       String
+  tags        String[] // Array of tag strings
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  order       Int      @default(0)
+  chapters    Chapter[]
+  transcript  Transcript?
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([published])
+  @@index([youtubeId])
+}
+
+model Chapter {
+  id        String @id @default(cuid())
+  videoId   String
+  video     Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  title     String
+  startTime Int    // Start time in seconds
+  endTime   Int    // End time in seconds
+  order     Int
+
+  @@index([videoId])
+  @@index([order])
+}
+
+// ==========================================
+// TRANSCRIPT MODELS
+// ==========================================
+
+model Transcript {
+  id        String            @id @default(cuid())
+  videoId   String            @unique
+  video     Video             @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  chunks    TranscriptChunk[]
+  source    String            // 'youtube' | 'manual' | 'whisper'
+  language  String            @default("he") // ISO language code
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  @@index([videoId])
+}
+
+model TranscriptChunk {
+  id           String     @id @default(cuid())
+  transcriptId String
+  transcript   Transcript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  text         String     @db.Text
+  startTime    Int        // Start time in seconds
+  endTime      Int        // End time in seconds
+  order        Int
+  createdAt    DateTime   @default(now())
+
+  @@index([transcriptId])
+  @@index([order])
+}
+
+// ==========================================
+// ADMIN AUTHENTICATION
+// ==========================================
+
+model Admin {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime  @default(now())
+  lastLogin    DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+}
