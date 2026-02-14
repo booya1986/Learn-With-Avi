@@ -1,8 +1,10 @@
 'use client'
 
 import * as React from 'react'
+
 import Link from 'next/link'
 import { useRouter, useParams } from 'next/navigation'
+
 import {
   DndContext,
   closestCenter,
@@ -10,7 +12,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
+  type DragEndEvent,
 } from '@dnd-kit/core'
 import {
   arrayMove,
@@ -21,10 +23,11 @@ import {
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { ArrowLeft, GripVertical, Edit, Trash2, Eye, EyeOff } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
+
 import { ConfirmDialog } from '@/components/admin/common/ConfirmDialog'
+import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
 import { useToast } from '@/components/admin/common/Toast'
+import { Button } from '@/components/ui/button'
 import { formatTime } from '@/lib/utils'
 
 interface Video {
@@ -50,7 +53,7 @@ interface SortableVideoItemProps {
   onTogglePublish: (id: string, published: boolean) => void
 }
 
-function SortableVideoItem({ video, onEdit, onDelete, onTogglePublish }: SortableVideoItemProps) {
+const SortableVideoItem = ({ video, onEdit, onDelete, onTogglePublish }: SortableVideoItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: video.id,
   })
@@ -145,7 +148,7 @@ export default function CourseVideosPage() {
   const fetchCourse = async () => {
     try {
       const response = await fetch(`/api/admin/courses/${params.id}`)
-      if (!response.ok) throw new Error('Failed to fetch course')
+      if (!response.ok) {throw new Error('Failed to fetch course')}
       const data = await response.json()
       setCourse(data)
       setVideos(data.videos.sort((a: Video, b: Video) => a.order - b.order))
@@ -163,7 +166,7 @@ export default function CourseVideosPage() {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
 
-    if (!over || active.id === over.id) return
+    if (!over || active.id === over.id) {return}
 
     const oldIndex = videos.findIndex((v) => v.id === active.id)
     const newIndex = videos.findIndex((v) => v.id === over.id)
@@ -182,7 +185,7 @@ export default function CourseVideosPage() {
         }),
       })
 
-      if (!response.ok) throw new Error('Failed to save order')
+      if (!response.ok) {throw new Error('Failed to save order')}
 
       toast({
         title: 'Success',
@@ -202,14 +205,14 @@ export default function CourseVideosPage() {
   }
 
   const handleDelete = async () => {
-    if (!deleteDialog.videoId) return
+    if (!deleteDialog.videoId) {return}
 
     try {
       const response = await fetch(`/api/admin/videos/${deleteDialog.videoId}`, {
         method: 'DELETE',
       })
 
-      if (!response.ok) throw new Error('Failed to delete video')
+      if (!response.ok) {throw new Error('Failed to delete video')}
 
       toast({
         title: 'Success',
@@ -235,7 +238,7 @@ export default function CourseVideosPage() {
         body: JSON.stringify({ published: !published }),
       })
 
-      if (!response.ok) throw new Error('Failed to update video')
+      if (!response.ok) {throw new Error('Failed to update video')}
 
       toast({
         title: 'Success',
@@ -282,9 +285,7 @@ export default function CourseVideosPage() {
         <p className="mt-2 text-gray-600">Manage videos and their order in this course</p>
       </div>
 
-      {isSaving && (
-        <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">Saving order...</div>
-      )}
+      {isSaving ? <div className="rounded-lg bg-blue-50 p-3 text-sm text-blue-700">Saving order...</div> : null}
 
       {videos.length === 0 ? (
         <div className="flex min-h-[400px] items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">

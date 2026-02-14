@@ -6,7 +6,8 @@
  */
 
 import { useCallback, useEffect, useState } from 'react'
-import { QuizSessionState } from '@/types'
+
+import { type QuizSessionState } from '@/types'
 
 export interface UseQuizSessionReturn {
   sessionState: QuizSessionState | null
@@ -38,13 +39,13 @@ export function useQuizSession(videoId: string | undefined): UseQuizSessionRetur
    */
   const restoreSession = useCallback(
     (targetVideoId: string): QuizSessionState | null => {
-      if (typeof window === 'undefined') return null
+      if (typeof window === 'undefined') {return null}
 
       try {
         const key = getStorageKey(targetVideoId)
         const stored = localStorage.getItem(key)
 
-        if (!stored) return null
+        if (!stored) {return null}
 
         const parsed = JSON.parse(stored) as QuizSessionState
 
@@ -78,7 +79,7 @@ export function useQuizSession(videoId: string | undefined): UseQuizSessionRetur
    * Save session to localStorage
    */
   const saveSession = useCallback((state: QuizSessionState) => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {return}
 
     try {
       const key = getStorageKey(state.videoId)
@@ -108,7 +109,7 @@ export function useQuizSession(videoId: string | undefined): UseQuizSessionRetur
    * Clear session from localStorage
    */
   const clearSession = useCallback(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {return}
 
     if (videoId) {
       try {
@@ -126,7 +127,7 @@ export function useQuizSession(videoId: string | undefined): UseQuizSessionRetur
    * Keeps only the most recent 5 sessions
    */
   const clearOldSessions = useCallback(() => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined') {return}
 
     try {
       const allKeys = Object.keys(localStorage)

@@ -1,12 +1,15 @@
 'use client'
 
 import * as React from 'react'
+
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+
 import { Home, Play, BookOpen, LogOut } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { signOut } from 'next-auth/react'
+
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const navigation = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: Home },
@@ -14,7 +17,7 @@ const navigation = [
   { name: 'Courses', href: '/admin/courses', icon: BookOpen },
 ]
 
-export function AdminSidebar() {
+export const AdminSidebar = () => {
   const pathname = usePathname()
 
   const handleLogout = async () => {

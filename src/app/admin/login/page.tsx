@@ -1,13 +1,16 @@
 'use client'
 
 import * as React from 'react'
+
 import { useRouter, useSearchParams } from 'next/navigation'
+
+import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Button } from '@/components/ui/button'
+
 import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
+import { Button } from '@/components/ui/button'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -158,9 +161,7 @@ export default function LoginPage() {
 
           {/* Forms */}
           <div className="p-8">
-            {error && (
-              <div className="mb-6 rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div>
-            )}
+            {error ? <div className="mb-6 rounded-md bg-red-50 p-3 text-sm text-red-600">{error}</div> : null}
 
             {activeTab === 'login' ? (
               <form onSubmit={handleSubmitLogin(onLoginSubmit)} className="space-y-6">
@@ -176,9 +177,7 @@ export default function LoginPage() {
                     placeholder="admin@example.com"
                     disabled={isLoading}
                   />
-                  {loginErrors.email && (
-                    <p className="mt-1 text-sm text-red-600">{loginErrors.email.message}</p>
-                  )}
+                  {loginErrors.email ? <p className="mt-1 text-sm text-red-600">{loginErrors.email.message}</p> : null}
                 </div>
 
                 <div>
@@ -196,9 +195,7 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     disabled={isLoading}
                   />
-                  {loginErrors.password && (
-                    <p className="mt-1 text-sm text-red-600">{loginErrors.password.message}</p>
-                  )}
+                  {loginErrors.password ? <p className="mt-1 text-sm text-red-600">{loginErrors.password.message}</p> : null}
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -226,9 +223,7 @@ export default function LoginPage() {
                     placeholder="John Doe"
                     disabled={isLoading}
                   />
-                  {signupErrors.name && (
-                    <p className="mt-1 text-sm text-red-600">{signupErrors.name.message}</p>
-                  )}
+                  {signupErrors.name ? <p className="mt-1 text-sm text-red-600">{signupErrors.name.message}</p> : null}
                 </div>
 
                 <div>
@@ -243,9 +238,7 @@ export default function LoginPage() {
                     placeholder="admin@example.com"
                     disabled={isLoading}
                   />
-                  {signupErrors.email && (
-                    <p className="mt-1 text-sm text-red-600">{signupErrors.email.message}</p>
-                  )}
+                  {signupErrors.email ? <p className="mt-1 text-sm text-red-600">{signupErrors.email.message}</p> : null}
                 </div>
 
                 <div>
@@ -263,9 +256,7 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     disabled={isLoading}
                   />
-                  {signupErrors.password && (
-                    <p className="mt-1 text-sm text-red-600">{signupErrors.password.message}</p>
-                  )}
+                  {signupErrors.password ? <p className="mt-1 text-sm text-red-600">{signupErrors.password.message}</p> : null}
                 </div>
 
                 <div>
@@ -283,11 +274,9 @@ export default function LoginPage() {
                     placeholder="••••••••"
                     disabled={isLoading}
                   />
-                  {signupErrors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">
+                  {signupErrors.confirmPassword ? <p className="mt-1 text-sm text-red-600">
                       {signupErrors.confirmPassword.message}
-                    </p>
-                  )}
+                    </p> : null}
                 </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>

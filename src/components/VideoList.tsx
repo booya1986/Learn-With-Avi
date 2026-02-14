@@ -1,11 +1,14 @@
 'use client'
 
 import React from 'react'
+
 import Image from 'next/image'
+
 import { Play, Check, Clock } from 'lucide-react'
-import { cn, formatTime } from '@/lib/utils'
-import { Video } from '@/types'
+
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { cn, formatTime } from '@/lib/utils'
+import { type Video } from '@/types'
 
 interface VideoListProps {
   videos: Video[]
@@ -16,14 +19,14 @@ interface VideoListProps {
   compact?: boolean
 }
 
-export function VideoList({
+export const VideoList = ({
   videos,
   currentVideoId,
   onVideoSelect,
   watchedVideos = new Set(),
   className,
   compact = false,
-}: VideoListProps) {
+}: VideoListProps) => {
   const sortedVideos = [...videos].sort((a, b) => a.order - b.order)
 
   return (
@@ -111,22 +114,18 @@ export function VideoList({
                   )}
 
                   {/* Duration (compact mode) */}
-                  {compact && (
-                    <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {compact ? <div className="flex items-center gap-1 mt-1 text-xs text-gray-500 dark:text-gray-400">
                       <Clock className="w-3 h-3" />
                       <span>{formatTime(video.duration)}</span>
-                    </div>
-                  )}
+                    </div> : null}
                 </div>
 
                 {/* Playing indicator */}
-                {isCurrentVideo && (
-                  <div className="flex-shrink-0 flex items-center gap-0.5">
+                {isCurrentVideo ? <div className="flex-shrink-0 flex items-center gap-0.5">
                     <span className="w-1 h-3 bg-blue-600 rounded-full animate-pulse" />
                     <span className="w-1 h-4 bg-blue-600 rounded-full animate-pulse delay-75" />
                     <span className="w-1 h-2 bg-blue-600 rounded-full animate-pulse delay-150" />
-                  </div>
-                )}
+                  </div> : null}
               </button>
             )
           })}

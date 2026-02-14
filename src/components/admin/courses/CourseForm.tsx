@@ -1,13 +1,18 @@
 'use client'
 
 import * as React from 'react'
+
 import { useRouter } from 'next/navigation'
-import { useForm, Controller } from 'react-hook-form'
+
 import { zodResolver } from '@hookform/resolvers/zod'
+import { X } from 'lucide-react'
+import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
+
+import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
+import { useToast } from '@/components/admin/common/Toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -16,9 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
-import { useToast } from '@/components/admin/common/Toast'
-import { X } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+
 
 const courseSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
@@ -36,7 +40,7 @@ interface CourseFormProps {
   initialData?: Partial<CourseFormData>
 }
 
-export function CourseForm({ courseId, initialData }: CourseFormProps) {
+export const CourseForm = ({ courseId, initialData }: CourseFormProps) => {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -128,7 +132,7 @@ export function CourseForm({ courseId, initialData }: CourseFormProps) {
         <div>
           <Label htmlFor="title">Title *</Label>
           <Input id="title" {...register('title')} placeholder="Course Title" className="mt-1" />
-          {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
+          {errors.title ? <p className="mt-1 text-sm text-red-600">{errors.title.message}</p> : null}
         </div>
 
         <div>
@@ -140,9 +144,7 @@ export function CourseForm({ courseId, initialData }: CourseFormProps) {
             rows={4}
             className="mt-1"
           />
-          {errors.description && (
-            <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
-          )}
+          {errors.description ? <p className="mt-1 text-sm text-red-600">{errors.description.message}</p> : null}
         </div>
 
         <div>
@@ -163,9 +165,7 @@ export function CourseForm({ courseId, initialData }: CourseFormProps) {
               </Select>
             )}
           />
-          {errors.difficulty && (
-            <p className="mt-1 text-sm text-red-600">{errors.difficulty.message}</p>
-          )}
+          {errors.difficulty ? <p className="mt-1 text-sm text-red-600">{errors.difficulty.message}</p> : null}
         </div>
 
         <div>
@@ -176,9 +176,7 @@ export function CourseForm({ courseId, initialData }: CourseFormProps) {
             placeholder="https://example.com/image.jpg"
             className="mt-1"
           />
-          {errors.thumbnail && (
-            <p className="mt-1 text-sm text-red-600">{errors.thumbnail.message}</p>
-          )}
+          {errors.thumbnail ? <p className="mt-1 text-sm text-red-600">{errors.thumbnail.message}</p> : null}
         </div>
 
         <div>

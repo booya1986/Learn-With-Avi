@@ -108,11 +108,11 @@ export function validateEnvironment(): EnvironmentConfig {
   } catch (error) {
     // Enhance error message with helpful information
     if (error instanceof Error) {
-      console.error('\n' + '='.repeat(70))
+      console.error(`\n${  '='.repeat(70)}`)
       console.error('🚨 ENVIRONMENT CONFIGURATION ERROR')
       console.error('='.repeat(70))
       console.error(error.message)
-      console.error('='.repeat(70) + '\n')
+      console.error(`${'='.repeat(70)  }\n`)
 
       if (process.env.NODE_ENV !== 'production') {
         console.error('💡 TIP: Copy .env.example to .env.local and fill in your API keys\n')

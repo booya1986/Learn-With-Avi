@@ -1,9 +1,12 @@
 import * as React from 'react'
-import { requireAuth } from '@/lib/auth'
-import { CourseForm } from '@/components/admin/courses/CourseForm'
-import { ArrowLeft } from 'lucide-react'
+
 import Link from 'next/link'
+
+import { ArrowLeft } from 'lucide-react'
+
+import { CourseForm } from '@/components/admin/courses/CourseForm'
 import { Button } from '@/components/ui/button'
+import { requireAuth } from '@/lib/auth'
 
 export default async function NewCoursePage() {
   await requireAuth()

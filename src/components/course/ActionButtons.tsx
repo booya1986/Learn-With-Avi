@@ -1,7 +1,9 @@
 'use client'
 
 import React from 'react'
+
 import { Sparkles, Brain } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 
 /**
@@ -22,12 +24,12 @@ interface ActionButtonsProps {
  * @param props - ActionButtons properties
  * @returns Action buttons component
  */
-export function ActionButtons({
+export const ActionButtons = ({
   onSummarize,
   onStartQuiz,
   courseVideosCount,
   currentVideoOrder,
-}: ActionButtonsProps) {
+}: ActionButtonsProps) => {
   return (
     <div className="flex items-center justify-between mt-4">
       <div className="flex items-center gap-2">

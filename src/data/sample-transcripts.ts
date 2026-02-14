@@ -1,4 +1,4 @@
-import { TranscriptChunk } from '@/types'
+import { type TranscriptChunk } from '@/types'
 
 /**
  * Sample transcript chunks for the AI No-Code video by Avi Levi

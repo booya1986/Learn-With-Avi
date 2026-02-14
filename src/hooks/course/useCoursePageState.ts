@@ -1,12 +1,16 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Course, Video, ChatMessage, TranscriptChunk } from '@/types'
-import { useVideoState } from '../video/useVideoState'
-import { useVideoProgressWithTracking } from '../video/useVideoProgress'
-import { useSummaryGeneration } from '../chat/useSummaryGeneration'
-import { useRouteSync } from './useRouteSync'
+
 import { getSampleChunksForVideo } from '@/data/sample-transcripts'
 import { useChat } from '@/hooks/useChat'
-import { useQuizState, UseQuizStateReturn } from '../quiz/useQuizState'
+import { type Course, type Video, type ChatMessage, type TranscriptChunk } from '@/types'
+
+import { useSummaryGeneration } from '../chat/useSummaryGeneration'
+import { useQuizState, type UseQuizStateReturn } from '../quiz/useQuizState'
+import { useVideoProgressWithTracking } from '../video/useVideoProgress'
+import { useVideoState } from '../video/useVideoState'
+
+import { useRouteSync } from './useRouteSync'
+
 
 export interface UseCoursePageStateReturn {
   /** Current video being watched */
@@ -124,11 +128,11 @@ export function useCoursePageState(
    */
   const getContext = useCallback(
     async (query: string): Promise<TranscriptChunk[]> => {
-      if (!currentVideo) return []
+      if (!currentVideo) {return []}
 
       // Get all chunks for the current video
       const allChunks = getSampleChunksForVideo(currentVideo.youtubeId)
-      if (allChunks.length === 0) return []
+      if (allChunks.length === 0) {return []}
 
       // Simple keyword search for client-side fallback
       const normalizedQuery = query.toLowerCase().trim()
@@ -251,7 +255,7 @@ export function useCoursePageState(
    * Live transcript chunks near current time
    */
   const liveTranscript = useMemo(() => {
-    if (!currentVideo) return []
+    if (!currentVideo) {return []}
 
     const chunks = getSampleChunksForVideo(currentVideo.youtubeId)
     return chunks
@@ -274,7 +278,7 @@ export function useCoursePageState(
    * Current stage index for progress visualization
    */
   const currentStageIndex = useMemo(() => {
-    if (!progressState.currentChapter || !currentVideo?.chapters) return 1
+    if (!progressState.currentChapter || !currentVideo?.chapters) {return 1}
     return Math.floor(currentVideo.chapters.indexOf(progressState.currentChapter) / 3) + 1
   }, [progressState.currentChapter, currentVideo])
 

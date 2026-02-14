@@ -1,9 +1,12 @@
 import * as React from 'react'
-import { requireAuth } from '@/lib/auth'
-import { VideoForm } from '@/components/admin/videos/VideoForm'
-import { ArrowLeft } from 'lucide-react'
+
 import Link from 'next/link'
+
+import { ArrowLeft } from 'lucide-react'
+
+import { VideoForm } from '@/components/admin/videos/VideoForm'
 import { Button } from '@/components/ui/button'
+import { requireAuth } from '@/lib/auth'
 
 export default async function NewVideoPage() {
   await requireAuth()

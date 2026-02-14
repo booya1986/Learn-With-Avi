@@ -1,10 +1,12 @@
 'use client'
 
 import * as React from 'react'
+
 import * as DialogPrimitives from '@radix-ui/react-dialog'
 import { AlertTriangle, X } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface ConfirmDialogProps {
   open: boolean
@@ -18,7 +20,7 @@ interface ConfirmDialogProps {
   isLoading?: boolean
 }
 
-export function ConfirmDialog({
+export const ConfirmDialog = ({
   open,
   onOpenChange,
   title,
@@ -28,7 +30,7 @@ export function ConfirmDialog({
   onConfirm,
   variant = 'default',
   isLoading = false,
-}: ConfirmDialogProps) {
+}: ConfirmDialogProps) => {
   const handleConfirm = async () => {
     await onConfirm()
     onOpenChange(false)

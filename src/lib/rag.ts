@@ -1,9 +1,11 @@
-import { ChromaClient, Collection, IncludeEnum } from 'chromadb'
-import { TranscriptChunk, VideoSource } from '@/types'
-import { getEmbedding, getBatchEmbeddings, getEmbeddingDimension } from './embeddings'
-import { generateId } from './utils'
-import { logError, ServiceUnavailableError } from './errors'
+import { ChromaClient, type Collection, IncludeEnum } from 'chromadb'
+
+import { type TranscriptChunk, type VideoSource } from '@/types'
+
 import { getChromaUrl } from './config'
+import { getEmbedding, getBatchEmbeddings, getEmbeddingDimension } from './embeddings'
+import { logError, ServiceUnavailableError } from './errors'
+import { generateId } from './utils'
 
 // Configuration
 const COLLECTION_NAME = 'learnwithavi_transcripts'
@@ -327,7 +329,7 @@ export async function queryChunks(
     // Convert results to QueryResult format
     const queryResults: QueryResult[] = []
 
-    if (results.ids && results.ids[0]) {
+    if (results.ids?.[0]) {
       for (let i = 0; i < results.ids[0].length; i++) {
         const id = results.ids[0][i]
         const document = results.documents?.[0]?.[i] || ''

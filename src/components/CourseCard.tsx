@@ -1,11 +1,14 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
+
 import Image from 'next/image'
+import Link from 'next/link'
+
 import { PlayCircle, Clock, BookOpen } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
-import { Course } from '@/types'
+import { type Course } from '@/types'
 
 interface CourseCardProps {
   course: Course
@@ -24,7 +27,7 @@ const difficultyLabels = {
   advanced: 'Advanced',
 }
 
-export function CourseCard({ course, className }: CourseCardProps) {
+export const CourseCard = ({ course, className }: CourseCardProps) => {
   const totalDuration = course.videos.reduce((acc, video) => acc + video.duration, 0)
   const hours = Math.floor(totalDuration / 3600)
   const minutes = Math.floor((totalDuration % 3600) / 60)

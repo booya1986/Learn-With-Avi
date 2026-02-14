@@ -1,7 +1,9 @@
 'use client'
 
 import * as React from 'react'
+
 import { Plus, Trash2, Download } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,13 +22,13 @@ interface ChapterEditorProps {
   isExtracting?: boolean
 }
 
-export function ChapterEditor({
+export const ChapterEditor = ({
   chapters,
   onChange,
   videoDuration,
   onAutoExtract,
   isExtracting = false,
-}: ChapterEditorProps) {
+}: ChapterEditorProps) => {
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
@@ -93,8 +95,7 @@ export function ChapterEditor({
       <div className="flex items-center justify-between">
         <Label>Chapters (Optional)</Label>
         <div className="flex gap-2">
-          {onAutoExtract && (
-            <Button
+          {onAutoExtract ? <Button
               type="button"
               variant="outline"
               size="sm"
@@ -109,8 +110,7 @@ export function ChapterEditor({
                   Auto-Extract from Description
                 </>
               )}
-            </Button>
-          )}
+            </Button> : null}
           <Button type="button" variant="outline" size="sm" onClick={handleAddChapter}>
             <Plus className="me-2 h-3 w-3" />
             Add Chapter

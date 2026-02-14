@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { type NextRequest, NextResponse } from 'next/server'
+
 import { z } from 'zod'
-import { authOptions } from '@/lib/auth-config'
+
 import { prisma } from '@/lib/prisma'
+import { invalidateCourseCache } from '@/lib/queries'
 
 /**
  * Course CRUD API - Single Course Operations
@@ -47,12 +48,6 @@ const updateCourseSchema = z.object({
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { id } = await params
 
     // Fetch course with videos and chapters
@@ -107,12 +102,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { id } = await params
 
     // Parse and validate request body
@@ -156,6 +145,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       },
     })
 
+    // Invalidate cache after successful update
+    await invalidateCourseCache(id)
+
     return NextResponse.json(course)
   } catch (error) {
     console.error('Error updating course:', error)
@@ -180,12 +172,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { id } = await params
 
     // Check if course exists
@@ -206,6 +192,9 @@ export async function DELETE(
     await prisma.course.delete({
       where: { id },
     })
+
+    // Invalidate cache after successful deletion
+    await invalidateCourseCache(id)
 
     return NextResponse.json({
       success: true,

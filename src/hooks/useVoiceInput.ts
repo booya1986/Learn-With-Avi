@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
+
 import { VoiceState } from '@/types'
 
 // Type definitions for Web Speech API
@@ -380,7 +381,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
     }
 
     const recognition = initRecognition()
-    if (!recognition) return
+    if (!recognition) {return}
 
     recognitionRef.current = recognition
 

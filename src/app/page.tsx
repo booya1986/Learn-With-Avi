@@ -1,6 +1,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
+
 import { ArrowRight, Play, Sparkles, BookOpen, MessageSquare, Mic } from 'lucide-react'
+
 import { CourseCard } from '@/components/CourseCard'
 import { getCourses, getAllVideos } from '@/data/courses'
 

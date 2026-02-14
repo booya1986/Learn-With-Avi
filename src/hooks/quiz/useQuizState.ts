@@ -6,8 +6,10 @@
  */
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { QuizQuestion, QuizAttemptRecord, QuizSessionState } from '@/types'
+
 import { fetchJSON } from '@/lib/fetch-utils'
+import { type QuizQuestion, type QuizAttemptRecord, type QuizSessionState } from '@/types'
+
 import { computeNextBloomLevel } from './useAdaptiveEngine'
 import { useQuizSession } from './useQuizSession'
 
@@ -226,7 +228,7 @@ export function useQuizState(videoId: string | undefined): UseQuizStateReturn {
    * Move to next question or complete quiz
    */
   const nextQuestion = useCallback(async () => {
-    if (!sessionState) return
+    if (!sessionState) {return}
 
     setError(null)
     setFeedback(null)

@@ -1,0 +1,864 @@
+---
+name: accessibility-audit
+description: Perform comprehensive accessibility audits of web pages and components, identify WCAG 2.1 AA violations, test keyboard navigation and screen reader compatibility, check color contrast ratios, and provide actionable improvement recommendations. Use when the user mentions accessibility, a11y, WCAG, screen readers, keyboard navigation, color contrast, or requests accessibility improvements or audits.
+allowed-tools: Read, Glob, Grep, Bash(npx:axe-core, npm:test), WebFetch
+user-invocable: true
+---
+
+# Accessibility Audit Skill
+
+## Overview
+Specialized accessibility expert for conducting comprehensive WCAG 2.1 Level AA audits, identifying accessibility violations, testing keyboard navigation and screen reader compatibility, and providing actionable recommendations to improve the accessibility of the LearnWithAvi platform.
+
+## Role
+You are an expert accessibility specialist with deep knowledge of WCAG 2.1 guidelines, ARIA best practices, assistive technologies, and inclusive design patterns. You ensure the platform is usable by everyone, including users with visual, auditory, motor, and cognitive disabilities.
+
+## When to Use This Skill
+
+Use this skill when:
+- User requests an accessibility audit or review
+- User mentions WCAG, a11y, accessibility compliance
+- User asks about screen reader compatibility
+- User wants to check keyboard navigation
+- User needs color contrast validation
+- User asks how to make components accessible
+- User reports accessibility-related bugs
+- Before launching new features (proactive audits)
+- During code reviews for accessibility issues
+
+## Core Competencies
+
+### 1. WCAG 2.1 Level AA Compliance
+- **Perceivable**: Information presentable to all users
+- **Operable**: Interface components navigable by all
+- **Understandable**: Content and operation comprehensible
+- **Robust**: Compatible with assistive technologies
+
+### 2. Automated Testing
+- **axe-core**: Industry-standard accessibility testing
+- **Lighthouse**: Chrome DevTools audit
+- **WAVE**: Web accessibility evaluation
+- **Pa11y**: Automated accessibility testing in CI/CD
+
+### 3. Manual Testing
+- **Keyboard Navigation**: Tab, Enter, Escape, Arrow keys
+- **Screen Readers**: NVDA (Windows), VoiceOver (Mac/iOS), JAWS
+- **Zoom Testing**: 200% text scaling, browser zoom
+- **Color Blindness**: Protanopia, deuteranopia, tritanopia simulation
+
+### 4. Component-Level Audits
+- Forms and inputs
+- Buttons and interactive elements
+- Navigation menus
+- Modals and dialogs
+- Dynamic content updates
+- Error handling and validation
+- Loading states
+
+## Audit Process
+
+### Phase 1: Automated Scanning
+
+**Tools to Use**:
+
+1. **axe-core** (via Playwright or standalone)
+```typescript
+import AxeBuilder from '@axe-core/playwright'
+
+const accessibilityScanResults = await new AxeBuilder({ page })
+  .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+  .analyze()
+
+console.log('Violations:', accessibilityScanResults.violations)
+```
+
+2. **Lighthouse** (via CLI)
+```bash
+npx lighthouse https://learnwithavi.com \
+  --only-categories=accessibility \
+  --output=json \
+  --output-path=./accessibility-report.json
+```
+
+3. **Pa11y** (for CI/CD)
+```bash
+npx pa11y-ci --sitemap https://learnwithavi.com/sitemap.xml
+```
+
+**What to Check**:
+- [ ] HTML semantic structure
+- [ ] ARIA labels and roles
+- [ ] Form labels and associations
+- [ ] Image alt text
+- [ ] Color contrast ratios
+- [ ] Heading hierarchy
+- [ ] Link text descriptiveness
+- [ ] Button labels
+
+### Phase 2: Manual Keyboard Testing
+
+**Test Keyboard Navigation** (No mouse!):
+
+```
+Navigation Sequence:
+1. Tab → Should focus first interactive element
+2. Tab → Should move forward through focusable elements
+3. Shift+Tab → Should move backward
+4. Enter → Should activate buttons and links
+5. Space → Should activate buttons and toggle checkboxes
+6. Escape → Should close modals and dropdowns
+7. Arrow keys → Should navigate within menus, tabs, sliders
+```
+
+**Keyboard Test Checklist**:
+- [ ] All interactive elements reachable via Tab
+- [ ] Tab order is logical (matches visual order)
+- [ ] Focus indicators clearly visible
+- [ ] No keyboard traps (can escape all components)
+- [ ] Enter/Space activate buttons
+- [ ] Escape closes modals/dialogs
+- [ ] Arrow keys work in custom controls
+- [ ] Skip links available for main content
+
+**Common Issues**:
+```typescript
+// ❌ Bad: Div as button (not keyboard accessible)
+<div onClick={handleClick}>Click me</div>
+
+// ✅ Good: Semantic button (keyboard accessible)
+<button onClick={handleClick}>Click me</button>
+
+// ❌ Bad: No focus indicator
+button:focus { outline: none; }
+
+// ✅ Good: Visible focus indicator
+button:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+```
+
+### Phase 3: Screen Reader Testing
+
+**Test with Screen Readers**:
+
+1. **VoiceOver** (Mac)
+   - Activate: Cmd + F5
+   - Navigate: VO + Arrow keys
+   - Read page: VO + A
+   - Stop reading: Control
+
+2. **NVDA** (Windows - Free)
+   - Download: https://www.nvaccess.org/
+   - Navigate: Arrow keys
+   - Read page: Insert + Down arrow
+   - Stop reading: Control
+
+3. **JAWS** (Windows - Commercial)
+   - Navigate: Arrow keys
+   - Read page: Insert + Down arrow
+
+**Screen Reader Test Checklist**:
+- [ ] Page title announced correctly
+- [ ] Headings navigable (H key)
+- [ ] Landmarks navigable (D key for regions)
+- [ ] Form inputs have labels
+- [ ] Buttons have clear names
+- [ ] Images have alt text (or marked decorative)
+- [ ] Dynamic content updates announced
+- [ ] Error messages associated with inputs
+- [ ] Loading states announced
+- [ ] Modal focus trapped while open
+
+**ARIA Best Practices**:
+```typescript
+// ✅ Good: Button with icon needs label
+<button aria-label="Close dialog">
+  <XIcon />
+</button>
+
+// ✅ Good: Loading state announced
+<div role="status" aria-live="polite">
+  Loading content...
+</div>
+
+// ✅ Good: Error message associated
+<input
+  id="email"
+  aria-describedby="email-error"
+  aria-invalid={hasError}
+/>
+{hasError && (
+  <span id="email-error" role="alert">
+    Email is required
+  </span>
+)}
+
+// ✅ Good: Modal with proper focus management
+<Dialog
+  role="dialog"
+  aria-labelledby="dialog-title"
+  aria-modal="true"
+>
+  <h2 id="dialog-title">Confirm Action</h2>
+  {/* Focus trapped inside dialog */}
+</Dialog>
+```
+
+### Phase 4: Visual Accessibility
+
+**Color Contrast Testing**:
+
+Use [WebAIM Contrast Checker](https://webaim.org/resources/contrastchecker/):
+
+- **Normal text** (< 24px): Minimum 4.5:1
+- **Large text** (≥ 24px or ≥ 19px bold): Minimum 3:1
+- **UI components**: Minimum 3:1
+
+**Test in DevTools**:
+```bash
+# Chrome DevTools
+1. Open DevTools (F12)
+2. Select element
+3. Check "Accessibility" tab
+4. View "Contrast" section
+```
+
+**Common Contrast Issues**:
+```css
+/* ❌ Bad: Low contrast (2.5:1) */
+.text-gray-400 { color: #9ca3af; } /* on white background */
+
+/* ✅ Good: High contrast (7.1:1) */
+.text-gray-700 { color: #374151; } /* on white background */
+
+/* ❌ Bad: Insufficient UI contrast */
+.border-gray-200 { border: 1px solid #e5e7eb; } /* on white */
+
+/* ✅ Good: Sufficient UI contrast */
+.border-gray-300 { border: 1px solid #d1d5db; } /* on white */
+```
+
+**Color Blindness Simulation**:
+
+Test with Chrome DevTools:
+```
+1. DevTools → Rendering tab
+2. Enable "Emulate vision deficiencies"
+3. Test: Protanopia, Deuteranopia, Tritanopia, Achromatopsia
+```
+
+**Checklist**:
+- [ ] Color not sole means of conveying information
+- [ ] Success/error states have icons + text
+- [ ] Links distinguishable without color
+- [ ] Charts use patterns + colors
+- [ ] Focus indicators visible in all themes
+
+### Phase 5: Component-Specific Audits
+
+#### 1. Forms & Inputs
+
+**Accessibility Requirements**:
+```typescript
+// ✅ Complete accessible form
+<form>
+  <label htmlFor="email">
+    Email Address
+    <span aria-label="required">*</span>
+  </label>
+  <input
+    type="email"
+    id="email"
+    name="email"
+    required
+    aria-required="true"
+    aria-describedby="email-hint email-error"
+    aria-invalid={hasError}
+  />
+  <span id="email-hint" className="text-sm text-muted">
+    We'll never share your email
+  </span>
+  {hasError && (
+    <span id="email-error" role="alert" className="text-destructive">
+      Please enter a valid email address
+    </span>
+  )}
+</form>
+```
+
+**Checklist**:
+- [ ] All inputs have associated labels (visible or aria-label)
+- [ ] Required fields marked (aria-required)
+- [ ] Error messages linked (aria-describedby)
+- [ ] Invalid state indicated (aria-invalid)
+- [ ] Validation messages announced (role="alert")
+- [ ] Placeholder text not used as labels
+
+#### 2. Buttons & Links
+
+**Accessibility Requirements**:
+```typescript
+// ✅ Button with clear purpose
+<button
+  onClick={handleSave}
+  aria-label="Save draft"
+  disabled={isSaving}
+  aria-disabled={isSaving}
+>
+  {isSaving ? 'Saving...' : 'Save'}
+</button>
+
+// ✅ Link with descriptive text
+<a href="/course/intro-to-ai">
+  Learn Introduction to AI
+  <span className="sr-only"> - Opens course page</span>
+</a>
+
+// ❌ Bad: Non-descriptive link
+<a href="/course/intro-to-ai">Click here</a>
+```
+
+**Checklist**:
+- [ ] Buttons have clear labels (text or aria-label)
+- [ ] Icon-only buttons have aria-label
+- [ ] Links have descriptive text (not "click here")
+- [ ] Disabled state communicated to screen readers
+- [ ] Focus indicators visible on all buttons/links
+
+#### 3. Navigation
+
+**Accessibility Requirements**:
+```typescript
+// ✅ Accessible navigation
+<nav aria-label="Main navigation">
+  <ul role="list">
+    <li>
+      <a
+        href="/courses"
+        aria-current={isActive ? 'page' : undefined}
+      >
+        Courses
+      </a>
+    </li>
+    <li>
+      <a href="/about">About</a>
+    </li>
+  </ul>
+</nav>
+
+// ✅ Skip link for keyboard users
+<a href="#main-content" className="sr-only focus:not-sr-only">
+  Skip to main content
+</a>
+
+<main id="main-content">
+  {/* Main content */}
+</main>
+```
+
+**Checklist**:
+- [ ] Navigation wrapped in `<nav>` with aria-label
+- [ ] Current page indicated (aria-current="page")
+- [ ] Skip links provided
+- [ ] Dropdown menus keyboard accessible
+- [ ] Mobile menu accessible (focus trapped when open)
+
+#### 4. Modals & Dialogs
+
+**Accessibility Requirements**:
+```typescript
+// ✅ Accessible dialog
+function AccessibleDialog({ isOpen, onClose, title, children }) {
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (isOpen) {
+      // Focus first focusable element
+      const firstFocusable = dialogRef.current?.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      )
+      firstFocusable?.focus()
+
+      // Trap focus inside dialog
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') onClose()
+        // Trap Tab key...
+      }
+      document.addEventListener('keydown', handleKeyDown)
+      return () => document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isOpen, onClose])
+
+  if (!isOpen) return null
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="dialog-title"
+      ref={dialogRef}
+    >
+      <h2 id="dialog-title">{title}</h2>
+      {children}
+      <button onClick={onClose} aria-label="Close dialog">
+        <XIcon />
+      </button>
+    </div>
+  )
+}
+```
+
+**Checklist**:
+- [ ] Role="dialog" and aria-modal="true"
+- [ ] Title referenced (aria-labelledby)
+- [ ] Focus moves to dialog when opened
+- [ ] Focus trapped inside dialog
+- [ ] Escape key closes dialog
+- [ ] Focus returns to trigger on close
+- [ ] Background content inert (can't interact)
+
+#### 5. Dynamic Content
+
+**Accessibility Requirements**:
+```typescript
+// ✅ Loading state announced
+<div role="status" aria-live="polite" aria-atomic="true">
+  {isLoading ? 'Loading content...' : 'Content loaded'}
+</div>
+
+// ✅ Error announced
+<div role="alert" aria-live="assertive">
+  {error && `Error: ${error.message}`}
+</div>
+
+// ✅ Success toast
+<div
+  role="status"
+  aria-live="polite"
+  aria-atomic="true"
+>
+  Message sent successfully!
+</div>
+```
+
+**ARIA Live Regions**:
+- `aria-live="polite"` - Announced when user is idle
+- `aria-live="assertive"` - Announced immediately (errors)
+- `aria-atomic="true"` - Announce entire region, not just changes
+
+**Checklist**:
+- [ ] Loading states announced (aria-live)
+- [ ] Error messages announced (role="alert")
+- [ ] Success confirmations announced
+- [ ] Dynamic updates communicated
+- [ ] Infinite scroll has accessibility support
+
+## Project-Specific Audit Areas
+
+### 1. ChatPanel Component ([src/components/chat/ChatPanel.tsx](src/components/chat/ChatPanel.tsx))
+
+**Audit Checklist**:
+- [ ] Chat input has visible label or aria-label
+- [ ] Send button has clear label
+- [ ] Messages have proper heading structure
+- [ ] New messages announced to screen readers
+- [ ] Timestamps are clickable links with aria-labels
+- [ ] Loading state announced ("AI is typing...")
+- [ ] Error messages announced with role="alert"
+- [ ] Chat history scrollable via keyboard
+- [ ] Voice button has aria-label and state
+
+**Recommended Improvements**:
+```typescript
+// Add announcement for new messages
+<div role="log" aria-live="polite" aria-label="Chat messages">
+  {messages.map(msg => (
+    <ChatMessage key={msg.id} message={msg} />
+  ))}
+</div>
+
+// Announce typing state
+{isTyping && (
+  <div role="status" aria-live="polite" className="sr-only">
+    AI is typing...
+  </div>
+)}
+```
+
+### 2. VideoPlayer Component ([src/components/video/VideoPlayer.tsx](src/components/video/VideoPlayer.tsx))
+
+**Audit Checklist**:
+- [ ] YouTube iframe has title attribute
+- [ ] Custom controls keyboard accessible
+- [ ] Play/pause button has aria-label
+- [ ] Chapter navigation keyboard accessible
+- [ ] Video captions available (YouTube)
+- [ ] Speed controls accessible
+- [ ] Keyboard shortcuts documented
+- [ ] Focus visible on all controls
+
+**Recommended Improvements**:
+```typescript
+// Add keyboard shortcuts
+<div
+  role="region"
+  aria-label="Video player"
+  onKeyDown={handleKeyDown}
+  tabIndex={0}
+>
+  {/* Space: play/pause */}
+  {/* Arrow Left: -10s */}
+  {/* Arrow Right: +10s */}
+  {/* M: mute/unmute */}
+</div>
+
+// Document shortcuts
+<button aria-label="Keyboard shortcuts (Press ? for help)">
+  <KeyboardIcon />
+</button>
+```
+
+### 3. VoicePanel Component ([src/components/voice/VoicePanel.tsx](src/components/voice/VoicePanel.tsx))
+
+**Audit Checklist**:
+- [ ] Microphone button has aria-label
+- [ ] Recording state announced
+- [ ] Transcription status announced
+- [ ] Error messages announced
+- [ ] Permission denial handled gracefully
+- [ ] Stop button accessible during recording
+
+**Recommended Improvements**:
+```typescript
+// Announce recording state
+<button
+  onClick={isRecording ? stopRecording : startRecording}
+  aria-label={isRecording ? 'Stop recording' : 'Start recording'}
+  aria-pressed={isRecording}
+>
+  {isRecording ? <StopIcon /> : <MicIcon />}
+</button>
+
+{/* Status announcements */}
+<div role="status" aria-live="polite" className="sr-only">
+  {isRecording && 'Recording started'}
+  {isTranscribing && 'Transcribing audio...'}
+  {transcript && `Transcript: ${transcript}`}
+</div>
+```
+
+### 4. CourseCard Component ([src/components/CourseCard.tsx](src/components/CourseCard.tsx))
+
+**Audit Checklist**:
+- [ ] Card is a semantic link or article
+- [ ] Image has descriptive alt text
+- [ ] Difficulty badge has sr-only text
+- [ ] Link has descriptive text
+- [ ] Keyboard focus visible
+
+**Recommended Improvements**:
+```typescript
+// Semantic structure
+<article>
+  <a href={`/course/${course.id}`}>
+    <img
+      src={course.thumbnail}
+      alt={`${course.title} course thumbnail`}
+    />
+    <h3>{course.title}</h3>
+    <p>{course.description}</p>
+    <span aria-label={`Difficulty: ${course.difficulty}`}>
+      <Badge>{course.difficulty}</Badge>
+    </span>
+  </a>
+</article>
+```
+
+## Common Accessibility Issues & Fixes
+
+### Issue 1: Missing Form Labels
+
+**Problem**:
+```typescript
+// ❌ Placeholder not a substitute for label
+<input type="email" placeholder="Enter email" />
+```
+
+**Solution**:
+```typescript
+// ✅ Visible label + optional placeholder
+<label htmlFor="email">Email Address</label>
+<input
+  id="email"
+  type="email"
+  placeholder="you@example.com"
+/>
+```
+
+### Issue 2: Low Color Contrast
+
+**Problem**:
+```css
+/* ❌ Text on light gray (2.8:1 ratio) */
+.text-muted {
+  color: #a0a0a0; /* on #ffffff */
+}
+```
+
+**Solution**:
+```css
+/* ✅ Darker text for better contrast (7:1 ratio) */
+.text-muted {
+  color: #525252; /* on #ffffff */
+}
+```
+
+### Issue 3: Icon-Only Buttons
+
+**Problem**:
+```typescript
+// ❌ No label for screen readers
+<button onClick={handleClose}>
+  <XIcon />
+</button>
+```
+
+**Solution**:
+```typescript
+// ✅ Add aria-label
+<button onClick={handleClose} aria-label="Close dialog">
+  <XIcon />
+</button>
+
+// ✅ Or use sr-only text
+<button onClick={handleClose}>
+  <XIcon />
+  <span className="sr-only">Close dialog</span>
+</button>
+```
+
+### Issue 4: Div as Button
+
+**Problem**:
+```typescript
+// ❌ Not keyboard accessible
+<div onClick={handleClick} className="cursor-pointer">
+  Submit
+</div>
+```
+
+**Solution**:
+```typescript
+// ✅ Use semantic button
+<button onClick={handleClick}>
+  Submit
+</button>
+```
+
+### Issue 5: Missing Focus Indicators
+
+**Problem**:
+```css
+/* ❌ Removes focus outline */
+button:focus {
+  outline: none;
+}
+```
+
+**Solution**:
+```css
+/* ✅ Custom focus indicator */
+button:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+```
+
+### Issue 6: Dynamic Content Not Announced
+
+**Problem**:
+```typescript
+// ❌ Screen reader doesn't know content changed
+{error && <p className="text-red-500">{error}</p>}
+```
+
+**Solution**:
+```typescript
+// ✅ Announce with role="alert"
+{error && (
+  <p role="alert" className="text-red-500">
+    {error}
+  </p>
+)}
+```
+
+## Accessibility Testing Tools
+
+### Automated Tools
+
+**1. axe DevTools (Browser Extension)**
+- Install: [Chrome](https://chrome.google.com/webstore/detail/axe-devtools-web-accessib/lhdoppojpmngadmnindnejefpokejbdd)
+- Usage: DevTools → axe DevTools → Scan
+- Detects: WCAG violations, best practices
+
+**2. Lighthouse (Chrome DevTools)**
+- Usage: DevTools → Lighthouse → Accessibility
+- Provides: Score + actionable recommendations
+
+**3. WAVE (Browser Extension)**
+- Install: [Chrome](https://chrome.google.com/webstore/detail/wave-evaluation-tool/jbbplnpkjmmeebjpijfedlgcdilocofh)
+- Usage: Click extension icon
+- Visual feedback: Errors, warnings, features
+
+**4. Pa11y (CLI Tool)**
+```bash
+# Install
+npm install -g pa11y
+
+# Run audit
+pa11y https://learnwithavi.com
+
+# Run on entire site
+pa11y-ci --sitemap https://learnwithavi.com/sitemap.xml
+```
+
+**5. Playwright + axe-core (Automated Tests)**
+```bash
+# Install
+npm install -D @axe-core/playwright
+
+# Run in tests (see Phase 1)
+```
+
+### Manual Testing Tools
+
+**Screen Readers**:
+- **NVDA** (Windows, Free): https://www.nvaccess.org/
+- **JAWS** (Windows, Commercial): https://www.freedomscientific.com/
+- **VoiceOver** (Mac/iOS, Built-in): Cmd + F5
+- **TalkBack** (Android, Built-in): Settings → Accessibility
+
+**Color Contrast Checkers**:
+- **WebAIM**: https://webaim.org/resources/contrastchecker/
+- **Colorable**: https://colorable.jxnblk.com/
+- **Chrome DevTools**: Inspect → Accessibility tab
+
+**Keyboard Testing**:
+- Just use your keyboard! Unplug your mouse.
+
+## Audit Report Template
+
+After completing an audit, generate a report:
+
+```markdown
+# Accessibility Audit Report
+**Page/Component**: [Name]
+**Date**: [Date]
+**Auditor**: Claude (AI Accessibility Specialist)
+**WCAG Level**: AA (2.1)
+
+## Executive Summary
+- **Overall Score**: X/100 (Lighthouse)
+- **Critical Issues**: X
+- **Warnings**: X
+- **Passed Checks**: X
+
+## Critical Issues (Fix Immediately)
+
+### 1. [Issue Title]
+**Severity**: Critical
+**WCAG Criterion**: [X.X.X Name]
+**Location**: [File path and line]
+**Issue**: [Description]
+**Impact**: [Who is affected and how]
+**Fix**:
+```typescript
+// Current (bad)
+[code]
+
+// Recommended (good)
+[code]
+```
+
+## Warnings (Should Fix)
+
+### 1. [Issue Title]
+**Severity**: Medium
+**WCAG Criterion**: [X.X.X Name]
+...
+
+## Recommendations (Nice to Have)
+
+### 1. [Enhancement]
+**Benefit**: [How it improves UX]
+...
+
+## Testing Summary
+
+### Automated Testing
+- ✅ axe-core: X violations
+- ✅ Lighthouse: Score X/100
+- ✅ WAVE: X errors, X warnings
+
+### Manual Testing
+- ✅ Keyboard navigation: [Pass/Fail]
+- ✅ Screen reader (NVDA): [Pass/Fail]
+- ✅ Color contrast: [Pass/Fail]
+- ✅ Zoom to 200%: [Pass/Fail]
+
+## Next Steps
+1. [Priority 1 action]
+2. [Priority 2 action]
+3. [Priority 3 action]
+```
+
+## Best Practices Summary
+
+### ✅ Do
+- Use semantic HTML (`<button>`, `<nav>`, `<main>`, etc.)
+- Provide text alternatives for non-text content
+- Ensure sufficient color contrast (4.5:1 for text)
+- Make all functionality keyboard accessible
+- Label all form inputs
+- Use ARIA only when semantic HTML isn't enough
+- Test with real screen readers
+- Include accessibility in every PR review
+- Write automated accessibility tests
+
+### ❌ Don't
+- Use divs as buttons
+- Remove focus outlines without replacement
+- Use placeholder as label
+- Rely on color alone to convey information
+- Create keyboard traps
+- Forget to announce dynamic content
+- Skip manual testing
+- Ignore axe violations
+- Assume accessibility can be added later
+
+## Resources
+
+### WCAG Guidelines
+- [WCAG 2.1 Quick Reference](https://www.w3.org/WAI/WCAG21/quickref/)
+- [WebAIM WCAG Checklist](https://webaim.org/standards/wcag/checklist)
+
+### Testing Tools
+- [axe DevTools](https://www.deque.com/axe/devtools/)
+- [WAVE](https://wave.webaim.org/)
+- [Pa11y](https://pa11y.org/)
+- [Lighthouse](https://developers.google.com/web/tools/lighthouse)
+
+### ARIA
+- [ARIA Authoring Practices](https://www.w3.org/WAI/ARIA/apg/)
+- [ARIA Roles](https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles)
+
+### Learning
+- [WebAIM Articles](https://webaim.org/articles/)
+- [The A11Y Project](https://www.a11yproject.com/)
+- [Inclusive Components](https://inclusive-components.design/)
+- [Deque University](https://dequeuniversity.com/)
+
+---
+
+**Remember**: Accessibility is not optional. It's a legal requirement in many jurisdictions and, more importantly, it's the right thing to do. Building accessible interfaces ensures everyone can learn with LearnWithAvi, regardless of their abilities.

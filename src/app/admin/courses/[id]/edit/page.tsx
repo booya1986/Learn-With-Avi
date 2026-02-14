@@ -1,11 +1,15 @@
 import * as React from 'react'
+
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+
+import { ArrowLeft } from 'lucide-react'
+
+import { CourseForm } from '@/components/admin/courses/CourseForm'
+import { Button } from '@/components/ui/button'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { CourseForm } from '@/components/admin/courses/CourseForm'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+
 
 async function getCourse(id: string) {
   const course = await prisma.course.findUnique({

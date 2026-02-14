@@ -1,9 +1,11 @@
 'use client'
 
 import React, { useMemo } from 'react'
+
 import { User, Bot } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
-import { ChatMessage as ChatMessageType, VideoSource } from '@/types'
+import { type ChatMessage as ChatMessageType, type VideoSource } from '@/types'
 
 interface ChatMessageProps {
   message: ChatMessageType
@@ -30,13 +32,13 @@ function parseTimestamp(timeStr: string): number {
 }
 
 // Component to render message content with clickable timestamps and markdown
-function MessageContent({
+const MessageContent = ({
   content,
   onTimestampClick,
 }: {
   content: string
   onTimestampClick?: (timestamp: number) => void
-}) {
+}) => {
   const parts = useMemo(() => {
     // Match timestamp pattern [timestamp:MM:SS] or [timestamp:H:MM:SS]
     const timestampRegex = /\[timestamp:(\d{1,2}:\d{2}(?::\d{2})?)\]/g
@@ -98,7 +100,7 @@ function MessageContent({
 }
 
 // Simple markdown renderer for common patterns
-function MarkdownText({ text }: { text: string }) {
+const MarkdownText = ({ text }: { text: string }) => {
   const rendered = useMemo(() => {
     // Split by newlines first
     const lines = text.split('\n')
@@ -223,7 +225,7 @@ function processInlineMarkdown(text: string): React.ReactNode {
   return elements.length > 0 ? elements : text
 }
 
-export function ChatMessage({ message, onTimestampClick }: ChatMessageProps) {
+export const ChatMessage = ({ message, onTimestampClick }: ChatMessageProps) => {
   const isUser = message.role === 'user'
   const isHebrew = containsHebrew(message.content)
 
@@ -256,11 +258,9 @@ export function ChatMessage({ message, onTimestampClick }: ChatMessageProps) {
             {isUser ? 'You' : 'Avi Tutor'}
           </span>
           <span className="text-xs text-gray-400">{formatMessageTime(message.timestamp)}</span>
-          {message.isVoice && (
-            <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded">
+          {message.isVoice ? <span className="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 px-1.5 py-0.5 rounded">
               Voice
-            </span>
-          )}
+            </span> : null}
         </div>
 
         <div
@@ -274,28 +274,26 @@ export function ChatMessage({ message, onTimestampClick }: ChatMessageProps) {
         </div>
 
         {/* Sources */}
-        {message.sources && message.sources.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+        {message.sources && message.sources.length > 0 ? <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Sources:</p>
             <div className="flex flex-wrap gap-2">
               {message.sources.map((source, index) => (
                 <SourceBadge key={index} source={source} onTimestampClick={onTimestampClick} />
               ))}
             </div>
-          </div>
-        )}
+          </div> : null}
       </div>
     </div>
   )
 }
 
-function SourceBadge({
+const SourceBadge = ({
   source,
   onTimestampClick,
 }: {
   source: VideoSource
   onTimestampClick?: (timestamp: number) => void
-}) {
+}) => {
   const formattedTime = formatTimestampDisplay(source.timestamp)
 
   return (

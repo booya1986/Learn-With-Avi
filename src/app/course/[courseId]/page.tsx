@@ -1,5 +1,7 @@
 import { notFound } from 'next/navigation'
+
 import { getCourseById } from '@/data/courses'
+
 import CoursePageClient from './CoursePageClient'
 
 interface CoursePageProps {

@@ -1,10 +1,11 @@
 'use client'
 
 import React from 'react'
+
 import { CheckCircle, XCircle, Play } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
-import { formatTime } from '@/lib/utils'
-import { cn } from '@/lib/utils'
+import { formatTime , cn } from '@/lib/utils'
 
 /**
  * Props for QuizFeedback component
@@ -24,14 +25,14 @@ interface QuizFeedbackProps {
  * Shows success/failure banner, explanation, optional video timestamp,
  * and a button to proceed to the next question.
  */
-export function QuizFeedback({
+export const QuizFeedback = ({
   isCorrect,
   correctOptionText,
   explanation,
   sourceTimeRange,
   onNextQuestion,
   onTimestampClick,
-}: QuizFeedbackProps) {
+}: QuizFeedbackProps) => {
   return (
     <div className="space-y-4 mt-6" dir="rtl">
       {/* Success/Failure Banner */}
@@ -67,23 +68,19 @@ export function QuizFeedback({
       </div>
 
       {/* Explanation */}
-      {explanation && (
-        <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700">
+      {explanation ? <div className="bg-gray-50 dark:bg-gray-800 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{explanation}</p>
-        </div>
-      )}
+        </div> : null}
 
       {/* Video Timestamp Link */}
-      {sourceTimeRange && (
-        <button
+      {sourceTimeRange ? <button
           onClick={() => onTimestampClick(sourceTimeRange.start)}
           className="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
           aria-label={`צפה בהסבר ב-${formatTime(sourceTimeRange.start)}`}
         >
           <Play className="w-4 h-4" />
           צפה בהסבר [{formatTime(sourceTimeRange.start)}]
-        </button>
-      )}
+        </button> : null}
 
       {/* Next Question Button */}
       <Button onClick={onNextQuestion} className="w-full" size="lg">

@@ -1,4 +1,4 @@
-// Voice Hooks
+// Voice Hooks (Legacy Web Speech API)
 export { useVoiceInput, checkMicrophonePermission, requestMicrophoneAccess } from './useVoiceInput'
 export type { Language } from './useVoiceInput'
 
@@ -9,6 +9,9 @@ export {
   getEnglishVoices,
 } from './useVoiceOutput'
 export type { VoiceProvider } from './useVoiceOutput'
+
+// Voice Chat Hooks (Refactored - MediaRecorder + API)
+export * from './voice'
 
 // Chat Hooks
 export { useChat, useVideoTimestampHandler } from './useChat'

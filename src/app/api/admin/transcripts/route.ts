@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { type NextRequest, NextResponse } from 'next/server'
+
 import { z } from 'zod'
-import { authOptions } from '@/lib/auth-config'
+
 import { prisma } from '@/lib/prisma'
 
 /**
@@ -80,12 +80,6 @@ const updateTranscriptSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Parse and validate request body
     const body = await request.json()
     const parseResult = createTranscriptSchema.safeParse(body)
@@ -196,12 +190,6 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     // Parse and validate request body
     const body = await request.json()
     const parseResult = updateTranscriptSchema.safeParse(body)

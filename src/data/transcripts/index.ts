@@ -1,4 +1,4 @@
-import { TranscriptChunk } from '@/types'
+import { type TranscriptChunk } from '@/types'
 
 /**
  * Transcript Management System

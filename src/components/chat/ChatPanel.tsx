@@ -1,12 +1,15 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
+
 import { Send, Loader2, AlertCircle, MessageSquare, Trash2 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ChatMessage } from './ChatMessage'
 import { cn } from '@/lib/utils'
-import { ChatMessage as ChatMessageType } from '@/types'
+import { type ChatMessage as ChatMessageType } from '@/types'
+
+import { ChatMessage } from './ChatMessage'
 
 interface ChatPanelProps {
   messages: ChatMessageType[]
@@ -19,7 +22,7 @@ interface ChatPanelProps {
   placeholder?: string
 }
 
-export function ChatPanel({
+export const ChatPanel = ({
   messages,
   isLoading,
   error,
@@ -28,7 +31,7 @@ export function ChatPanel({
   onClearChat,
   className,
   placeholder = 'Ask about the video content...',
-}: ChatPanelProps) {
+}: ChatPanelProps) => {
   const [inputValue, setInputValue] = useState('')
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -81,8 +84,7 @@ export function ChatPanel({
           <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <h2 className="font-semibold text-gray-800 dark:text-gray-200">AI Tutor</h2>
         </div>
-        {messages.length > 0 && onClearChat && (
-          <Button
+        {messages.length > 0 && onClearChat ? <Button
             variant="ghost"
             size="sm"
             onClick={onClearChat}
@@ -90,8 +92,7 @@ export function ChatPanel({
             title="Clear chat"
           >
             <Trash2 className="w-4 h-4" />
-          </Button>
-        )}
+          </Button> : null}
       </div>
 
       {/* Messages Area */}
@@ -110,12 +111,10 @@ export function ChatPanel({
               ))}
 
               {/* Loading indicator */}
-              {isLoading && (
-                <div className="flex items-center gap-2 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              {isLoading ? <div className="flex items-center gap-2 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
                   <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">Thinking...</span>
-                </div>
-              )}
+                </div> : null}
 
               {/* Scroll anchor */}
               <div ref={messagesEndRef} />
@@ -125,12 +124,10 @@ export function ChatPanel({
       </ScrollArea>
 
       {/* Error Display */}
-      {error && (
-        <div className="mx-4 mb-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
+      {error ? <div className="mx-4 mb-2 p-3 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-2">
           <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
           <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
-        </div>
-      )}
+        </div> : null}
 
       {/* Input Area */}
       <form onSubmit={handleSubmit} className="p-4 border-t border-gray-200 dark:border-gray-800">
@@ -183,7 +180,7 @@ export function ChatPanel({
   )
 }
 
-function EmptyState() {
+const EmptyState = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full py-12 text-center">
       <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
@@ -202,7 +199,7 @@ function EmptyState() {
   )
 }
 
-function SuggestionChip({ text }: { text: string }) {
+const SuggestionChip = ({ text }: { text: string }) => {
   return (
     <button
       type="button"
@@ -214,13 +211,13 @@ function SuggestionChip({ text }: { text: string }) {
 }
 
 // Export a streaming message component for use with streaming responses
-export function StreamingMessage({
+export const StreamingMessage = ({
   content,
   onTimestampClick,
 }: {
   content: string
   onTimestampClick?: (timestamp: number) => void
-}) {
+}) => {
   return (
     <ChatMessage
       message={{

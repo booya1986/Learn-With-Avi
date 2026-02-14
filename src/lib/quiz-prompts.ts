@@ -5,8 +5,8 @@
  * Bloom's Taxonomy cognitive levels.
  */
 
-import { TranscriptChunk } from '@/types'
 import { formatTime } from '@/lib/utils'
+import { type TranscriptChunk } from '@/types'
 
 /**
  * System prompt for quiz generation

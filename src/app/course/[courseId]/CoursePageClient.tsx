@@ -14,22 +14,24 @@
  */
 
 import React from 'react'
+
 import Link from 'next/link'
-import { ChevronLeft, ChevronDown, Share2, Settings } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Course } from '@/types'
-import { useCoursePageState } from '@/hooks'
+
+import { ChevronLeft, ChevronDown, Share2, Settings , FileText } from 'lucide-react'
+
+import { ChatSidebar } from '@/components/course/ChatSidebar'
+import { MaterialsSidebar } from '@/components/course/MaterialsSidebar'
+import { SummaryModal } from '@/components/course/SummaryModal'
+import { VideoSection } from '@/components/course/VideoSection'
 import {
   ErrorBoundary,
   ChatErrorFallback,
   VideoErrorFallback,
   MaterialsErrorFallback,
 } from '@/components/ErrorBoundary'
-import { ChatSidebar } from '@/components/course/ChatSidebar'
-import { VideoSection } from '@/components/course/VideoSection'
-import { MaterialsSidebar } from '@/components/course/MaterialsSidebar'
-import { SummaryModal } from '@/components/course/SummaryModal'
-import { FileText } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { useCoursePageState } from '@/hooks'
+import { type Course } from '@/types'
 
 interface CoursePageClientProps {
   course: Course

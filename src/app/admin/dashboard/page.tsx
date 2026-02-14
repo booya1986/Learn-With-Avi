@@ -1,9 +1,12 @@
 import * as React from 'react'
+
 import Link from 'next/link'
+
+import { BookOpen, Play, CheckCircle, Plus } from 'lucide-react'
+
+import { Button } from '@/components/ui/button'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { BookOpen, Play, CheckCircle, Plus } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { formatTime } from '@/lib/utils'
 
 async function getDashboardStats() {

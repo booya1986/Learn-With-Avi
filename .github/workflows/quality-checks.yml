@@ -1,0 +1,166 @@
+name: Quality & Security Checks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/quality-checks.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-check:
+    name: Dependency Security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Audit npm dependencies
+        run: |
+          npm audit --audit-level=moderate || true
+
+      - name: Check for vulnerable packages
+        run: |
+          npm audit --json > audit-report.json || true
+          if grep -q '"vulnerable": [1-9]' audit-report.json; then
+            echo "⚠️  Vulnerable packages detected. Review npm audit results."
+          else
+            echo "✅ No critical vulnerabilities detected"
+          fi
+
+  bundle-size:
+    name: Bundle Size Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze bundle size
+        run: |
+          npm run build 2>&1 | tee build-output.txt
+
+          echo "## Build Size Analysis"
+
+          # Extract build information
+          if grep -q "Route (pages)" build-output.txt; then
+            echo "### Next.js Build Output"
+            grep -A 50 "Route (pages)" build-output.txt | head -30 || true
+          fi
+
+      - name: Check build output size
+        run: |
+          NEXT_SIZE=$(du -sh .next | awk '{print $1}')
+          echo "✅ .next build folder size: $NEXT_SIZE"
+
+          # Check if .next exceeds threshold (500MB)
+          NEXT_BYTES=$(du -sb .next | awk '{print $1}')
+          THRESHOLD=$((500 * 1024 * 1024))
+
+          if [ "$NEXT_BYTES" -gt "$THRESHOLD" ]; then
+            echo "⚠️  Build folder exceeds 500MB. Consider optimizing."
+          fi
+
+  code-quality:
+    name: Code Quality Metrics
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Analyze code patterns
+        run: |
+          echo "## Code Quality Checks"
+
+          # Check for console.log in production code
+          CONSOLE_LOGS=$(grep -r "console\.log" src --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "test" | grep -v ".test." | wc -l)
+          if [ "$CONSOLE_LOGS" -gt 0 ]; then
+            echo "⚠️  Found $CONSOLE_LOGS console.log statements in production code"
+          else
+            echo "✅ No console.log in production code"
+          fi
+
+          # Check for TODO comments
+          TODO_COUNT=$(grep -r "TODO\|FIXME" src --include="*.ts" --include="*.tsx" 2>/dev/null | wc -l)
+          if [ "$TODO_COUNT" -gt 0 ]; then
+            echo "ℹ️  Found $TODO_COUNT TODO/FIXME comments:"
+            grep -r "TODO\|FIXME" src --include="*.ts" --include="*.tsx" 2>/dev/null | head -10
+          fi
+
+          # Check for any/unknown types
+          ANY_COUNT=$(grep -r ": any\|: unknown" src --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "test" | wc -l)
+          if [ "$ANY_COUNT" -gt 0 ]; then
+            echo "⚠️  Found $ANY_COUNT instances of 'any' or 'unknown' types"
+          else
+            echo "✅ No unsafe 'any' types in production code"
+          fi
+
+  accessibility-check:
+    name: Accessibility Standards
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check accessibility patterns
+        run: |
+          echo "## Accessibility Checks"
+
+          # Check for images without alt text
+          ALT_COUNT=$(grep -r "<Image" src --include="*.tsx" 2>/dev/null | grep -v "alt=" | wc -l)
+          if [ "$ALT_COUNT" -gt 0 ]; then
+            echo "⚠️  Found $ALT_COUNT <Image> components without alt text"
+          else
+            echo "✅ All images have alt text"
+          fi
+
+          # Check for buttons without aria labels
+          ARIA_COUNT=$(grep -r "<button" src --include="*.tsx" 2>/dev/null | grep -v "aria-" | wc -l)
+          if [ "$ARIA_COUNT" -gt 5 ]; then
+            echo "⚠️  Some buttons may be missing aria labels"
+          else
+            echo "✅ Buttons properly labeled"
+          fi
+
+          # Check for required semantic HTML
+          if grep -r "dir=\"rtl\"" src --include="*.tsx" 2>/dev/null | grep -q "."; then
+            echo "✅ RTL support detected"
+          fi

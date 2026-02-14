@@ -1,9 +1,11 @@
 'use client'
 
 import * as React from 'react'
+
 import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react'
-import { cn } from '@/lib/utils'
+
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 export interface Column<T> {
   key: string
@@ -22,14 +24,14 @@ interface DataTableProps<T> {
   className?: string
 }
 
-export function DataTable<T extends { id: string | number }>({
+export const DataTable = <T extends { id: string | number }>({
   columns,
   data,
   onRowClick,
   emptyMessage = 'No data available',
   pageSize = 10,
   className,
-}: DataTableProps<T>) {
+}: DataTableProps<T>) => {
   const [sortKey, setSortKey] = React.useState<string | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -45,14 +47,14 @@ export function DataTable<T extends { id: string | number }>({
   }
 
   const sortedData = React.useMemo(() => {
-    if (!sortKey) return data
+    if (!sortKey) {return data}
 
     return [...data].sort((a, b) => {
       const aValue = (a as any)[sortKey]
       const bValue = (b as any)[sortKey]
 
-      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
-      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
+      if (aValue < bValue) {return sortDirection === 'asc' ? -1 : 1}
+      if (aValue > bValue) {return sortDirection === 'asc' ? 1 : -1}
       return 0
     })
   }, [data, sortKey, sortDirection])
@@ -63,7 +65,7 @@ export function DataTable<T extends { id: string | number }>({
   const paginatedData = sortedData.slice(startIndex, endIndex)
 
   const getSortIcon = (key: string) => {
-    if (sortKey !== key) return <ArrowUpDown className="h-4 w-4" />
+    if (sortKey !== key) {return <ArrowUpDown className="h-4 w-4" />}
     return sortDirection === 'asc' ? (
       <ArrowUp className="h-4 w-4" />
     ) : (

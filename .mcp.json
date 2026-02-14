@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp"],
+      "description": "Browser automation for visual testing, accessibility audits, and E2E testing"
+    }
+  }
+}

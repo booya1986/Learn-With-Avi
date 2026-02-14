@@ -1,15 +1,18 @@
 'use client'
 
 import * as React from 'react'
-import { useSession } from 'next-auth/react'
+
 import { useRouter, usePathname } from 'next/navigation'
+
+import { useSession } from 'next-auth/react'
+
 import { LoadingSpinner } from './common/LoadingSpinner'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
 }
 
-export function ProtectedRoute({ children }: ProtectedRouteProps) {
+export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { data: session, status } = useSession()
   const router = useRouter()
   const pathname = usePathname()

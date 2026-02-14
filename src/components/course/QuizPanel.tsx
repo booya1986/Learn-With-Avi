@@ -1,14 +1,18 @@
 'use client'
 
 import React, { useState } from 'react'
+
 import { Brain, Loader2, Trophy } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
+import { type UseQuizStateReturn } from '@/hooks/quiz/useQuizState'
+import { cn } from '@/lib/utils'
 import { BLOOM_LABELS } from '@/types'
-import { UseQuizStateReturn } from '@/hooks/quiz/useQuizState'
+
+import { QuizFeedback } from './QuizFeedback'
 import { QuizProgress } from './QuizProgress'
 import { QuizQuestionCard } from './QuizQuestionCard'
-import { QuizFeedback } from './QuizFeedback'
-import { cn } from '@/lib/utils'
+
 
 /**
  * Props for QuizPanel component
@@ -28,7 +32,7 @@ interface QuizPanelProps {
  * - feedback: Show answer explanation and next button
  * - complete: Final score summary with restart option
  */
-export function QuizPanel({ quizState, onTimestampClick }: QuizPanelProps) {
+export const QuizPanel = ({ quizState, onTimestampClick }: QuizPanelProps) => {
   const {
     status,
     currentQuestion,
@@ -92,14 +96,12 @@ export function QuizPanel({ quizState, onTimestampClick }: QuizPanelProps) {
             </p>
           </div>
 
-          {error && (
-            <div
+          {error ? <div
               className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3"
               dir="rtl"
             >
               <p className="text-red-800 dark:text-red-200 text-sm">{error}</p>
-            </div>
-          )}
+            </div> : null}
 
           <Button onClick={startQuiz} size="lg" className="px-8">
             התחל בוחן
@@ -190,8 +192,8 @@ export function QuizPanel({ quizState, onTimestampClick }: QuizPanelProps) {
           <QuizQuestionCard
             question={currentQuestion}
             selectedOption={selectedOption}
-            revealAnswer={true}
-            disabled={true}
+            revealAnswer
+            disabled
             onSelectOption={() => {}}
           />
 

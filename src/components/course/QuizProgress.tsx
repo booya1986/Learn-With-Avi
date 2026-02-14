@@ -1,9 +1,11 @@
 'use client'
 
 import React from 'react'
+
 import { Flame } from 'lucide-react'
-import { BLOOM_LABELS } from '@/types'
+
 import { cn } from '@/lib/utils'
+import { BLOOM_LABELS } from '@/types'
 
 /**
  * Props for QuizProgress component
@@ -21,12 +23,12 @@ interface QuizProgressProps {
  * Displays current score, Bloom level badge, and streak counter.
  * Shows progress at the top of the quiz panel.
  */
-export function QuizProgress({
+export const QuizProgress = ({
   totalAnswered,
   totalCorrect,
   bloomLevel,
   streak,
-}: QuizProgressProps) {
+}: QuizProgressProps) => {
   // Bloom level color mapping
   const bloomColors: Record<number, { bg: string; text: string; border: string }> = {
     1: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-300' },

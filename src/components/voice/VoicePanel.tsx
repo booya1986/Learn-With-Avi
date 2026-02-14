@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+
 import {
   Mic,
   MicOff,
@@ -12,13 +13,15 @@ import {
   Languages,
   ChevronDown,
 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/lib/utils'
-import { VoiceButton, VoiceButtonMode } from './VoiceButton'
-import { useVoiceInput, Language } from '@/hooks/useVoiceInput'
+import { useVoiceInput, type Language } from '@/hooks/useVoiceInput'
 import { useVoiceOutput, getHebrewVoices, getEnglishVoices } from '@/hooks/useVoiceOutput'
-import { ChatMessage } from '@/types'
+import { cn } from '@/lib/utils'
+import { type ChatMessage } from '@/types'
+
+import { VoiceButton, type VoiceButtonMode } from './VoiceButton'
 
 interface VoicePanelProps {
   messages?: ChatMessage[]
@@ -30,7 +33,7 @@ interface VoicePanelProps {
   defaultLanguage?: Language
 }
 
-export function VoicePanel({
+export const VoicePanel = ({
   messages = [],
   onSendMessage,
   onClose,
@@ -38,7 +41,7 @@ export function VoicePanel({
   className,
   defaultMode = 'voice',
   defaultLanguage = 'auto',
-}: VoicePanelProps) {
+}: VoicePanelProps) => {
   const [mode, setMode] = useState<'voice' | 'text'>(defaultMode)
   const [language, setLanguage] = useState<Language>(defaultLanguage)
   const [showSettings, setShowSettings] = useState(false)
@@ -139,7 +142,7 @@ export function VoicePanel({
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen) {return null}
 
   return (
     <div
@@ -206,17 +209,14 @@ export function VoicePanel({
           </Button>
 
           {/* Close Button */}
-          {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8" title="Close">
+          {onClose ? <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8" title="Close">
               <X size={16} />
-            </Button>
-          )}
+            </Button> : null}
         </div>
       </div>
 
       {/* Settings Panel */}
-      {showSettings && (
-        <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+      {showSettings ? <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
           <div className="space-y-3">
             {/* Language Selection */}
             <div className="flex items-center justify-between">
@@ -247,7 +247,7 @@ export function VoicePanel({
                     value={selectedVoice?.name || ''}
                     onChange={(e) => {
                       const voice = availableVoices.find((v) => v.name === e.target.value)
-                      if (voice) setVoice(voice)
+                      if (voice) {setVoice(voice)}
                     }}
                     className="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[180px] truncate"
                   >
@@ -294,8 +294,7 @@ export function VoicePanel({
               </div>
             </div>
           </div>
-        </div>
-      )}
+        </div> : null}
 
       {/* Messages Area */}
       <ScrollArea className="flex-1 min-h-[200px] max-h-[400px]">
@@ -325,33 +324,28 @@ export function VoicePanel({
                   )}
                 >
                   {/* Voice indicator */}
-                  {message.isVoice && (
-                    <span className="text-xs opacity-70 flex items-center gap-1 mb-1">
+                  {message.isVoice ? <span className="text-xs opacity-70 flex items-center gap-1 mb-1">
                       <Mic size={10} />
                       Voice message
-                    </span>
-                  )}
+                    </span> : null}
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
 
                   {/* Speak button for assistant messages */}
-                  {message.role === 'assistant' && ttsSupported && !isMuted && (
-                    <button
+                  {message.role === 'assistant' && ttsSupported && !isMuted ? <button
                       onClick={() => speakMessage(message.content)}
                       className="mt-1 text-xs opacity-70 hover:opacity-100 flex items-center gap-1 text-gray-600 dark:text-gray-400"
                       disabled={isSpeaking}
                     >
                       <Volume2 size={12} />
                       {isSpeaking ? 'Speaking...' : 'Listen'}
-                    </button>
-                  )}
+                    </button> : null}
                 </div>
               </div>
             ))
           )}
 
           {/* Pending transcript */}
-          {pendingTranscript && (
-            <div className="flex justify-end">
+          {pendingTranscript ? <div className="flex justify-end">
               <div className="max-w-[80%] rounded-lg px-3 py-2 bg-blue-400 text-white opacity-70">
                 <span className="text-xs flex items-center gap-1 mb-1">
                   <Mic size={10} className="animate-pulse" />
@@ -359,19 +353,16 @@ export function VoicePanel({
                 </span>
                 <p className="text-sm">{pendingTranscript}</p>
               </div>
-            </div>
-          )}
+            </div> : null}
 
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
       {/* Waveform / Visual Indicator */}
-      {isListening && (
-        <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+      {isListening ? <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
           <WaveformVisualizer isActive={isListening} />
-        </div>
-      )}
+        </div> : null}
 
       {/* Input Area */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
@@ -417,7 +408,7 @@ interface WaveformVisualizerProps {
   className?: string
 }
 
-function WaveformVisualizer({ isActive, className }: WaveformVisualizerProps) {
+const WaveformVisualizer = ({ isActive, className }: WaveformVisualizerProps) => {
   const barsCount = 20
 
   return (

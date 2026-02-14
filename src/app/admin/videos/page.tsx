@@ -1,15 +1,18 @@
 'use client'
 
 import * as React from 'react'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+
 import { Plus, Edit, Trash2, Eye, EyeOff, Play } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { SearchInput } from '@/components/admin/common/SearchInput'
-import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
+
 import { ConfirmDialog } from '@/components/admin/common/ConfirmDialog'
-import { DataTable, Column } from '@/components/admin/common/DataTable'
+import { DataTable, type Column } from '@/components/admin/common/DataTable'
+import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
+import { SearchInput } from '@/components/admin/common/SearchInput'
 import { useToast } from '@/components/admin/common/Toast'
+import { Button } from '@/components/ui/button'
 import { formatTime } from '@/lib/utils'
 
 interface Video {
@@ -61,7 +64,7 @@ export default function VideosPage() {
   const fetchVideos = async () => {
     try {
       const response = await fetch('/api/admin/videos')
-      if (!response.ok) throw new Error('Failed to fetch videos')
+      if (!response.ok) {throw new Error('Failed to fetch videos')}
       const data = await response.json()
       setVideos(data)
       setFilteredVideos(data)
@@ -77,14 +80,14 @@ export default function VideosPage() {
   }
 
   const handleDelete = async () => {
-    if (!deleteDialog.videoId) return
+    if (!deleteDialog.videoId) {return}
 
     try {
       const response = await fetch(`/api/admin/videos/${deleteDialog.videoId}`, {
         method: 'DELETE',
       })
 
-      if (!response.ok) throw new Error('Failed to delete video')
+      if (!response.ok) {throw new Error('Failed to delete video')}
 
       toast({
         title: 'Success',
@@ -110,7 +113,7 @@ export default function VideosPage() {
         body: JSON.stringify({ published: !published }),
       })
 
-      if (!response.ok) throw new Error('Failed to update video')
+      if (!response.ok) {throw new Error('Failed to update video')}
 
       toast({
         title: 'Success',

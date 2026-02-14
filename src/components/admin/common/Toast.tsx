@@ -1,8 +1,10 @@
 'use client'
 
 import * as React from 'react'
+
 import * as ToastPrimitives from '@radix-ui/react-toast'
 import { X, CheckCircle, AlertCircle, Info } from 'lucide-react'
+
 import { cn } from '@/lib/utils'
 
 const ToastProvider = ToastPrimitives.Provider
@@ -157,7 +159,7 @@ export function useToast() {
 }
 
 // Toaster component
-export function Toaster() {
+export const Toaster = () => {
   const { toasts, dismiss } = useToast()
 
   const getIcon = (variant?: string) => {
@@ -180,14 +182,14 @@ export function Toaster() {
           key={toast.id}
           variant={toast.variant}
           onOpenChange={(open) => {
-            if (!open) dismiss(toast.id)
+            if (!open) {dismiss(toast.id)}
           }}
         >
           <div className="flex items-start gap-3">
             {getIcon(toast.variant)}
             <div className="flex-1">
-              {toast.title && <ToastTitle>{toast.title}</ToastTitle>}
-              {toast.description && <ToastDescription>{toast.description}</ToastDescription>}
+              {toast.title ? <ToastTitle>{toast.title}</ToastTitle> : null}
+              {toast.description ? <ToastDescription>{toast.description}</ToastDescription> : null}
             </div>
           </div>
           {toast.action}

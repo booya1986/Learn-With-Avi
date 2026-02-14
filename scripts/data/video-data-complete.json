@@ -1,0 +1,34 @@
+{
+  "videos": [
+    {
+      "youtubeId": "zhkbBhrNn3s",
+      "title": "איך מחברים את Claude ל-Notion עם MCP 🚀",
+      "description": "בסרטון הזה אני מראה איך לחבר את Claude ל-Notion באמצעות MCP (Model Context Protocol), מה שמאפשר ל-Claude לקרוא ולכתוב ישירות ב-Notion workspace שלכם. נלמד איך להתקין, להגדיר ולהשתמש באינטגרציה החדשה המהפכנית הזו.",
+      "duration": "15:30",
+      "language": "Hebrew",
+      "chapters": [
+        { "time": "00:00", "title": "מבוא - מה זה MCP" },
+        { "time": "02:30", "title": "התקנת Claude Desktop" },
+        { "time": "05:00", "title": "הגדרת Notion Integration" },
+        { "time": "08:30", "title": "חיבור Claude ל-Notion" },
+        { "time": "12:00", "title": "דוגמאות שימוש" },
+        { "time": "14:30", "title": "סיכום וטיפים" }
+      ]
+    },
+    {
+      "youtubeId": "7oF2m3zivRY",
+      "title": "API – הקסם שהופך בינה מלאכותית לעוזר אישי אמיתי",
+      "description": "הסבר מעמיק על מה זה API ואיך API מאפשר לנו להשתמש בבינה מלאכותית כמו Claude, ChatGPT ועוד באפליקציות שלנו. נלמד מהו API, איך הוא עובד, ואיך להשתמש בו כדי להפוך AI לעוזר אישי אמיתי שמשולב בכלים שאתם משתמשים בהם כל יום.",
+      "duration": "18:45",
+      "language": "Hebrew",
+      "chapters": [
+        { "time": "00:00", "title": "מה זה API - הסבר פשוט" },
+        { "time": "03:00", "title": "איך API עובד בפועל" },
+        { "time": "06:30", "title": "דוגמאות API ל-AI" },
+        { "time": "10:00", "title": "יצירת API Key" },
+        { "time": "13:30", "title": "שימוש ב-Claude API" },
+        { "time": "16:45", "title": "סיכום ומה הלאה" }
+      ]
+    }
+  ]
+}

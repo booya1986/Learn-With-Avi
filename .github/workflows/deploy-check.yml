@@ -1,0 +1,108 @@
+name: Deploy Check
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deployment-readiness:
+    name: Deployment Readiness
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check PR status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            if (!pr.title) {
+              core.setFailed('PR title is required');
+              return;
+            }
+
+            if (!pr.body || pr.body.trim().length === 0) {
+              core.warning('PR description is empty. Please add a description.');
+            }
+
+            if (pr.draft) {
+              core.notice('This is a draft PR. Merge when ready for production.');
+            }
+
+            core.info(`PR: ${pr.title}`);
+            core.info(`Branch: ${pr.head.ref} -> ${pr.base.ref}`);
+            core.info(`Author: ${pr.user.login}`);
+
+  environment-check:
+    name: Environment Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check environment files
+        run: |
+          if [ ! -f ".env.example" ]; then
+            echo "❌ .env.example not found"
+            exit 1
+          fi
+
+          echo "✅ .env.example exists"
+
+          # Check for required environment variables in example
+          required_vars=("ANTHROPIC_API_KEY" "OPENAI_API_KEY" "NEXTAUTH_SECRET")
+
+          for var in "${required_vars[@]}"; do
+            if grep -q "$var" .env.example; then
+              echo "✅ $var found in .env.example"
+            else
+              echo "⚠️  $var not found in .env.example"
+            fi
+          done
+
+  secrets-check:
+    name: Secrets Configuration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for hardcoded secrets
+        run: |
+          # Check for common hardcoded secret patterns
+          if grep -r "ANTHROPIC_API_KEY\s*=\s*['\"]sk-" . --include="*.ts" --include="*.tsx" --include="*.js" --include="*.json" 2>/dev/null; then
+            echo "❌ Potential hardcoded Anthropic API key found"
+            exit 1
+          fi
+
+          if grep -r "OPENAI_API_KEY\s*=\s*['\"]sk-" . --include="*.ts" --include="*.tsx" --include="*.js" --include="*.json" 2>/dev/null; then
+            echo "❌ Potential hardcoded OpenAI API key found"
+            exit 1
+          fi
+
+          echo "✅ No hardcoded secrets detected"
+
+      - name: Check .env.local is gitignored
+        run: |
+          if [ -f ".gitignore" ]; then
+            if grep -q "\.env\.local" .gitignore; then
+              echo "✅ .env.local is in .gitignore"
+            else
+              echo "⚠️  .env.local might not be properly gitignored"
+            fi
+          fi
+
+          if [ -f ".env" ]; then
+            if grep -q "^\.env$" .gitignore 2>/dev/null; then
+              echo "✅ .env is in .gitignore"
+            else
+              echo "⚠️  .env file should be gitignored"
+            fi
+          fi

@@ -1,0 +1,466 @@
+{
+  "$schema": "https://claude.ai/schemas/agents/v1.0.0",
+  "version": "1.0.0",
+  "description": "Multi-agent orchestration system for LearnWithAvi platform",
+
+  "orchestrator": {
+    "enabled": true,
+    "name": "project-manager-ai",
+    "displayName": "Project Manager AI",
+    "model": "claude-sonnet-4-5-20251101",
+    "systemPrompt": "You are the Project Manager AI orchestrator for LearnWithAvi. Analyze user requests, break them into subtasks, delegate to specialized sub-agents, coordinate their work, and track progress using TodoWrite. Always create todos for non-trivial tasks. Read the orchestrator guide at agents/orchestrator/ORCHESTRATOR.md for decision frameworks and delegation patterns.",
+    "tools": ["TodoWrite", "Task", "AskUserQuestion", "Read", "Glob", "Grep"],
+    "contextFiles": [
+      "agents/orchestrator/ORCHESTRATOR.md",
+      "agents/config.json",
+      "LearnWithAvi-PRD.md"
+    ]
+  },
+
+  "agents": [
+    {
+      "id": "frontend-engineer",
+      "name": "frontend-engineer",
+      "displayName": "Frontend Engineer",
+      "model": "claude-sonnet-4-5-20251101",
+      "fallbackModel": "claude-haiku-4",
+      "role": "React and Next.js specialist",
+      "description": "Develops UI components, manages client-side state, optimizes frontend performance",
+      "systemPrompt": "You are a Frontend Engineer specialist for LearnWithAvi. You are an expert in React 19, Next.js 16 App Router, TypeScript 5, Tailwind CSS 4, and shadcn/ui components. Follow the methodologies and best practices defined in your skill file at skills/frontend-engineer/SKILL.md",
+      "expertise": [
+        "React 19",
+        "Next.js 16 App Router",
+        "TypeScript 5 strict mode",
+        "Tailwind CSS 4",
+        "shadcn/ui components",
+        "react-youtube integration",
+        "Client-side state management",
+        "TanStack Query",
+        "React hooks and custom hooks",
+        "Performance optimization",
+        "Responsive design (mobile-first)",
+        "RTL (Hebrew) layout support"
+      ],
+      "keywords": [
+        "component",
+        "UI",
+        "styling",
+        "responsive",
+        "frontend",
+        "client",
+        "hooks",
+        "state",
+        "rendering",
+        "layout",
+        "CSS",
+        "mobile",
+        "accessibility",
+        "a11y",
+        "React",
+        "Next.js",
+        "Tailwind"
+      ],
+      "skillPath": "skills/frontend-engineer/SKILL.md",
+      "tools": ["Read", "Edit", "Write", "Glob", "Grep", "Bash"],
+      "contextFiles": [
+        "src/components/**/*.tsx",
+        "src/app/**/page.tsx",
+        "src/app/**/layout.tsx",
+        "src/hooks/**/*.ts",
+        "src/types/index.ts",
+        "tailwind.config.mjs",
+        "next.config.ts"
+      ],
+      "enabled": true,
+      "priority": "high"
+    },
+    {
+      "id": "backend-engineer",
+      "name": "backend-engineer",
+      "displayName": "Backend Engineer",
+      "model": "claude-sonnet-4-5-20251101",
+      "role": "API and database specialist",
+      "description": "Develops server-side APIs, integrates external services, manages database schema and migrations",
+      "systemPrompt": "You are a Backend Engineer specialist for LearnWithAvi. You are an expert in Node.js, Next.js API Routes, TypeScript, PostgreSQL, Prisma, Server-Sent Events, and external API integrations (Claude, OpenAI, ElevenLabs). Follow the methodologies defined in your skill file at skills/backend-engineer/SKILL.md",
+      "expertise": [
+        "Node.js + TypeScript",
+        "Next.js API Routes (App Router)",
+        "RESTful API design",
+        "Server-Sent Events (SSE)",
+        "PostgreSQL + Prisma",
+        "Clerk authentication",
+        "Rate limiting",
+        "Error sanitization",
+        "Anthropic Claude API",
+        "OpenAI API (Whisper, embeddings)",
+        "ElevenLabs API",
+        "YouTube API"
+      ],
+      "keywords": [
+        "API",
+        "backend",
+        "server",
+        "database",
+        "authentication",
+        "authorization",
+        "endpoint",
+        "route",
+        "middleware",
+        "SSE",
+        "streaming",
+        "Prisma",
+        "PostgreSQL",
+        "integration"
+      ],
+      "skillPath": "skills/backend-engineer/SKILL.md",
+      "tools": ["Read", "Edit", "Write", "Glob", "Grep", "Bash"],
+      "contextFiles": [
+        "src/app/api/**/*.ts",
+        "src/lib/**/*.ts",
+        "prisma/schema.prisma",
+        ".env.example"
+      ],
+      "enabled": true,
+      "priority": "high"
+    },
+    {
+      "id": "rag-specialist",
+      "name": "rag-pipeline-specialist",
+      "displayName": "RAG Pipeline Specialist",
+      "model": "claude-sonnet-4-5-20251101",
+      "role": "Vector search and retrieval specialist",
+      "description": "Optimizes RAG pipeline, improves retrieval accuracy, manages embeddings and vector databases",
+      "systemPrompt": "You are a RAG Pipeline Specialist for LearnWithAvi. You are an expert in vector embeddings, ChromaDB, semantic search, hybrid search, retrieval evaluation, and multilingual embeddings (Hebrew). Follow the methodologies defined in your skill file at skills/rag-pipeline-optimizer/SKILL.md",
+      "expertise": [
+        "Vector embeddings (OpenAI, Anthropic)",
+        "Vector databases (ChromaDB)",
+        "Semantic search algorithms",
+        "Hybrid search (semantic + keyword)",
+        "Retrieval evaluation (precision, recall, MRR)",
+        "Chunking strategies",
+        "Prompt engineering for RAG",
+        "Context caching optimization",
+        "Multilingual embeddings (Hebrew)"
+      ],
+      "keywords": [
+        "RAG",
+        "embeddings",
+        "vector",
+        "ChromaDB",
+        "search",
+        "semantic",
+        "retrieval",
+        "context",
+        "chunks",
+        "rerank",
+        "hybrid search",
+        "AI quality"
+      ],
+      "skillPath": "skills/rag-pipeline-optimizer/SKILL.md",
+      "tools": ["Read", "Edit", "Write", "Glob", "Grep", "Bash"],
+      "contextFiles": [
+        "src/lib/rag.ts",
+        "src/lib/embeddings.ts",
+        "src/lib/embeddings-cache.ts",
+        "src/data/transcripts/**/*.json",
+        "src/app/api/chat/route.ts"
+      ],
+      "enabled": true,
+      "priority": "high"
+    },
+    {
+      "id": "product-manager",
+      "name": "product-manager",
+      "displayName": "Product Manager",
+      "model": "claude-sonnet-4-5-20251101",
+      "role": "Product strategy and requirements specialist",
+      "description": "Writes product requirements (PRDs), defines user stories, prioritizes features, analyzes user feedback",
+      "systemPrompt": "You are a Product Manager specialist for LearnWithAvi. You are an expert in writing PRDs, user stories, feature prioritization (RICE, MoSCoW), roadmapping, and EdTech product patterns. Follow the methodologies defined in your skill file at skills/product-manager/SKILL.md",
+      "expertise": [
+        "Product requirements (PRDs)",
+        "User story writing",
+        "Acceptance criteria definition",
+        "Roadmap planning",
+        "Feature prioritization (RICE, MoSCoW)",
+        "Stakeholder communication",
+        "Success metrics (KPIs)",
+        "EdTech product patterns"
+      ],
+      "keywords": [
+        "requirements",
+        "feature",
+        "prioritize",
+        "roadmap",
+        "user story",
+        "acceptance criteria",
+        "PRD",
+        "backlog",
+        "planning",
+        "metrics",
+        "KPI"
+      ],
+      "skillPath": "skills/product-manager/SKILL.md",
+      "tools": ["Read", "Write", "Glob", "Grep"],
+      "contextFiles": [
+        "LearnWithAvi-PRD.md",
+        "docs/**/*.md"
+      ],
+      "enabled": true,
+      "priority": "medium"
+    },
+    {
+      "id": "ui-ux-designer",
+      "name": "ui-ux-designer",
+      "displayName": "UI/UX Designer",
+      "model": "claude-sonnet-4-5-20251101",
+      "role": "Interface design and accessibility specialist",
+      "description": "Designs user interfaces, ensures accessibility compliance (WCAG 2.1 AA), optimizes user experience",
+      "systemPrompt": "You are a UI/UX Designer specialist for LearnWithAvi. You are an expert in user interface design, accessibility (WCAG 2.1 AA), responsive design, RTL layouts for Hebrew, design systems, and usability. Follow the methodologies defined in your skill file at skills/ui-ux-designer/SKILL.md",
+      "expertise": [
+        "User interface design principles",
+        "Accessibility (WCAG 2.1 AA)",
+        "Responsive design (mobile-first)",
+        "Design systems (shadcn/ui, Radix UI)",
+        "Color theory and contrast ratios",
+        "Typography and readability",
+        "User flow design",
+        "Interaction patterns",
+        "RTL (Hebrew) design"
+      ],
+      "keywords": [
+        "UX",
+        "design",
+        "accessibility",
+        "WCAG",
+        "user flow",
+        "wireframe",
+        "mockup",
+        "interaction",
+        "usability",
+        "RTL",
+        "Hebrew",
+        "responsive design"
+      ],
+      "skillPath": "skills/ui-ux-designer/SKILL.md",
+      "tools": ["Read", "Glob", "Grep"],
+      "contextFiles": [
+        "src/components/**/*.tsx",
+        "src/app/**/layout.tsx",
+        "tailwind.config.mjs",
+        "src/components/ui/**/*.tsx"
+      ],
+      "enabled": true,
+      "priority": "medium"
+    },
+    {
+      "id": "devops-engineer",
+      "name": "devops-engineer",
+      "displayName": "DevOps Engineer",
+      "model": "claude-haiku-4",
+      "upgradeModel": "claude-sonnet-4-5-20251101",
+      "role": "Deployment and infrastructure specialist",
+      "description": "Manages deployments, configures CI/CD, monitors production, optimizes infrastructure",
+      "systemPrompt": "You are a DevOps Engineer specialist for LearnWithAvi. You are an expert in Docker, CI/CD pipelines (GitHub Actions), Vercel deployment, environment management, monitoring, and security best practices. Follow the methodologies defined in your skill file at skills/devops-engineer/SKILL.md",
+      "expertise": [
+        "Docker containerization",
+        "CI/CD pipelines (GitHub Actions)",
+        "Vercel deployment",
+        "Next.js optimization",
+        "Environment variable management",
+        "Monitoring and logging",
+        "Performance monitoring",
+        "Database migrations",
+        "Security best practices"
+      ],
+      "keywords": [
+        "deployment",
+        "CI/CD",
+        "infrastructure",
+        "monitoring",
+        "DevOps",
+        "production",
+        "build",
+        "pipeline",
+        "Docker",
+        "environment",
+        "scaling"
+      ],
+      "skillPath": "skills/devops-engineer/SKILL.md",
+      "tools": ["Read", "Edit", "Write", "Bash"],
+      "contextFiles": [
+        "next.config.ts",
+        "docker-compose.yml",
+        "Dockerfile",
+        ".github/workflows/**/*.yml",
+        ".env.example"
+      ],
+      "enabled": true,
+      "priority": "low"
+    },
+    {
+      "id": "qa-engineer",
+      "name": "qa-engineer",
+      "displayName": "QA Engineer",
+      "model": "claude-haiku-4",
+      "upgradeModel": "claude-sonnet-4-5-20251101",
+      "role": "Testing and quality assurance specialist",
+      "description": "Writes and runs tests (unit, integration, E2E), evaluates quality metrics, reports bugs",
+      "systemPrompt": "You are a QA Engineer specialist for LearnWithAvi. You are an expert in unit testing (Vitest), integration testing (Testing Library), E2E testing (Playwright), accessibility testing (axe-core), and quality assurance. Follow the methodologies defined in your skill file at skills/qa-engineer/SKILL.md",
+      "expertise": [
+        "Unit testing (Vitest)",
+        "Integration testing (Testing Library)",
+        "E2E testing (Playwright)",
+        "Visual regression testing",
+        "Performance testing",
+        "Test coverage analysis",
+        "Bug reporting and reproduction",
+        "Accessibility testing (axe-core)"
+      ],
+      "keywords": [
+        "test",
+        "testing",
+        "QA",
+        "quality",
+        "bug",
+        "E2E",
+        "integration test",
+        "unit test",
+        "coverage",
+        "automation",
+        "regression"
+      ],
+      "skillPath": "skills/qa-engineer/SKILL.md",
+      "tools": ["Read", "Edit", "Write", "Bash", "Glob", "Grep"],
+      "contextFiles": [
+        "src/**/*.test.ts",
+        "src/**/*.test.tsx",
+        "e2e/**/*.spec.ts",
+        "vitest.config.ts",
+        "playwright.config.ts"
+      ],
+      "enabled": true,
+      "priority": "low"
+    }
+  ],
+
+  "delegationRules": {
+    "description": "Rules for the orchestrator to delegate tasks to sub-agents",
+    "rules": [
+      {
+        "condition": "keywords include: component, UI, styling, responsive, frontend, React, Next.js, Tailwind",
+        "agent": "frontend-engineer",
+        "pattern": "single"
+      },
+      {
+        "condition": "keywords include: API, backend, database, server, endpoint, Prisma, authentication",
+        "agent": "backend-engineer",
+        "pattern": "single"
+      },
+      {
+        "condition": "keywords include: RAG, embeddings, vector, search, ChromaDB, semantic, retrieval",
+        "agent": "rag-specialist",
+        "pattern": "single"
+      },
+      {
+        "condition": "keywords include: requirements, feature planning, roadmap, prioritize, PRD, user story",
+        "agent": "product-manager",
+        "pattern": "single"
+      },
+      {
+        "condition": "keywords include: UX, design, accessibility, WCAG, user flow, mockup, RTL",
+        "agent": "ui-ux-designer",
+        "pattern": "single"
+      },
+      {
+        "condition": "keywords include: deployment, CI/CD, infrastructure, monitoring, Docker, production",
+        "agent": "devops-engineer",
+        "pattern": "single"
+      },
+      {
+        "condition": "keywords include: test, testing, QA, quality, bug verification, E2E, coverage",
+        "agent": "qa-engineer",
+        "pattern": "single"
+      },
+      {
+        "condition": "new feature spanning frontend AND backend",
+        "agents": ["product-manager", "backend-engineer", "frontend-engineer", "qa-engineer"],
+        "pattern": "sequential"
+      },
+      {
+        "condition": "performance issue across stack",
+        "agents": ["frontend-engineer", "backend-engineer", "rag-specialist", "devops-engineer"],
+        "pattern": "parallel_then_coordinate"
+      }
+    ]
+  },
+
+  "executionPatterns": {
+    "single": {
+      "description": "One agent handles the entire task",
+      "useCase": "Simple, isolated tasks within a single domain"
+    },
+    "sequential": {
+      "description": "Agents work in order, each depending on previous completion",
+      "useCase": "Tasks with strict dependencies between domains"
+    },
+    "parallel": {
+      "description": "Multiple agents work simultaneously on independent tasks",
+      "useCase": "Independent tasks that can be done concurrently"
+    },
+    "parallel_then_coordinate": {
+      "description": "Agents work in parallel, then coordinate to integrate results",
+      "useCase": "Complex features requiring multiple domains with final integration"
+    }
+  },
+
+  "coordinationRules": {
+    "conflictResolution": "Orchestrator makes final decisions on conflicts between agents",
+    "qualityGates": [
+      "All code changes must pass QA Engineer tests before deployment",
+      "All UI changes must pass UI/UX Designer accessibility audit (WCAG AA)",
+      "All API changes must pass Backend Engineer security review",
+      "All RAG changes must meet precision/recall targets set by RAG Specialist"
+    ],
+    "communication": {
+      "statusUpdates": "Agents must report status updates regularly",
+      "blockers": "Agents must escalate blockers to orchestrator immediately",
+      "handoffs": "Agents must provide clear handoff notes when passing work",
+      "completion": "Agents must provide detailed completion reports with artifacts"
+    },
+    "escalation": {
+      "critical": "Security vulnerabilities, production outages, data loss",
+      "high": "Blocked tasks preventing other agents from progressing",
+      "medium": "Unclear requirements, conflicting specifications",
+      "low": "Questions, clarifications, recommendations"
+    }
+  },
+
+  "modelSelectionGuidelines": {
+    "claude-haiku-4": {
+      "useFor": "Simple, straightforward tasks",
+      "examples": ["Fix typos", "Update configuration", "Run tests", "Deploy to staging"],
+      "cost": "lowest",
+      "speed": "fastest"
+    },
+    "claude-sonnet-4-5": {
+      "useFor": "Moderate complexity tasks requiring domain expertise",
+      "examples": ["Implement components", "Create API endpoints", "Optimize RAG", "Design UI"],
+      "cost": "medium",
+      "speed": "medium"
+    },
+    "claude-opus-4-5": {
+      "useFor": "Complex tasks requiring deep reasoning",
+      "examples": ["Architecture design", "Complex debugging", "Strategic planning"],
+      "cost": "highest",
+      "speed": "slower"
+    }
+  },
+
+  "metadata": {
+    "created": "2026-01-16",
+    "version": "1.0.0",
+    "author": "LearnWithAvi Multi-Agent Architecture Team",
+    "lastUpdated": "2026-01-16",
+    "status": "active"
+  }
+}

@@ -1,14 +1,18 @@
 'use client'
 
 import React from 'react'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { Video, Chapter } from '@/types'
+
 import { FileText, Brain } from 'lucide-react'
-import { VideoPlayerSection } from './VideoPlayerSection'
+
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { type UseQuizStateReturn } from '@/hooks'
+import { type Video, type Chapter } from '@/types'
+
 import { ActionButtons } from './ActionButtons'
 import { LiveTranscript } from './LiveTranscript'
 import { QuizPanel } from './QuizPanel'
-import { UseQuizStateReturn } from '@/hooks'
+import { VideoPlayerSection } from './VideoPlayerSection'
+
 
 /**
  * Props for VideoSection component
@@ -48,7 +52,7 @@ interface VideoSectionProps {
  * @param props - VideoSection properties
  * @returns Video section component
  */
-export function VideoSection({
+export const VideoSection = ({
   currentVideo,
   currentTime,
   videoDuration,
@@ -66,22 +70,20 @@ export function VideoSection({
   activeContentTab,
   onTabChange,
   onStartQuiz,
-}: VideoSectionProps) {
+}: VideoSectionProps) => {
   return (
     <div className="flex-1 min-w-0">
       <ScrollArea className="h-[calc(100vh-57px)]">
         <div className="p-4 lg:p-6">
           {/* Video Player Section */}
-          {currentVideo && (
-            <VideoPlayerSection
+          {currentVideo ? <VideoPlayerSection
               currentVideo={currentVideo}
               currentStageIndex={currentStageIndex}
               currentChapter={currentChapter}
               onTimeUpdate={onTimeUpdate}
               onDurationChange={onDurationChange}
               seekToTime={seekToTime}
-            />
-          )}
+            /> : null}
 
           {/* Action Buttons below video */}
           <ActionButtons

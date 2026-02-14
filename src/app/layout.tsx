@@ -1,5 +1,6 @@
-import type { Metadata } from 'next'
 import { GraduationCap } from 'lucide-react'
+import type { Metadata } from 'next'
+
 import { ConditionalNav } from '@/components/ConditionalNav'
 import './globals.css'
 

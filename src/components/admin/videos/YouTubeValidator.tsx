@@ -1,7 +1,9 @@
 'use client'
 
 import * as React from 'react'
+
 import { Check, Loader2, AlertCircle } from 'lucide-react'
+
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
@@ -23,12 +25,12 @@ interface YouTubeValidatorProps {
   className?: string
 }
 
-export function YouTubeValidator({
+export const YouTubeValidator = ({
   value,
   onChange,
   onValidated,
   className,
-}: YouTubeValidatorProps) {
+}: YouTubeValidatorProps) => {
   const [isValidating, setIsValidating] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [metadata, setMetadata] = React.useState<YouTubeMetadata | null>(null)
@@ -124,16 +126,15 @@ export function YouTubeValidator({
             )}
           />
           <div className="absolute end-3 top-1/2 -translate-y-1/2">
-            {isValidating && <Loader2 className="h-4 w-4 animate-spin text-gray-400" />}
-            {!isValidating && metadata && <Check className="h-4 w-4 text-green-600" />}
-            {!isValidating && error && <AlertCircle className="h-4 w-4 text-red-600" />}
+            {isValidating ? <Loader2 className="h-4 w-4 animate-spin text-gray-400" /> : null}
+            {!isValidating && metadata ? <Check className="h-4 w-4 text-green-600" /> : null}
+            {!isValidating && error ? <AlertCircle className="h-4 w-4 text-red-600" /> : null}
           </div>
         </div>
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {error ? <p className="mt-1 text-sm text-red-600">{error}</p> : null}
       </div>
 
-      {metadata && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+      {metadata ? <div className="rounded-lg border border-green-200 bg-green-50 p-4">
           <div className="flex gap-4">
             <img
               src={metadata.thumbnail}
@@ -148,8 +149,7 @@ export function YouTubeValidator({
               </p>
             </div>
           </div>
-        </div>
-      )}
+        </div> : null}
     </div>
   )
 }

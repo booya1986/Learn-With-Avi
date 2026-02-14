@@ -1,14 +1,17 @@
 'use client'
 
 import * as React from 'react'
+
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+
 import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { SearchInput } from '@/components/admin/common/SearchInput'
-import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
+
 import { ConfirmDialog } from '@/components/admin/common/ConfirmDialog'
+import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
+import { SearchInput } from '@/components/admin/common/SearchInput'
 import { useToast } from '@/components/admin/common/Toast'
+import { Button } from '@/components/ui/button'
 
 interface Course {
   id: string
@@ -55,7 +58,7 @@ export default function CoursesPage() {
   const fetchCourses = async () => {
     try {
       const response = await fetch('/api/admin/courses')
-      if (!response.ok) throw new Error('Failed to fetch courses')
+      if (!response.ok) {throw new Error('Failed to fetch courses')}
       const data = await response.json()
       setCourses(data)
       setFilteredCourses(data)
@@ -71,14 +74,14 @@ export default function CoursesPage() {
   }
 
   const handleDelete = async () => {
-    if (!deleteDialog.courseId) return
+    if (!deleteDialog.courseId) {return}
 
     try {
       const response = await fetch(`/api/admin/courses/${deleteDialog.courseId}`, {
         method: 'DELETE',
       })
 
-      if (!response.ok) throw new Error('Failed to delete course')
+      if (!response.ok) {throw new Error('Failed to delete course')}
 
       toast({
         title: 'Success',
@@ -104,7 +107,7 @@ export default function CoursesPage() {
         body: JSON.stringify({ published: !published }),
       })
 
-      if (!response.ok) throw new Error('Failed to update course')
+      if (!response.ok) {throw new Error('Failed to update course')}
 
       toast({
         title: 'Success',

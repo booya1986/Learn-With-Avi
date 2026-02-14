@@ -1,10 +1,11 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
 import { GraduationCap, Menu } from 'lucide-react'
 
-export function ConditionalNav() {
+export const ConditionalNav = () => {
   const pathname = usePathname()
 
   // Don't show navigation on admin pages (they have their own layout)

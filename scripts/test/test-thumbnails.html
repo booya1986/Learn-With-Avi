@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Thumbnail Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        img { max-width: 400px; margin: 10px 0; display: block; border: 1px solid #ccc; }
+        .video { margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+    <h1>YouTube Thumbnail Test</h1>
+
+    <div class="video">
+        <h2>Video 1 - mHThVfGmd6I</h2>
+        <img src="https://img.youtube.com/vi/mHThVfGmd6I/maxresdefault.jpg" alt="Video 1" onerror="this.src='https://img.youtube.com/vi/mHThVfGmd6I/hqdefault.jpg'; this.onerror=null;">
+    </div>
+
+    <div class="video">
+        <h2>Video 2 - zhkbBhrNn3s</h2>
+        <img src="https://img.youtube.com/vi/zhkbBhrNn3s/maxresdefault.jpg" alt="Video 2" onerror="this.src='https://img.youtube.com/vi/zhkbBhrNn3s/hqdefault.jpg'; this.onerror=null;">
+    </div>
+
+    <div class="video">
+        <h2>Video 3 - 7oF2m3zivRY</h2>
+        <img src="https://img.youtube.com/vi/7oF2m3zivRY/maxresdefault.jpg" alt="Video 3" onerror="this.src='https://img.youtube.com/vi/7oF2m3zivRY/hqdefault.jpg'; this.onerror=null;">
+    </div>
+
+    <script>
+        document.querySelectorAll('img').forEach(img => {
+            img.addEventListener('load', function() {
+                console.log('Loaded:', this.src, 'Size:', this.naturalWidth, 'x', this.naturalHeight);
+                const status = document.createElement('p');
+                status.textContent = `✅ Loaded successfully: ${this.naturalWidth}x${this.naturalHeight}`;
+                status.style.color = 'green';
+                this.parentElement.appendChild(status);
+            });
+            img.addEventListener('error', function() {
+                console.error('Failed:', this.src);
+                const status = document.createElement('p');
+                status.textContent = '❌ Failed to load';
+                status.style.color = 'red';
+                this.parentElement.appendChild(status);
+            });
+        });
+    </script>
+</body>
+</html>

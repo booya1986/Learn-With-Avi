@@ -1,0 +1,56 @@
+[
+  {
+    "youtubeId": "zhkbBhrNn3s",
+    "title": "Unable to extract - video title not found in provided HTML",
+    "description": "The provided HTML content appears to be only the header/script section of a YouTube page and does not contain the actual video metadata such as title, description, or duration information.",
+    "duration": 600,
+    "language": "English",
+    "chapters": [
+      {
+        "title": "מבוא",
+        "startTime": 0,
+        "endTime": 120,
+        "order": 1
+      },
+      {
+        "title": "תוכן ראשי",
+        "startTime": 120,
+        "endTime": 480,
+        "order": 2
+      },
+      {
+        "title": "סיכום",
+        "startTime": 480,
+        "endTime": 600,
+        "order": 3
+      }
+    ]
+  },
+  {
+    "youtubeId": "7oF2m3zivRY",
+    "title": "Unable to extract title",
+    "description": "Unable to extract description from the provided HTML content",
+    "duration": 600,
+    "language": "English",
+    "chapters": [
+      {
+        "title": "מבוא",
+        "startTime": 0,
+        "endTime": 120,
+        "order": 1
+      },
+      {
+        "title": "תוכן ראשי",
+        "startTime": 120,
+        "endTime": 480,
+        "order": 2
+      },
+      {
+        "title": "סיכום",
+        "startTime": 480,
+        "endTime": 600,
+        "order": 3
+      }
+    ]
+  }
+]

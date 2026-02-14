@@ -1,9 +1,11 @@
 'use client'
 
 import React from 'react'
+
 import { Check, X } from 'lucide-react'
-import { QuizQuestion } from '@/types'
+
 import { cn } from '@/lib/utils'
+import { type QuizQuestion } from '@/types'
 
 /**
  * Props for QuizQuestionCard component
@@ -25,13 +27,13 @@ interface QuizQuestionCardProps {
  * - Correct (revealed): green background with checkmark
  * - Incorrect (revealed): red background with X icon
  */
-export function QuizQuestionCard({
+export const QuizQuestionCard = ({
   question,
   selectedOption,
   revealAnswer,
   disabled,
   onSelectOption,
-}: QuizQuestionCardProps) {
+}: QuizQuestionCardProps) => {
   // Hebrew option labels
   const optionLabels: Record<string, string> = {
     a: 'א',
@@ -110,15 +112,13 @@ export function QuizQuestionCard({
               </span>
 
               {/* Icon (shown after reveal) */}
-              {showIcon && (
-                <span className="flex-shrink-0">
+              {showIcon ? <span className="flex-shrink-0">
                   {option.isCorrect ? (
                     <Check className="w-5 h-5 text-green-600 dark:text-green-400" />
                   ) : (
                     <X className="w-5 h-5 text-red-600 dark:text-red-400" />
                   )}
-                </span>
-              )}
+                </span> : null}
             </button>
           )
         })}

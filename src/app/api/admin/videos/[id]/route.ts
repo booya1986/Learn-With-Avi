@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { type NextRequest, NextResponse } from 'next/server'
+
 import { z } from 'zod'
-import { authOptions } from '@/lib/auth-config'
+
 import { prisma } from '@/lib/prisma'
+import { invalidateVideoCache } from '@/lib/queries'
 
 /**
  * Video CRUD API - Single Video Operations
@@ -66,12 +67,6 @@ const updateVideoSchema = z.object({
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { id } = await params
 
     // Fetch video with chapters and course
@@ -147,12 +142,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { id } = await params
 
     // Parse and validate request body
@@ -242,6 +231,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       })
     })
 
+    // Invalidate cache after successful update
+    await invalidateVideoCache(id)
+
     return NextResponse.json(video)
   } catch (error) {
     console.error('Error updating video:', error)
@@ -266,12 +258,6 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     const { id } = await params
 
     // Check if video exists
@@ -299,6 +285,9 @@ export async function DELETE(
     await prisma.video.delete({
       where: { id },
     })
+
+    // Invalidate cache after successful deletion
+    await invalidateVideoCache(id)
 
     return NextResponse.json({
       success: true,

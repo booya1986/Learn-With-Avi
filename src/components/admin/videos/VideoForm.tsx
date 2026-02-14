@@ -1,13 +1,17 @@
 'use client'
 
 import * as React from 'react'
+
 import { useRouter } from 'next/navigation'
-import { useForm, Controller } from 'react-hook-form'
+
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm, Controller } from 'react-hook-form'
 import { z } from 'zod'
+
+import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
+import { useToast } from '@/components/admin/common/Toast'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -16,10 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { LoadingSpinner } from '@/components/admin/common/LoadingSpinner'
-import { useToast } from '@/components/admin/common/Toast'
+import { Textarea } from '@/components/ui/textarea'
+
+import { ChapterEditor, type Chapter } from './ChapterEditor'
 import { YouTubeValidator } from './YouTubeValidator'
-import { ChapterEditor, Chapter } from './ChapterEditor'
 
 const videoSchema = z.object({
   youtubeUrl: z.string().min(1, 'YouTube URL is required'),
@@ -60,7 +64,7 @@ interface VideoFormProps {
   }
 }
 
-export function VideoForm({ videoId, initialData }: VideoFormProps) {
+export const VideoForm = ({ videoId, initialData }: VideoFormProps) => {
   const router = useRouter()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = React.useState(false)
@@ -99,7 +103,7 @@ export function VideoForm({ videoId, initialData }: VideoFormProps) {
   const fetchCourses = async () => {
     try {
       const response = await fetch('/api/admin/courses')
-      if (!response.ok) throw new Error('Failed to fetch courses')
+      if (!response.ok) {throw new Error('Failed to fetch courses')}
       const data = await response.json()
       setCourses(data)
     } catch (error) {
@@ -121,7 +125,7 @@ export function VideoForm({ videoId, initialData }: VideoFormProps) {
   }
 
   const handleAutoExtractChapters = async () => {
-    if (!metadata) return
+    if (!metadata) {return}
 
     setIsExtractingChapters(true)
     try {
@@ -261,14 +265,13 @@ export function VideoForm({ videoId, initialData }: VideoFormProps) {
         onValidated={handleMetadataValidated}
       />
 
-      {errors.youtubeUrl && <p className="text-sm text-red-600">{errors.youtubeUrl.message}</p>}
+      {errors.youtubeUrl ? <p className="text-sm text-red-600">{errors.youtubeUrl.message}</p> : null}
 
-      {metadata && (
-        <div className="space-y-4 border-t pt-6">
+      {metadata ? <div className="space-y-4 border-t pt-6">
           <div>
             <Label htmlFor="title">Title *</Label>
             <Input id="title" {...register('title')} placeholder="Video title" className="mt-1" />
-            {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>}
+            {errors.title ? <p className="mt-1 text-sm text-red-600">{errors.title.message}</p> : null}
           </div>
 
           <div>
@@ -280,9 +283,7 @@ export function VideoForm({ videoId, initialData }: VideoFormProps) {
               rows={4}
               className="mt-1"
             />
-            {errors.description && (
-              <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
-            )}
+            {errors.description ? <p className="mt-1 text-sm text-red-600">{errors.description.message}</p> : null}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -294,7 +295,7 @@ export function VideoForm({ videoId, initialData }: VideoFormProps) {
                 placeholder="e.g., JavaScript, React"
                 className="mt-1"
               />
-              {errors.topic && <p className="mt-1 text-sm text-red-600">{errors.topic.message}</p>}
+              {errors.topic ? <p className="mt-1 text-sm text-red-600">{errors.topic.message}</p> : null}
             </div>
 
             <div>
@@ -317,9 +318,7 @@ export function VideoForm({ videoId, initialData }: VideoFormProps) {
                   </Select>
                 )}
               />
-              {errors.courseId && (
-                <p className="mt-1 text-sm text-red-600">{errors.courseId.message}</p>
-              )}
+              {errors.courseId ? <p className="mt-1 text-sm text-red-600">{errors.courseId.message}</p> : null}
             </div>
           </div>
 
@@ -344,8 +343,7 @@ export function VideoForm({ videoId, initialData }: VideoFormProps) {
               Publish video
             </Label>
           </div>
-        </div>
-      )}
+        </div> : null}
 
       <div className="flex gap-3 border-t pt-6">
         <Button

@@ -1,15 +1,17 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
+
 import { Mic, MicOff, Loader2, Volume2 } from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 import {
   useVoiceInput,
   checkMicrophonePermission,
   requestMicrophoneAccess,
-  Language,
+  type Language,
 } from '@/hooks/useVoiceInput'
+import { cn } from '@/lib/utils'
 
 export type VoiceButtonMode = 'push-to-talk' | 'toggle'
 
@@ -29,7 +31,7 @@ interface VoiceButtonProps {
 
 type ButtonState = 'idle' | 'listening' | 'processing' | 'speaking' | 'error' | 'no-permission'
 
-export function VoiceButton({
+export const VoiceButton = ({
   mode = 'toggle',
   language = 'auto',
   onTranscript,
@@ -41,7 +43,7 @@ export function VoiceButton({
   variant = 'default',
   className,
   showLabel = false,
-}: VoiceButtonProps) {
+}: VoiceButtonProps) => {
   const [buttonState, setButtonState] = useState<ButtonState>('idle')
   const [permissionState, setPermissionState] = useState<PermissionState | 'unsupported' | null>(
     null
@@ -116,7 +118,7 @@ export function VoiceButton({
 
   // Handle button click for toggle mode
   const handleClick = useCallback(async () => {
-    if (disabled) return
+    if (disabled) {return}
 
     if (permissionState === 'denied') {
       onError?.('Microphone access is denied. Please enable it in your browser settings.')
@@ -147,7 +149,7 @@ export function VoiceButton({
 
   // Handle push-to-talk mouse events
   const handleMouseDown = useCallback(async () => {
-    if (mode !== 'push-to-talk' || disabled) return
+    if (mode !== 'push-to-talk' || disabled) {return}
 
     if (permissionState !== 'granted') {
       await handlePermissionRequest()
@@ -159,7 +161,7 @@ export function VoiceButton({
   }, [mode, disabled, permissionState, handlePermissionRequest, resetTranscript, startListening])
 
   const handleMouseUp = useCallback(() => {
-    if (mode !== 'push-to-talk' || disabled) return
+    if (mode !== 'push-to-talk' || disabled) {return}
     stopListening()
   }, [mode, disabled, stopListening])
 
@@ -202,8 +204,8 @@ export function VoiceButton({
 
   // Get button variant based on state
   const getButtonVariant = () => {
-    if (buttonState === 'listening') return 'destructive' as const
-    if (buttonState === 'error' || buttonState === 'no-permission') return 'outline' as const
+    if (buttonState === 'listening') {return 'destructive' as const}
+    if (buttonState === 'error' || buttonState === 'no-permission') {return 'outline' as const}
     return variant
   }
 
@@ -255,15 +257,13 @@ export function VoiceButton({
         )}
 
         {getIcon()}
-        {showLabel && <span className="ml-2">{getLabel()}</span>}
+        {showLabel ? <span className="ml-2">{getLabel()}</span> : null}
       </Button>
 
       {/* Interim transcript tooltip */}
-      {interimTranscript && buttonState === 'listening' && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap max-w-xs truncate">
+      {interimTranscript && buttonState === 'listening' ? <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap max-w-xs truncate">
           {interimTranscript}
-        </div>
-      )}
+        </div> : null}
     </div>
   )
 }
@@ -275,7 +275,7 @@ interface VoiceIndicatorProps {
   className?: string
 }
 
-export function VoiceIndicator({ state, size = 'default', className }: VoiceIndicatorProps) {
+export const VoiceIndicator = ({ state, size = 'default', className }: VoiceIndicatorProps) => {
   const sizeClasses = {
     sm: 'w-2 h-2',
     default: 'w-3 h-3',

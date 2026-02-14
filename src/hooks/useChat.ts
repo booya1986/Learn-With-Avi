@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { ChatMessage, VideoSource, TranscriptChunk, RAGContext } from '@/types'
-import { generateId } from '@/lib/utils'
+
 import { fetchWithTimeout } from '@/lib/fetch-utils'
+import { generateId } from '@/lib/utils'
+import { type ChatMessage, type VideoSource, type TranscriptChunk, type RAGContext } from '@/types'
 
 /**
  * Configuration options for the useChat hook
@@ -210,7 +211,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
   // Send a message and get streaming response
   const sendMessage = useCallback(
     async (content: string, isVoice: boolean = false) => {
-      if (!content.trim() || isLoading) return
+      if (!content.trim() || isLoading) {return}
 
       // Clear any previous error
       setError(null)
@@ -299,7 +300,7 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
 
         while (true) {
           const { done, value } = await reader.read()
-          if (done) break
+          if (done) {break}
 
           const chunk = decoder.decode(value, { stream: true })
           const lines = chunk.split('\n')

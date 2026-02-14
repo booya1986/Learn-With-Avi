@@ -1,0 +1,90 @@
+{
+  "nav": {
+    "home": "Home",
+    "courses": "Courses",
+    "about": "About",
+    "admin": "Admin"
+  },
+  "homepage": {
+    "hero": {
+      "badge": "AI-Powered Learning Experience",
+      "title": "Learn AI by Using AI—Your Personal Tutor, Always Available",
+      "subtitle": "Transform passive video watching into active learning. Ask questions, get instant answers, and master AI/ML concepts faster with your voice-powered AI tutor in Hebrew or English.",
+      "trustBadge": "Join 10,000+ developers learning with AI",
+      "browseCourses": "Browse Courses",
+      "startLearning": "Start Learning Free",
+      "watchDemo": "Watch Demo (2 min)"
+    },
+    "features": {
+      "voice": {
+        "title": "Voice-to-Voice Conversations",
+        "description": "Talk to your AI tutor in Hebrew or English, just like chatting with the real instructor. No typing, no interruptions—just natural learning."
+      },
+      "context": {
+        "title": "Context-Aware Answers",
+        "description": "Get answers based on the exact video you're watching. No generic responses, no hallucinations—only relevant, accurate help."
+      },
+      "timestamps": {
+        "title": "Smart Timestamp Navigation",
+        "description": "Ask \"where was that explained?\" and jump directly to the moment. Every answer includes clickable timestamps to relevant video sections."
+      }
+    },
+    "courses": {
+      "title": "Start Learning Today",
+      "subtitle": "Choose from AI/ML courses built on proven YouTube content by @avilevi86 (10K+ subscribers)"
+    },
+    "about": {
+      "title": "Join Thousands of Developers Mastering AI",
+      "description": "LearnWithAvi helps you actually finish courses with an AI tutor that understands the context of the videos you're watching.",
+      "stats": {
+        "completionRate": {
+          "value": "70%",
+          "label": "Completion Rate",
+          "comparison": "(vs 15% average)"
+        },
+        "fasterLearning": {
+          "value": "3x",
+          "label": "Faster Learning",
+          "comparison": "with AI tutor"
+        },
+        "avgSession": {
+          "value": "15min",
+          "label": "Avg. Session",
+          "comparison": "high engagement"
+        },
+        "nps": {
+          "value": "NPS 65",
+          "label": "User Satisfaction",
+          "comparison": "(vs 30 average)"
+        }
+      },
+      "testimonials": {
+        "testimonial1": {
+          "quote": "I finally finished a course! The voice AI tutor made all the difference. I could ask questions while commuting without typing.",
+          "name": "Michal R.",
+          "role": "Full-Stack Developer"
+        },
+        "testimonial2": {
+          "quote": "Went from AI curious to building production chatbots in 6 weeks. LearnWithAvi showed me AI in action while teaching me about it.",
+          "name": "Yossi C.",
+          "role": "PHP Developer → AI Engineer"
+        },
+        "testimonial3": {
+          "quote": "As someone with dyslexia, voice interaction is a game-changer. I can learn without the friction of reading and typing.",
+          "name": "David L.",
+          "role": "CS Student"
+        }
+      }
+    },
+    "cta": {
+      "title": "Ready to Actually Finish a Course?",
+      "description": "Try LearnWithAvi free. No credit card required. Start learning with your AI tutor today and see why 70% of users complete their courses.",
+      "button": "Start Free Trial",
+      "trialTerms": "7-day free trial • Cancel anytime • No credit card required"
+    }
+  },
+  "footer": {
+    "tagline": "AI-Powered Interactive Learning Platform",
+    "builtWith": "Built with Next.js and AI assistance"
+  }
+}

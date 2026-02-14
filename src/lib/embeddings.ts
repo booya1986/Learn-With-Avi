@@ -1,7 +1,8 @@
 import OpenAI from 'openai'
+
 import { getConfig } from './config'
-import { logError, sanitizeError } from './errors'
 import { getEmbeddingCache } from './embeddings-cache'
+import { logError, sanitizeError } from './errors'
 
 // Validate environment and initialize OpenAI client
 let openai: OpenAI

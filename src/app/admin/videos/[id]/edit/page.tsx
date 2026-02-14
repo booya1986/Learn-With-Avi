@@ -1,11 +1,15 @@
 import * as React from 'react'
+
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
+
+import { ArrowLeft } from 'lucide-react'
+
+import { VideoForm } from '@/components/admin/videos/VideoForm'
+import { Button } from '@/components/ui/button'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { VideoForm } from '@/components/admin/videos/VideoForm'
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+
 
 async function getVideo(id: string) {
   const video = await prisma.video.findUnique({
