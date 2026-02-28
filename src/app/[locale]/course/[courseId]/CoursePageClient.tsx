@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button'
 import { CourseProvider, useVideoContext, useChatContext, useQuizContext } from '@/contexts'
 import { useRouter } from '@/i18n/navigation'
 import { formatTime } from '@/lib/utils'
-import { type Video, type Course } from '@/types'
+import { type Course } from '@/types'
 
 interface CoursePageClientProps {
   course: Course
@@ -37,33 +37,63 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  // Get all state from contexts (no local state needed!)
+  // Get all state from contexts — destructure specific values to avoid
+  // whole-object deps which create infinite loops when the object ref changes.
   const videoContext = useVideoContext()
+  const {
+    currentVideo,
+    currentTime,
+    videoDuration,
+    chapterWatchedTime,
+    currentChapter,
+    currentStageIndex,
+    liveTranscript,
+    overallProgress,
+    seekToTime,
+    setCurrentVideo,
+    handleSeek,
+    handleTimeUpdate,
+    handleDurationChange,
+  } = videoContext
+
   const chatContext = useChatContext()
+  const {
+    messages,
+    inputMessage,
+    isLoading,
+    isListening,
+    setInputMessage,
+    toggleVoiceInput,
+    sendMessage,
+    handleKeyPress: chatHandleKeyPress,
+    generateSummary,
+    showSummary,
+    setShowSummary,
+    isGeneratingSummary,
+    generatedSummaryData,
+  } = chatContext
+
   const quizContext = useQuizContext()
+  const { status: quizStatus, startQuiz } = quizContext
 
   // Local UI state only
   const [activeContentTab, setActiveContentTab] = useState<'transcript' | 'quiz'>('transcript')
 
   const handleStartQuiz = useCallback(() => {
     setActiveContentTab('quiz')
-    if (quizContext.status === 'idle') {
-      quizContext.startQuiz()
+    if (quizStatus === 'idle') {
+      void startQuiz()
     }
-  }, [quizContext])
+  }, [quizStatus, startQuiz])
 
   // Generate chapter items directly from video chapters
   const chapterItems: ChapterItem[] = useMemo(() => {
-    const { currentVideo, currentTime, videoDuration, chapterWatchedTime } = videoContext
 
     const calculateChapterProgress = (
       chapterIndex: number,
       chapterDuration: number,
-      startTime: number,
-      endTime: number
     ): { isCompleted: boolean; progress: number } => {
       const watchedSeconds = chapterWatchedTime[chapterIndex] || 0
-      const isActive = currentTime >= startTime && currentTime < endTime
 
       const completionThreshold = 0.9
       const isCompleted = watchedSeconds >= chapterDuration * completionThreshold
@@ -82,12 +112,7 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
       return currentVideo.chapters.map((chapter, index) => {
         const chapterDuration = chapter.endTime - chapter.startTime
         const isActive = currentTime >= chapter.startTime && currentTime < chapter.endTime
-        const { isCompleted, progress } = calculateChapterProgress(
-          index,
-          chapterDuration,
-          chapter.startTime,
-          chapter.endTime
-        )
+        const { isCompleted, progress } = calculateChapterProgress(index, chapterDuration)
 
         return {
           id: `chapter-${index}`,
@@ -111,12 +136,7 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
         const endTime = Math.round((index + 1) * chapterLength)
         const chapterDuration = endTime - startTime
         const isActive = currentTime >= startTime && currentTime < endTime
-        const { isCompleted, progress } = calculateChapterProgress(
-          index,
-          chapterDuration,
-          startTime,
-          endTime
-        )
+        const { isCompleted, progress } = calculateChapterProgress(index, chapterDuration)
 
         return {
           id: `auto-chapter-${index}`,
@@ -132,66 +152,49 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
     }
 
     return []
-  }, [videoContext])
+  }, [currentVideo, currentTime, videoDuration, chapterWatchedTime])
 
-  // Initialize current video
+  // Initialize current video — only needs the setter (stable reference), course, and searchParams
   useEffect(() => {
     if (course && course.videos.length > 0) {
       const videoIdParam = searchParams.get('video')
       if (videoIdParam) {
         const video = course.videos.find((v) => v.id === videoIdParam)
         if (video) {
-          videoContext.setCurrentVideo(video)
+          setCurrentVideo(video)
           return
         }
       }
-      videoContext.setCurrentVideo(course.videos[0])
+      setCurrentVideo(course.videos[0])
     }
-  }, [course, searchParams, videoContext])
+  }, [course, searchParams, setCurrentVideo])
 
-  // Handle video selection
-  const handleVideoSelect = useCallback(
-    (video: Video) => {
-      videoContext.setCurrentVideo(video)
-      router.push(`/course/${courseId}?video=${video.id}`, { scroll: false })
-    },
-    [courseId, router, videoContext]
-  )
-
-  // Handle chapter click - delegates to video context
+  // Handle chapter click
   const handleChapterClick = useCallback((startTime: number) => {
-    videoContext.handleSeek(startTime)
-  }, [videoContext])
+    handleSeek(startTime)
+  }, [handleSeek])
 
-  // Handle chat message send - delegates to chat context
+  // Handle chat message send
   const handleSendMessage = useCallback(() => {
-    chatContext.sendMessage(
-      videoContext.currentVideo?.youtubeId,
-      videoContext.currentVideo?.title,
-      videoContext.currentVideo?.description
-    )
-  }, [chatContext, videoContext])
+    sendMessage(currentVideo?.youtubeId, currentVideo?.title, currentVideo?.description)
+  }, [sendMessage, currentVideo])
 
   // Wrap chat key press handler to call sendMessage
   const handleChatKeyPress = useCallback(
     (e: React.KeyboardEvent) => {
-      chatContext.handleKeyPress(e)
+      void chatHandleKeyPress(e)
       if (e.key === 'Enter' && !e.shiftKey) {
         handleSendMessage()
       }
     },
-    [chatContext, handleSendMessage]
+    [chatHandleKeyPress, handleSendMessage]
   )
 
-  // Handle summary generation - delegates to chat context
+  // Handle summary generation
   const handleSummarize = useCallback(() => {
-    if (!videoContext.currentVideo) {return}
-    chatContext.generateSummary(
-      videoContext.currentVideo.youtubeId,
-      videoContext.currentVideo.title,
-      videoContext.currentVideo.description
-    )
-  }, [chatContext, videoContext])
+    if (!currentVideo) {return}
+    generateSummary(currentVideo.youtubeId, currentVideo.title, currentVideo.description)
+  }, [generateSummary, currentVideo])
 
   if (!course) {
     return (
@@ -251,33 +254,33 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
       <div className="flex max-w-[1800px] mx-auto">
         {/* LEFT SIDEBAR - AI Chat */}
         <ChatSidebar
-          messages={chatContext.messages}
-          inputMessage={chatContext.inputMessage}
-          isLoading={chatContext.isLoading}
-          isListening={chatContext.isListening}
-          onInputChange={chatContext.setInputMessage}
+          messages={messages}
+          inputMessage={inputMessage}
+          isLoading={isLoading}
+          isListening={isListening}
+          onInputChange={setInputMessage}
           onSendMessage={handleSendMessage}
-          onToggleVoice={chatContext.toggleVoiceInput}
-          onTimestampClick={videoContext.handleSeek}
+          onToggleVoice={toggleVoiceInput}
+          onTimestampClick={handleSeek}
           onKeyPress={handleChatKeyPress}
         />
 
         {/* CENTER - Video Player + Transcript/Quiz */}
         <VideoSection
-          currentVideo={videoContext.currentVideo}
-          currentTime={videoContext.currentTime}
-          videoDuration={videoContext.videoDuration}
-          currentChapter={videoContext.currentChapter}
-          currentStageIndex={videoContext.currentStageIndex}
-          liveTranscript={videoContext.liveTranscript}
-          onTimeUpdate={videoContext.handleTimeUpdate}
-          onDurationChange={videoContext.handleDurationChange}
+          currentVideo={currentVideo}
+          currentTime={currentTime}
+          videoDuration={videoDuration}
+          currentChapter={currentChapter}
+          currentStageIndex={currentStageIndex}
+          liveTranscript={liveTranscript}
+          onTimeUpdate={handleTimeUpdate}
+          onDurationChange={handleDurationChange}
           onSummarize={handleSummarize}
-          onTimestampClick={videoContext.handleSeek}
-          seekToTime={videoContext.seekToTime}
+          onTimestampClick={handleSeek}
+          seekToTime={seekToTime}
           courseVideosCount={course.videos.length}
           currentVideoOrder={
-            videoContext.currentVideo ? course.videos.findIndex((v) => v.id === videoContext.currentVideo!.id) + 1 : 1
+            currentVideo ? course.videos.findIndex((v) => v.id === currentVideo.id) + 1 : 1
           }
           quizState={quizContext}
           activeContentTab={activeContentTab}
@@ -288,34 +291,37 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
         {/* RIGHT SIDEBAR - Course Materials */}
         <MaterialsSidebar
           course={course}
-          currentVideo={videoContext.currentVideo}
-          currentTime={videoContext.currentTime}
-          videoDuration={videoContext.videoDuration}
+          currentVideo={currentVideo}
+          currentTime={currentTime}
+          videoDuration={videoDuration}
           chapterItems={chapterItems}
-          overallProgress={videoContext.overallProgress}
+          overallProgress={overallProgress}
           onChapterClick={handleChapterClick}
         />
       </div>
 
       {/* Summary Modal */}
       <SummaryModal
-        isOpen={chatContext.showSummary}
-        onClose={() => chatContext.setShowSummary(false)}
-        videoTitle={videoContext.currentVideo?.title || ''}
-        isGenerating={chatContext.isGeneratingSummary}
-        summaryData={chatContext.generatedSummaryData}
+        isOpen={showSummary}
+        onClose={() => setShowSummary(false)}
+        videoTitle={currentVideo?.title || ''}
+        isGenerating={isGeneratingSummary}
+        summaryData={generatedSummaryData}
       />
     </div>
   )
 }
 
+export default CoursePageClient
+
 /**
  * Main CoursePageClient component with context providers
  */
-export default function CoursePageClient({ course, courseId }: CoursePageClientProps) {
+const CoursePageClient = ({ course, courseId }: CoursePageClientProps) => {
   return (
     <CourseProvider initialVideo={course.videos[0]} videoId={course.videos[0]?.youtubeId}>
       <CoursePageContent course={course} courseId={courseId} />
     </CourseProvider>
   )
 }
+
