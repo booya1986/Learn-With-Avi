@@ -4,9 +4,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 import { GraduationCap, Menu } from 'lucide-react'
+import { useLocale } from 'next-intl'
 
 export const ConditionalNav = () => {
   const pathname = usePathname()
+  const locale = useLocale()
 
   // Don't show navigation on admin pages (they have their own layout)
   // pathname includes locale prefix e.g. /en/admin/... or /he/admin/...
@@ -48,7 +50,7 @@ export const ConditionalNav = () => {
             About
           </Link>
           <Link
-            href="/admin/videos"
+            href={`/${locale}/admin/dashboard`}
             className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
           >
             Admin

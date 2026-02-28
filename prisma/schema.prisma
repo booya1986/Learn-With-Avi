@@ -131,6 +131,22 @@ model VectorChunk {
 }
 
 // ==========================================
+// STUDENT AUTHENTICATION
+// ==========================================
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime  @default(now())
+  lastLogin    DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@index([email])
+}
+
+// ==========================================
 // ADMIN AUTHENTICATION
 // ==========================================
 

@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { PlayCircle, Clock, BookOpen } from 'lucide-react'
+import { useLocale } from 'next-intl'
 
 import { cn } from '@/lib/utils'
 import { type Course } from '@/types'
@@ -28,13 +29,14 @@ const difficultyLabels = {
 }
 
 export const CourseCard = ({ course, className }: CourseCardProps) => {
+  const locale = useLocale()
   const totalDuration = course.videos.reduce((acc, video) => acc + video.duration, 0)
   const hours = Math.floor(totalDuration / 3600)
   const minutes = Math.floor((totalDuration % 3600) / 60)
   const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
 
   return (
-    <Link href={`/course/${course.id}`}>
+    <Link href={`/${locale}/course/${course.id}`}>
       <div
         className={cn(
           'group relative flex flex-col overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1',
