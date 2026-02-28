@@ -22,24 +22,8 @@ export async function getSession() {
 }
 
 /**
- * Require authentication for a page/route
- * Redirects to login if not authenticated
- *
- * Use in Server Components:
- * ```typescript
- * export default async function AdminPage() {
- *   await requireAuth();
- *   // Rest of your component
- * }
- * ```
- *
- * With locale support:
- * ```typescript
- * export default async function AdminPage({ params }: { params: { locale: string } }) {
- *   await requireAuth(undefined, params.locale);
- *   // Rest of your component
- * }
- * ```
+ * Require admin authentication for a page/route.
+ * Redirects to admin login if not authenticated, or to home if authenticated but not admin.
  *
  * @param redirectTo - URL to redirect to after login (optional)
  * @param locale - Locale code for i18n routing (optional, defaults to no locale prefix)
@@ -51,6 +35,13 @@ export async function requireAuth(redirectTo?: string, locale?: string) {
     const callbackUrl = redirectTo || '/admin'
     const loginPath = locale ? `/${locale}/admin/login` : '/admin/login'
     redirect(`${loginPath}?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+  }
+
+  // Student users (role='user') must not access admin pages
+  const role = (session.user as { role?: string }).role
+  if (role !== 'admin') {
+    const homePath = locale ? `/${locale}` : '/'
+    redirect(homePath)
   }
 
   return session

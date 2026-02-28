@@ -19,6 +19,8 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
 
   const isLoginPage = pathname?.endsWith('/admin/login')
 
+  const isAdmin = (session?.user as { role?: string })?.role === 'admin'
+
   React.useEffect(() => {
     // Don't redirect if we're already on the login page
     if (isLoginPage) {
@@ -28,8 +30,15 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     if (status === 'unauthenticated') {
       const locale = pathname?.split('/')[1] || 'en'
       router.push(`/${locale}/admin/login`)
+      return
     }
-  }, [status, router, pathname, isLoginPage])
+
+    // Redirect non-admin authenticated users (students) away from admin
+    if (status === 'authenticated' && !isAdmin) {
+      const locale = pathname?.split('/')[1] || 'en'
+      router.push(`/${locale}`)
+    }
+  }, [status, isAdmin, router, pathname, isLoginPage])
 
   // Don't protect the login page - allow it to render
   if (isLoginPage) {
@@ -44,7 +53,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     )
   }
 
-  if (status === 'unauthenticated') {
+  if (status === 'unauthenticated' || (status === 'authenticated' && !isAdmin && !isLoginPage)) {
     return null
   }
 

@@ -2,7 +2,7 @@ import * as React from "react";
 
 import Link from "next/link";
 
-import { BookOpen, Play, CheckCircle, Plus } from "lucide-react";
+import { BookOpen, Play, CheckCircle, Users, Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
@@ -11,12 +11,13 @@ import { prisma } from "@/lib/prisma";
 import { formatTime } from "@/lib/utils";
 
 async function getDashboardStats() {
-  const [totalCourses, totalVideos, publishedCourses, publishedVideos, recentVideos] =
+  const [totalCourses, totalVideos, publishedCourses, publishedVideos, totalStudents, recentVideos] =
     await Promise.all([
       prisma.course.count(),
       prisma.video.count(),
       prisma.course.count({ where: { published: true } }),
       prisma.video.count({ where: { published: true } }),
+      prisma.user.count(),
       prisma.video.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -29,6 +30,7 @@ async function getDashboardStats() {
     totalVideos,
     publishedCourses,
     publishedVideos,
+    totalStudents,
     recentVideos,
   };
 }
@@ -47,25 +49,22 @@ export default async function DashboardPage({
       title: "Total Courses",
       value: stats.totalCourses,
       icon: BookOpen,
-      color: "bg-blue-500",
     },
     {
       title: "Total Videos",
       value: stats.totalVideos,
       icon: Play,
-      color: "bg-purple-500",
     },
     {
-      title: "Published Courses",
-      value: stats.publishedCourses,
+      title: "Published",
+      value: `${stats.publishedCourses}c / ${stats.publishedVideos}v`,
       icon: CheckCircle,
-      color: "bg-green-500",
     },
     {
-      title: "Published Videos",
-      value: stats.publishedVideos,
-      icon: CheckCircle,
-      color: "bg-green-500",
+      title: "Students",
+      value: stats.totalStudents,
+      icon: Users,
+      href: `/${locale}/admin/students`,
     },
   ];
 
@@ -92,8 +91,13 @@ export default async function DashboardPage({
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {statCards.map((stat) => {
           const Icon = stat.icon;
-          return (
-            <GlassCard key={stat.title} variant="dark" padding="lg">
+          const card = (
+            <GlassCard
+              key={stat.title}
+              variant="dark"
+              padding="lg"
+              className={stat.href ? 'cursor-pointer transition-all hover:bg-white/10' : ''}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-white/70">{stat.title}</p>
@@ -106,6 +110,11 @@ export default async function DashboardPage({
                 </div>
               </div>
             </GlassCard>
+          );
+          return stat.href ? (
+            <Link key={stat.title} href={stat.href}>{card}</Link>
+          ) : (
+            <React.Fragment key={stat.title}>{card}</React.Fragment>
           );
         })}
       </div>

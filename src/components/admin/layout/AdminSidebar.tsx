@@ -5,29 +5,32 @@ import * as React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { Home, Play, BookOpen, LogOut } from 'lucide-react'
+import { Home, Play, BookOpen, Users, LogOut } from 'lucide-react'
 import { signOut } from 'next-auth/react'
+import { useLocale } from 'next-intl'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
-const navigation = [
-  { name: 'Dashboard', href: '/admin/dashboard', icon: Home },
-  { name: 'Videos', href: '/admin/videos', icon: Play },
-  { name: 'Courses', href: '/admin/courses', icon: BookOpen },
-]
-
 export const AdminSidebar = () => {
   const pathname = usePathname()
+  const locale = useLocale()
+
+  const navigation = [
+    { name: 'Dashboard', href: `/${locale}/admin/dashboard`, icon: Home },
+    { name: 'Videos', href: `/${locale}/admin/videos`, icon: Play },
+    { name: 'Courses', href: `/${locale}/admin/courses`, icon: BookOpen },
+    { name: 'Students', href: `/${locale}/admin/students`, icon: Users },
+  ]
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/admin/login' })
+    await signOut({ callbackUrl: `/${locale}/admin/login` })
   }
 
   return (
-    <aside className="flex h-screen w-60 flex-col border-e border-gray-200 bg-white">
-      <div className="flex h-16 items-center border-b border-gray-200 px-6">
-        <h1 className="text-xl font-bold text-blue-600">LearnWithAvi</h1>
+    <aside className="flex h-screen w-60 flex-col border-e border-white/10 bg-white/5 backdrop-blur-md">
+      <div className="flex h-16 items-center border-b border-white/10 px-6">
+        <h1 className="text-xl font-bold text-white">LearnWithAvi</h1>
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
@@ -42,8 +45,8 @@ export const AdminSidebar = () => {
               className={cn(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'bg-blue-50 text-blue-600'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                  ? 'bg-white/20 text-white'
+                  : 'text-white/70 hover:bg-white/10 hover:text-white'
               )}
             >
               <Icon className="h-5 w-5" />
@@ -53,10 +56,10 @@ export const AdminSidebar = () => {
         })}
       </nav>
 
-      <div className="border-t border-gray-200 p-4">
+      <div className="border-t border-white/10 p-4">
         <Button
           variant="ghost"
-          className="w-full justify-start text-gray-700"
+          className="w-full justify-start text-white/70 hover:bg-white/10 hover:text-white"
           onClick={handleLogout}
         >
           <LogOut className="me-3 h-5 w-5" />
