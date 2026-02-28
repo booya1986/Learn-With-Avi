@@ -31,7 +31,7 @@ const signupSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 type SignupFormData = z.infer<typeof signupSchema>;
 
-export default function LoginPage() {
+const LoginPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
@@ -39,322 +39,121 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState<"login" | "signup">("login");
 
-  // Extract locale from pathname (e.g., /en/admin/login -> en)
   const locale = pathname?.split('/')[1] || 'en';
 
-  const {
-    register: registerLogin,
-    handleSubmit: handleSubmitLogin,
-    formState: { errors: loginErrors },
-  } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-  });
+  const { register: reg, handleSubmit: hSubmit, formState: { errors: le } } = useForm<LoginFormData>({ resolver: zodResolver(loginSchema) });
+  const { register: regS, handleSubmit: hSubmitS, formState: { errors: se } } = useForm<SignupFormData>({ resolver: zodResolver(signupSchema) });
 
-  const {
-    register: registerSignup,
-    handleSubmit: handleSubmitSignup,
-    formState: { errors: signupErrors },
-  } = useForm<SignupFormData>({
-    resolver: zodResolver(signupSchema),
-  });
-
-  const onLoginSubmit = async (data: LoginFormData) => {
+  const onLogin = async (data: LoginFormData) => {
     setIsLoading(true);
     setError(null);
-
     try {
-      const result = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-
+      const result = await signIn("admin-credentials", { email: data.email, password: data.password, redirect: false });
       if (result?.error) {
         setError("Invalid email or password");
       } else if (result?.ok) {
-        const rawCallbackUrl = searchParams.get("callbackUrl") || `/${locale}/admin/dashboard`;
-        // Validate callback URL to prevent open redirect attacks
-        const callbackUrl = rawCallbackUrl.startsWith("/") && !rawCallbackUrl.startsWith("//")
-          ? rawCallbackUrl
-          : `/${locale}/admin/dashboard`;
-        router.push(callbackUrl);
+        const raw = searchParams.get("callbackUrl") || `/${locale}/admin/dashboard`;
+        router.push(raw.startsWith("/") && !raw.startsWith("//") ? raw : `/${locale}/admin/dashboard`);
       }
-    } catch (err) {
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const onSignupSubmit = async (data: SignupFormData) => {
+  const onSignup = async (data: SignupFormData) => {
     setIsLoading(true);
     setError(null);
-
     try {
-      const response = await fetch("/api/admin/signup", {
+      const resp = await fetch("/api/admin/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-        }),
+        body: JSON.stringify({ name: data.name, email: data.email, password: data.password }),
       });
+      const result = await resp.json();
+      if (!resp.ok) { setError(result.error || "Failed to create account"); return; }
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result.error || "Failed to create account");
-        return;
-      }
-
-      // Auto-login after successful signup
-      const loginResult = await signIn("credentials", {
-        email: data.email,
-        password: data.password,
-        redirect: false,
-      });
-
-      if (loginResult?.ok) {
-        router.push(`/${locale}/admin/dashboard`);
-      }
-    } catch (err) {
+      const loginResult = await signIn("admin-credentials", { email: data.email, password: data.password, redirect: false });
+      if (loginResult?.ok) router.push(`/${locale}/admin/dashboard`);
+    } catch {
       setError("An error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center px-4 relative overflow-hidden"
-      style={{
-        background: `
-          radial-gradient(circle at 30% 20%, #4A6FDC 0%, transparent 50%),
-          radial-gradient(circle at 70% 80%, #6B75D6 0%, transparent 50%),
-          linear-gradient(135deg, #2E3548 0%, #3A3F4E 100%)`
-      }}
-    >
-      {/* Pattern overlay */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-[0.02]"
-        style={{
-          backgroundImage: `
-            repeating-linear-gradient(
-              0deg,
-              transparent,
-              transparent 100px,
-              rgba(255, 255, 255, 0.06) 100px,
-              rgba(255, 255, 255, 0.06) 102px
-            ),
-            repeating-linear-gradient(
-              90deg,
-              transparent,
-              transparent 100px,
-              rgba(255, 255, 255, 0.06) 100px,
-              rgba(255, 255, 255, 0.06) 102px
-            )
-          `,
-        }}
-      />
+  const bg = `
+    radial-gradient(circle at 30% 20%, #4A6FDC 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, #6B75D6 0%, transparent 50%),
+    linear-gradient(135deg, #2E3548 0%, #3A3F4E 100%)`;
 
+  const inputCls = "glass-input mt-1 block w-full rounded-md px-3 py-2 text-sm";
+  const labelCls = "block text-sm font-medium text-white/90";
+  const errCls = "mt-1 text-sm text-red-400";
+
+  return (
+    <div className="flex min-h-screen items-center justify-center px-4 relative overflow-hidden" style={{ background: bg }}>
       <div className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4A6FDC] to-[#8B4FD4] bg-clip-text text-transparent">
-            LearnWithAvi
-          </h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4A6FDC] to-[#8B4FD4] bg-clip-text text-transparent">LearnWithAvi</h1>
           <p className="mt-2 text-white/80">Admin Panel</p>
         </div>
 
         <GlassCard variant="dark" padding="none">
-          {/* Tabs */}
           <div className="flex border-b border-white/10">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("login");
-                setError(null);
-              }}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                activeTab === "login"
-                  ? "border-b-2 border-[#4A6FDC] text-white"
-                  : "text-white/60 hover:text-white/80"
-              }`}
-            >
-              Login
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setActiveTab("signup");
-                setError(null);
-              }}
-              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
-                activeTab === "signup"
-                  ? "border-b-2 border-[#4A6FDC] text-white"
-                  : "text-white/60 hover:text-white/80"
-              }`}
-            >
-              Sign Up
-            </button>
+            {(["login", "signup"] as const).map((tab) => (
+              <button key={tab} type="button" onClick={() => { setActiveTab(tab); setError(null); }}
+                className={`flex-1 px-4 py-3 text-sm font-medium transition-colors capitalize ${
+                  activeTab === tab ? "border-b-2 border-[#4A6FDC] text-white" : "text-white/60 hover:text-white/80"}`}>
+                {tab === "login" ? "Login" : "Sign Up"}
+              </button>
+            ))}
           </div>
 
-          {/* Forms */}
           <div className="p-8">
-            {error ? <div className="mb-6 rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">
-                {error}
-              </div> : null}
+            {error ? <div className="mb-6 rounded-md bg-red-500/10 border border-red-500/20 p-3 text-sm text-red-400">{error}</div> : null}
 
             {activeTab === "login" ? (
-              <form onSubmit={handleSubmitLogin(onLoginSubmit)} className="space-y-6">
+              <form onSubmit={(e) => void hSubmit(onLogin)(e)} className="space-y-6">
                 <div>
-                  <label
-                    htmlFor="login-email"
-                    className="block text-sm font-medium text-white/90"
-                  >
-                    Email
-                  </label>
-                  <input
-                    id="login-email"
-                    type="email"
-                    {...registerLogin("email")}
-                    className="glass-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
-                    placeholder="admin@example.com"
-                    disabled={isLoading}
-                  />
-                  {loginErrors.email ? <p className="mt-1 text-sm text-red-400">{loginErrors.email.message}</p> : null}
+                  <label htmlFor="login-email" className={labelCls}>Email</label>
+                  <input id="login-email" type="email" {...reg("email")} className={inputCls} placeholder="admin@example.com" disabled={isLoading} />
+                  {le.email ? <p className={errCls}>{le.email.message}</p> : null}
                 </div>
-
                 <div>
-                  <label
-                    htmlFor="login-password"
-                    className="block text-sm font-medium text-white/90"
-                  >
-                    Password
-                  </label>
-                  <input
-                    id="login-password"
-                    type="password"
-                    {...registerLogin("password")}
-                    className="glass-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
-                    placeholder="••••••••"
-                    disabled={isLoading}
-                  />
-                  {loginErrors.password ? <p className="mt-1 text-sm text-red-400">
-                      {loginErrors.password.message}
-                    </p> : null}
+                  <label htmlFor="login-password" className={labelCls}>Password</label>
+                  <input id="login-password" type="password" {...reg("password")} className={inputCls} placeholder="••••••••" disabled={isLoading} />
+                  {le.password ? <p className={errCls}>{le.password.message}</p> : null}
                 </div>
-
-                <Button
-                  type="submit"
-                  variant="orbyto-primary"
-                  size="orbyto"
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <LoadingSpinner size="sm" className="me-2" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign In"
-                  )}
+                <Button type="submit" variant="orbyto-primary" size="orbyto" className="w-full" disabled={isLoading}>
+                  {isLoading ? <><LoadingSpinner size="sm" className="me-2" />Signing in...</> : "Sign In"}
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleSubmitSignup(onSignupSubmit)} className="space-y-6">
+              <form onSubmit={(e) => void hSubmitS(onSignup)(e)} className="space-y-6">
                 <div>
-                  <label
-                    htmlFor="signup-name"
-                    className="block text-sm font-medium text-white/90"
-                  >
-                    Name
-                  </label>
-                  <input
-                    id="signup-name"
-                    type="text"
-                    {...registerSignup("name")}
-                    className="glass-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
-                    placeholder="John Doe"
-                    disabled={isLoading}
-                  />
-                  {signupErrors.name ? <p className="mt-1 text-sm text-red-400">{signupErrors.name.message}</p> : null}
+                  <label htmlFor="signup-name" className={labelCls}>Name</label>
+                  <input id="signup-name" type="text" {...regS("name")} className={inputCls} placeholder="John Doe" disabled={isLoading} />
+                  {se.name ? <p className={errCls}>{se.name.message}</p> : null}
                 </div>
-
                 <div>
-                  <label
-                    htmlFor="signup-email"
-                    className="block text-sm font-medium text-white/90"
-                  >
-                    Email
-                  </label>
-                  <input
-                    id="signup-email"
-                    type="email"
-                    {...registerSignup("email")}
-                    className="glass-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
-                    placeholder="admin@example.com"
-                    disabled={isLoading}
-                  />
-                  {signupErrors.email ? <p className="mt-1 text-sm text-red-400">{signupErrors.email.message}</p> : null}
+                  <label htmlFor="signup-email" className={labelCls}>Email</label>
+                  <input id="signup-email" type="email" {...regS("email")} className={inputCls} placeholder="admin@example.com" disabled={isLoading} />
+                  {se.email ? <p className={errCls}>{se.email.message}</p> : null}
                 </div>
-
                 <div>
-                  <label
-                    htmlFor="signup-password"
-                    className="block text-sm font-medium text-white/90"
-                  >
-                    Password
-                  </label>
-                  <input
-                    id="signup-password"
-                    type="password"
-                    {...registerSignup("password")}
-                    className="glass-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
-                    placeholder="••••••••"
-                    disabled={isLoading}
-                  />
-                  {signupErrors.password ? <p className="mt-1 text-sm text-red-400">
-                      {signupErrors.password.message}
-                    </p> : null}
+                  <label htmlFor="signup-password" className={labelCls}>Password</label>
+                  <input id="signup-password" type="password" {...regS("password")} className={inputCls} placeholder="••••••••" disabled={isLoading} />
+                  {se.password ? <p className={errCls}>{se.password.message}</p> : null}
                 </div>
-
                 <div>
-                  <label
-                    htmlFor="signup-confirmPassword"
-                    className="block text-sm font-medium text-white/90"
-                  >
-                    Confirm Password
-                  </label>
-                  <input
-                    id="signup-confirmPassword"
-                    type="password"
-                    {...registerSignup("confirmPassword")}
-                    className="glass-input mt-1 block w-full rounded-md px-3 py-2 text-sm"
-                    placeholder="••••••••"
-                    disabled={isLoading}
-                  />
-                  {signupErrors.confirmPassword ? <p className="mt-1 text-sm text-red-400">
-                      {signupErrors.confirmPassword.message}
-                    </p> : null}
+                  <label htmlFor="signup-confirmPassword" className={labelCls}>Confirm Password</label>
+                  <input id="signup-confirmPassword" type="password" {...regS("confirmPassword")} className={inputCls} placeholder="••••••••" disabled={isLoading} />
+                  {se.confirmPassword ? <p className={errCls}>{se.confirmPassword.message}</p> : null}
                 </div>
-
-                <Button
-                  type="submit"
-                  variant="orbyto-primary"
-                  size="orbyto"
-                  className="w-full"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <LoadingSpinner size="sm" className="me-2" />
-                      Creating account...
-                    </>
-                  ) : (
-                    "Create Account"
-                  )}
+                <Button type="submit" variant="orbyto-primary" size="orbyto" className="w-full" disabled={isLoading}>
+                  {isLoading ? <><LoadingSpinner size="sm" className="me-2" />Creating account...</> : "Create Account"}
                 </Button>
               </form>
             )}
@@ -363,4 +162,6 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+};
+
+export default LoginPage;
