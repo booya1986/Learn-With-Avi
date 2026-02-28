@@ -9,7 +9,8 @@ export const ConditionalNav = () => {
   const pathname = usePathname()
 
   // Don't show navigation on admin pages (they have their own layout)
-  if (pathname?.startsWith('/admin')) {
+  // pathname includes locale prefix e.g. /en/admin/... or /he/admin/...
+  if (pathname?.includes('/admin')) {
     return null
   }
 
