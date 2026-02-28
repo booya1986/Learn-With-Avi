@@ -1,11 +1,12 @@
 import { Rubik } from 'next/font/google';
 import { notFound } from 'next/navigation';
 
+import { SessionProvider } from 'next-auth/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 
-import { ConditionalNav } from '@/components/ConditionalNav';
 import { ConditionalFooter } from '@/components/ConditionalFooter';
+import { ConditionalNav } from '@/components/ConditionalNav';
 import { routing } from '@/i18n/routing';
 
 const rubik = Rubik({
@@ -15,6 +16,7 @@ const rubik = Rubik({
   variable: '--font-rubik',
 });
 
+/** Returns locale params for static generation of [locale] routes. */
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
@@ -48,9 +50,11 @@ export default async function LocaleLayout({
         suppressHydrationWarning
       >
         <NextIntlClientProvider messages={messages}>
-          <ConditionalNav />
-          {children}
-          <ConditionalFooter />
+          <SessionProvider>
+            <ConditionalNav />
+            {children}
+            <ConditionalFooter />
+          </SessionProvider>
         </NextIntlClientProvider>
       </body>
     </html>
