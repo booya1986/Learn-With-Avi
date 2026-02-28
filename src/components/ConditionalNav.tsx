@@ -7,6 +7,7 @@ import { LogOut, Menu, User } from 'lucide-react'
 import { useSession, signOut } from 'next-auth/react'
 import { useLocale } from 'next-intl'
 
+/** Site-wide navigation header. Hidden on admin and course pages which have their own layouts. */
 export const ConditionalNav = () => {
   const pathname = usePathname()
   const locale = useLocale()
@@ -24,7 +25,7 @@ export const ConditionalNav = () => {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/8 border border-green-500/25 transition-all duration-150 group-hover:[box-shadow:var(--glow-success-sm)] group-hover:border-green-500/50">
-            <span className="w-2 h-2 rounded-full bg-green-500 [box-shadow:var(--glow-success-sm)]" />
+            <img src="/logo.svg" alt="LearnWithAvi" className="h-5 w-auto" />
             <span className="text-sm font-bold text-green-400">LearnWithAvi</span>
           </div>
         </Link>

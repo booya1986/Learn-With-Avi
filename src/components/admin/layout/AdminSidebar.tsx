@@ -31,7 +31,7 @@ export const AdminSidebar = () => {
     <aside className="flex h-screen w-60 flex-col border-e border-green-500/10 bg-[#141414]">
       <div className="flex h-16 items-center border-b border-green-500/10 px-5">
         <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-green-500/7 border border-green-500/25">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-500" style={{ boxShadow: 'var(--glow-success-sm)' }} />
+          <img src="/logo.svg" alt="LearnWithAvi" className="h-5 w-auto" />
           <h1 className="text-sm font-bold text-green-400">LearnWithAvi</h1>
         </div>
       </div>
