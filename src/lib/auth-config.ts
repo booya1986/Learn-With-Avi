@@ -72,8 +72,8 @@ export const authOptions: NextAuthOptions = {
 
   // Custom pages
   pages: {
-    signIn: '/admin/login',
-    error: '/admin/login', // Redirect to login on error
+    signIn: '/en/admin/login',
+    error: '/en/admin/login', // Redirect to login on error
   },
 
   // JWT configuration
