@@ -2,6 +2,7 @@
 
 import React from 'react'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -39,19 +40,16 @@ export const ConditionalNav = () => {
         {/* Logo */}
         <Link href={`/${locale}`}>
           <div
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all duration-150"
+            className="flex items-center px-3 py-2 rounded-lg transition-all duration-150"
             style={{
               background: 'rgba(34,197,94,0.07)',
               border: '1px solid rgba(34,197,94,0.3)',
-              fontSize: 15,
-              fontWeight: 700,
-              color: G_SOFT,
               cursor: 'pointer',
             }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = G_GLOW_SM }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}
           >
-            LearnWithAvi
+            <Image src="/logo.svg" alt="LearnWithAvi" width={33} height={24} />
           </div>
         </Link>
 
