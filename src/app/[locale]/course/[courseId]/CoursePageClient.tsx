@@ -312,8 +312,6 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
   )
 }
 
-export default CoursePageClient
-
 /**
  * Main CoursePageClient component with context providers
  */
@@ -324,4 +322,6 @@ const CoursePageClient = ({ course, courseId }: CoursePageClientProps) => {
     </CourseProvider>
   )
 }
+
+export default CoursePageClient
 
