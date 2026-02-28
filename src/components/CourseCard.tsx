@@ -8,43 +8,51 @@ import Link from 'next/link'
 import { PlayCircle, Clock, BookOpen } from 'lucide-react'
 import { useLocale } from 'next-intl'
 
-import { cn } from '@/lib/utils'
 import { type Course } from '@/types'
 
 interface CourseCardProps {
   course: Course
-  className?: string
 }
 
-const difficultyColors = {
-  beginner: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  intermediate: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
-  advanced: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+const levelColors: Record<string, string> = {
+  beginner: '#4ade80',
+  intermediate: '#facc15',
+  advanced: '#f87171',
 }
 
-const difficultyLabels = {
-  beginner: 'Beginner',
-  intermediate: 'Intermediate',
-  advanced: 'Advanced',
-}
-
-export const CourseCard = ({ course, className }: CourseCardProps) => {
+export const CourseCard = ({ course }: CourseCardProps) => {
   const locale = useLocale()
   const totalDuration = course.videos.reduce((acc, video) => acc + video.duration, 0)
   const hours = Math.floor(totalDuration / 3600)
   const minutes = Math.floor((totalDuration % 3600) / 60)
   const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
+  const levelColor = levelColors[course.difficulty] ?? '#4ade80'
+  const firstTopic = course.topics[0]
 
   return (
-    <Link href={`/${locale}/course/${course.id}`} className="block h-full">
+    <Link href={`/${locale}/course/${course.id}`} className="block h-full group">
       <div
-        className={cn(
-          'group relative flex flex-col overflow-hidden rounded-xl h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1',
-          className
-        )}
+        className="relative flex flex-col overflow-hidden h-full transition-all duration-300"
+        style={{
+          borderRadius: 14,
+          background: '#161616',
+          border: '1px solid rgba(34,197,94,0.12)',
+        }}
+        onMouseEnter={(e) => {
+          const el = e.currentTarget as HTMLDivElement
+          el.style.borderColor = 'rgba(34,197,94,0.45)'
+          el.style.boxShadow = '0 0 12px rgba(34,197,94,0.45)'
+          el.style.transform = 'translateY(-3px)'
+        }}
+        onMouseLeave={(e) => {
+          const el = e.currentTarget as HTMLDivElement
+          el.style.borderColor = 'rgba(34,197,94,0.12)'
+          el.style.boxShadow = 'none'
+          el.style.transform = 'translateY(0)'
+        }}
       >
         {/* Thumbnail */}
-        <div className="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
+        <div className="relative aspect-video overflow-hidden" style={{ borderBottom: '1px solid rgba(34,197,94,0.1)' }}>
           <Image
             src={course.thumbnail}
             alt={course.title}
@@ -52,63 +60,52 @@ export const CourseCard = ({ course, className }: CourseCardProps) => {
             className="object-cover transition-transform duration-300 group-hover:scale-105"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-          {/* Play overlay on hover */}
+          {/* Play circle overlay on hover */}
           <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-all duration-300">
-            <PlayCircle className="w-16 h-16 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <PlayCircle className="w-14 h-14 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
-          {/* Difficulty badge */}
-          <div className="absolute top-3 end-3">
-            <span
-              className={cn(
-                'px-2.5 py-1 text-xs font-medium rounded-full',
-                difficultyColors[course.difficulty]
-              )}
+          {/* Topic badge top-right */}
+          {firstTopic ? <div
+              className="absolute top-3 end-3 px-2.5 py-0.5 text-xs font-bold"
+              style={{
+                background: 'rgba(34,197,94,0.1)',
+                border: '1px solid rgba(34,197,94,0.3)',
+                borderRadius: 99,
+                color: '#4ade80',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}
             >
-              {difficultyLabels[course.difficulty]}
+              {firstTopic}
+            </div> : null}
+        </div>
+
+        {/* Body */}
+        <div className="flex flex-col flex-1 p-5">
+          {/* Title */}
+          <h3 className="text-base font-semibold mb-3" style={{ color: '#e5e5e5', lineHeight: 1.3 }}>
+            {course.title}
+          </h3>
+
+          {/* Meta row: level · videos · duration */}
+          <div className="flex items-center gap-4 text-xs" style={{ color: '#555' }}>
+            <span style={{ color: levelColor, fontWeight: 600 }}>
+              {course.difficulty.charAt(0).toUpperCase() + course.difficulty.slice(1)}
+            </span>
+            <span className="flex items-center gap-1">
+              <BookOpen className="w-3 h-3" />
+              {course.videos.length} videos
+            </span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              {durationText}
             </span>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex flex-col flex-1 p-4">
-          {/* Title */}
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white line-clamp-2 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-            {course.title}
-          </h3>
-
-          {/* Description */}
-          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-4 flex-1">
-            {course.description}
-          </p>
-
-          {/* Meta info */}
-          <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
-            <div className="flex items-center gap-1.5">
-              <BookOpen className="w-4 h-4" />
-              <span>{course.videos.length} videos</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <Clock className="w-4 h-4" />
-              <span>{durationText}</span>
-            </div>
-          </div>
-
-          {/* Topics */}
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {course.topics.slice(0, 3).map((topic) => (
-              <span
-                key={topic}
-                className="px-2 py-0.5 text-xs font-medium rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-              >
-                {topic}
-              </span>
-            ))}
-            {course.topics.length > 3 && (
-              <span className="px-2 py-0.5 text-xs font-medium rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-500">
-                +{course.topics.length - 3}
-              </span>
-            )}
-          </div>
+        {/* Progress bar — 3px at bottom */}
+        <div style={{ height: 3, background: '#2a2a2a', borderRadius: '0 0 14px 14px', overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: '0%', background: 'linear-gradient(to right, #22c55e, #4ade80)', borderRadius: 99 }} />
         </div>
       </div>
     </Link>
