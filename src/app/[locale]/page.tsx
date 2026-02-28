@@ -1,11 +1,9 @@
-import Link from "next/link";
-
 import { getTranslations } from 'next-intl/server';
 
 import { CourseCard } from "@/components/CourseCard";
+import { HeroCTAButtons } from "@/components/HeroCTAButtons";
 import { getCourses } from "@/data/courses";
 
-const G = '#22c55e'
 const G_SOFT = '#4ade80'
 const G_GLOW_MD = '0 0 24px rgba(34,197,94,0.35), 0 0 48px rgba(34,197,94,0.12)'
 
@@ -83,70 +81,12 @@ export default async function Home({
           {t('hero.subtitle')}
         </p>
 
-        {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link
-            href={`/${locale}#courses`}
-            className="transition-all duration-150"
-            style={{
-              padding: '14px 32px',
-              background: G,
-              color: '#0a2812',
-              border: 'none',
-              borderRadius: 8,
-              fontSize: 15,
-              fontWeight: 700,
-              cursor: 'pointer',
-              letterSpacing: '0.02em',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLAnchorElement
-              el.style.boxShadow = G_GLOW_MD
-              el.style.transform = 'translateY(-1px)'
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLAnchorElement
-              el.style.boxShadow = 'none'
-              el.style.transform = 'translateY(0)'
-            }}
-          >
-            {t('hero.browseCourses')}
-          </Link>
-          <Link
-            href={`/${locale}/course/intro-to-embeddings`}
-            className="transition-all duration-150"
-            style={{
-              padding: '14px 32px',
-              background: 'rgba(34,197,94,0.07)',
-              color: G_SOFT,
-              border: `1.5px solid rgba(34,197,94,0.35)`,
-              borderRadius: 8,
-              fontSize: 15,
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLAnchorElement
-              el.style.boxShadow = '0 0 12px rgba(34,197,94,0.45)'
-              el.style.borderColor = 'rgba(34,197,94,0.65)'
-              el.style.background = 'rgba(34,197,94,0.12)'
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLAnchorElement
-              el.style.boxShadow = 'none'
-              el.style.borderColor = 'rgba(34,197,94,0.35)'
-              el.style.background = 'rgba(34,197,94,0.07)'
-            }}
-          >
-            {t('hero.startLearning')}
-          </Link>
-        </div>
+        {/* CTA Buttons — client component handles hover effects */}
+        <HeroCTAButtons
+          locale={locale}
+          browseCourses={t('hero.browseCourses')}
+          startLearning={t('hero.startLearning')}
+        />
       </section>
 
       {/* Courses Section */}
