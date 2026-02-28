@@ -23,15 +23,11 @@ export default async function Home({
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section - Orbyto Design */}
+      {/* Hero Section */}
       <section
         className="relative overflow-hidden min-h-[90vh] flex items-center"
         style={{
-          background: `
-            radial-gradient(circle at 20% 30%, #4A7BD9 0%, transparent 50%),
-            radial-gradient(circle at 80% 20%, #8B6DD4 0%, transparent 50%),
-            radial-gradient(circle at 50% 80%, #3A3F4E 0%, transparent 60%),
-            linear-gradient(135deg, #6B75D6 0%, #8B6DD4 35%, #3A3F4E 70%, #2E3548 100%)`
+          background: `radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.03) 45%, transparent 70%), #1b1b1b`
         }}
       >
         {/* Background Slot Pattern - Dotted grid effect */}
@@ -64,18 +60,18 @@ export default async function Home({
         <div className="container mx-auto px-4 relative z-10 py-16 md:py-24">
           <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-medium mb-8 animate-fade-in-up">
-              <Sparkles className="w-4 h-4" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/8 border border-green-500/30 text-green-400 text-xs font-bold mb-8 tracking-widest uppercase animate-fade-in-up">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 [box-shadow:var(--glow-success-sm)]" />
               {t('hero.badge')}
             </div>
 
             {/* Headline */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight animate-fade-in-up delay-75">
+            <h1 className="font-bold text-white mb-6 leading-tight animate-fade-in-up delay-75" style={{ fontSize: 'var(--text-display)', letterSpacing: '-0.03em' }}>
               {t('hero.title')}
             </h1>
 
             {/* Subheadline */}
-            <p className="text-lg md:text-xl text-white/90 mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-in-up delay-150">
+            <p className="text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-in-up delay-150" style={{ fontSize: 'var(--text-hero-sub)' }}>
               {t('hero.subtitle')}
             </p>
 
@@ -138,13 +134,13 @@ export default async function Home({
       </section>
 
       {/* Courses Section */}
-      <section id="courses" className="py-16 md:py-24 bg-white dark:bg-gray-950">
+      <section id="courses" className="py-16 md:py-24 bg-[#1b1b1b]">
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="font-bold text-white mb-4" style={{ fontSize: 'var(--text-section-title)' }}>
               {t('courses.title')}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-500">
               {t('courses.subtitle')}
             </p>
           </div>
@@ -158,13 +154,13 @@ export default async function Home({
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-16 md:py-24 bg-white dark:bg-gray-950">
+      <section id="about" className="py-16 md:py-24 bg-[#161616] border-t border-green-500/8">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-6">
+            <h2 className="font-bold text-white mb-6" style={{ fontSize: 'var(--text-section-title)' }}>
               {t('about.title')}
             </h2>
-            <p className="text-lg text-gray-600 dark:text-gray-400 mb-12">
+            <p className="text-gray-500 mb-12 text-lg leading-relaxed">
               {t('about.description')}
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -175,8 +171,8 @@ export default async function Home({
                 <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">{t('about.stats.completionRate.label')}</div>
                 <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">{t('about.stats.completionRate.comparison')}</div>
               </div>
-              <div className="p-6 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border border-purple-200 dark:border-purple-800">
-                <div className="text-3xl md:text-4xl font-bold text-purple-600 dark:text-purple-400 mb-1">
+              <div className="p-6 rounded-xl bg-green-500/5 dark:bg-green-500/5 border border-green-500/15 dark:border-green-500/20">
+                <div className="text-3xl md:text-4xl font-bold text-green-500 dark:text-green-400 mb-1">
                   {t('about.stats.fasterLearning.value')}
                 </div>
                 <div className="text-sm text-gray-700 dark:text-gray-300 font-medium">{t('about.stats.fasterLearning.label')}</div>
@@ -205,10 +201,7 @@ export default async function Home({
       <section
         className="relative py-16 md:py-24 overflow-hidden"
         style={{
-          background: `
-            radial-gradient(circle at 20% 30%, #4A7BD9 0%, transparent 50%),
-            radial-gradient(circle at 80% 70%, #8B6DD4 0%, transparent 50%),
-            linear-gradient(135deg, #6B75D6 0%, #8B6DD4 50%, #3A3F4E 100%)`
+          background: `radial-gradient(ellipse at 50% 100%, rgba(34,197,94,0.08) 0%, rgba(34,197,94,0.02) 50%, transparent 70%), #1b1b1b`
         }}
       >
         {/* Background pattern */}

@@ -32,8 +32,8 @@ export const OverallProgressBar = ({
       <div className="mb-3">
         <div className="h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
-            style={{ width: `${overallProgress}%` }}
+            className="h-full transition-all duration-300"
+            style={{ background: 'linear-gradient(to right, #22c55e, #4ade80)', width: `${overallProgress}%` }}
           />
         </div>
         <div className="flex justify-between mt-1 text-[10px] text-gray-400">

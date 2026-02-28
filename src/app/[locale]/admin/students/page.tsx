@@ -54,7 +54,7 @@ export default async function StudentsPage({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Students</h1>
-          <p className="mt-1 text-sm text-white/60">
+          <p className="mt-1 text-sm text-white/70">
             {students.length} registered student{students.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -64,8 +64,8 @@ export default async function StudentsPage({
         <GlassCard variant="dark" padding="lg">
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Users className="mb-4 h-12 w-12 text-white/30" />
-            <p className="text-lg font-medium text-white/70">No students yet</p>
-            <p className="mt-1 text-sm text-white/50">
+            <p className="text-lg font-medium text-white">No students yet</p>
+            <p className="mt-1 text-sm text-white/70">
               Students will appear here once they sign up for the platform.
             </p>
           </div>
@@ -90,7 +90,7 @@ export default async function StudentsPage({
                 {/* Name + email */}
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-white">{student.name}</p>
-                  <div className="mt-0.5 flex items-center gap-1 text-sm text-white/50">
+                  <div className="mt-0.5 flex items-center gap-1 text-sm text-white/70">
                     <Mail className="h-3.5 w-3.5 flex-shrink-0" />
                     <span className="truncate">{student.email}</span>
                   </div>
@@ -98,7 +98,7 @@ export default async function StudentsPage({
 
                 {/* Sign-up date */}
                 <div className="hidden flex-shrink-0 text-end sm:block">
-                  <p className="text-xs font-medium text-white/50">Signed up</p>
+                  <p className="text-xs font-medium text-white/60">Signed up</p>
                   <div className="mt-0.5 flex items-center gap-1 text-sm text-white/70">
                     <Calendar className="h-3.5 w-3.5" />
                     <span>{formatDate(student.createdAt)}</span>
@@ -107,10 +107,10 @@ export default async function StudentsPage({
 
                 {/* Last login */}
                 <div className="hidden flex-shrink-0 text-end lg:block">
-                  <p className="text-xs font-medium text-white/50">Last login</p>
+                  <p className="text-xs font-medium text-white/60">Last login</p>
                   <div
                     className={`mt-0.5 flex items-center gap-1 text-sm ${
-                      student.lastLogin ? 'text-green-400' : 'text-white/40'
+                      student.lastLogin ? 'text-green-400' : 'text-white/60'
                     }`}
                   >
                     <Clock className="h-3.5 w-3.5" />

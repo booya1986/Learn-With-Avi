@@ -95,13 +95,13 @@ export const VideoSection = ({
 
           {/* Tabs: Transcript / Quiz */}
           <div className="mt-6">
-            <div className="flex gap-6 border-b border-gray-200 dark:border-gray-800" dir="rtl">
+            <div className="flex gap-6 border-b border-gray-200 dark:border-[#1e1e1e]" dir="rtl">
               <button
                 onClick={() => onTabChange('transcript')}
-                className={`flex items-center gap-2 pb-3 px-2 border-b-2 transition-colors ${
+                className={`flex items-center gap-2 pb-3 px-2 border-b-2 transition-all duration-300 ${
                   activeContentTab === 'transcript'
-                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'border-green-500 text-green-400 [box-shadow:0_2px_0_rgba(34,197,94,0.35)]'
+                    : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-400 dark:hover:text-gray-400'
                 }`}
               >
                 <FileText className="w-4 h-4" />
@@ -109,10 +109,10 @@ export const VideoSection = ({
               </button>
               <button
                 onClick={() => onTabChange('quiz')}
-                className={`flex items-center gap-2 pb-3 px-2 border-b-2 transition-colors ${
+                className={`flex items-center gap-2 pb-3 px-2 border-b-2 transition-all duration-300 ${
                   activeContentTab === 'quiz'
-                    ? 'border-blue-600 text-blue-600 dark:text-blue-400'
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                    ? 'border-green-500 text-green-400 [box-shadow:0_2px_0_rgba(34,197,94,0.35)]'
+                    : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-400 dark:hover:text-gray-400'
                 }`}
               >
                 <Brain className="w-4 h-4" />

@@ -58,11 +58,11 @@ export const Timestamp = React.forwardRef<HTMLButtonElement, TimestampProps>(
         disabled={!onClick}
         className={cn(
           "inline-flex items-center justify-center text-xs font-mono rounded-md px-2 py-0.5 transition-all duration-200",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2",
           isActive
-            ? "bg-blue-500 text-white shadow-md"
-            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400",
-          onClick && !isActive && "hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer",
+            ? "bg-green-500/20 border border-green-500/40 text-green-300 shadow-[0_0_8px_rgba(34,197,94,0.3)]"
+            : "bg-white/5 border border-white/10 text-white/60",
+          onClick && !isActive && "hover:bg-green-500/10 hover:border-green-500/25 hover:text-green-400 cursor-pointer",
           !onClick && "cursor-default opacity-75",
           className
         )}

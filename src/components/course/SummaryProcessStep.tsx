@@ -44,7 +44,7 @@ export const SummaryProcessStep = React.memo<SummaryProcessStepProps>(
       <div className={cn("flex items-start gap-3", className)}>
         {/* Step number badge */}
         <div
-          className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-sm font-bold flex-shrink-0"
+          className="w-7 h-7 rounded-full bg-green-500/15 border border-green-500/30 text-green-400 flex items-center justify-center text-sm font-bold flex-shrink-0"
           aria-label={`Step ${step}`}
         >
           {step}
@@ -52,10 +52,10 @@ export const SummaryProcessStep = React.memo<SummaryProcessStepProps>(
 
         {/* Step content */}
         <div className="flex-1 min-w-0">
-          <div className="font-medium text-gray-900 dark:text-white">
+          <div className="font-medium text-white">
             {title}
           </div>
-          <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+          <div className="text-sm text-white/50 mt-0.5">
             {description}
           </div>
         </div>

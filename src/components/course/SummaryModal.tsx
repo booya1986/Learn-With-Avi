@@ -135,22 +135,23 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
         onClick={onClose}
       >
         <div
-          className="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          className="bg-[#141414] border border-green-500/15 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          style={{ boxShadow: '0 0 40px rgba(34,197,94,0.08), 0 24px 64px rgba(0,0,0,0.6)' }}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header with gradient */}
-          <div className="relative bg-gradient-to-r from-blue-600 to-indigo-600 p-6">
+          {/* Header with green gradient */}
+          <div className="relative p-6" style={{ background: 'linear-gradient(135deg, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.05) 60%, transparent 100%), #161616', borderBottom: '1px solid rgba(34,197,94,0.1)' }}>
             <button
               onClick={onClose}
               aria-label="Close summary modal"
-              className="absolute top-4 start-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600"
+              className="absolute top-4 start-4 p-2 rounded-full bg-white/10 hover:bg-green-500/20 border border-white/10 hover:border-green-500/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#141414]"
             >
               <X className="w-5 h-5 text-white" />
             </button>
 
             <div className="text-center" dir="rtl">
-              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white/20 mb-3">
-                <Sparkles className="w-7 h-7 text-white" />
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-green-500/15 border border-green-500/25 mb-3" style={{ boxShadow: '0 0 16px rgba(34,197,94,0.2)' }}>
+                <Sparkles className="w-7 h-7 text-green-400" />
               </div>
               <h3
                 id="summary-modal-title"
@@ -158,7 +159,7 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
               >
                 סיכום AI מהתמליל
               </h3>
-              {videoTitle ? <p className="text-blue-100 text-sm mt-1">{videoTitle}</p> : null}
+              {videoTitle ? <p className="text-green-400/70 text-sm mt-1">{videoTitle}</p> : null}
             </div>
           </div>
 
@@ -170,20 +171,20 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
                 className="p-12 flex flex-col items-center justify-center"
                 dir="rtl"
               >
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mb-4">
-                  <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+                <div className="w-16 h-16 rounded-2xl bg-green-500/10 border border-green-500/20 flex items-center justify-center mb-4" style={{ boxShadow: '0 0 20px rgba(34,197,94,0.15)' }}>
+                  <Loader2 className="w-8 h-8 text-green-400 animate-spin" />
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                <h4 className="text-lg font-semibold text-white mb-2">
                   מנתח את התמליל...
                 </h4>
-                <p className="text-gray-500 dark:text-gray-400 text-sm text-center">
+                <p className="text-white/50 text-sm text-center">
                   ה-AI קורא את התמליל ומייצר סיכום מותאם אישית
                 </p>
                 <div className="flex gap-1 mt-4">
                   {[...Array(3)].map((_, i) => (
                     <div
                       key={i}
-                      className="w-2 h-2 bg-blue-500 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-green-500 rounded-full animate-bounce"
                       style={{ animationDelay: `${i * 0.15}s` }}
                     />
                   ))}
@@ -193,18 +194,18 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
               // Summary content
               <div className="p-6" dir="rtl">
                 {/* AI Badge */}
-                <div className="flex items-center gap-2 mb-4 text-xs text-blue-600 dark:text-blue-400">
-                  <Sparkles className="w-4 h-4" />
+                <div className="flex items-center gap-2 mb-4 text-xs text-green-400/70">
+                  <Sparkles className="w-4 h-4 text-green-400" />
                   <span>סיכום זה נוצר אוטומטית מתוך התמליל של הסרטון</span>
                 </div>
 
                 {/* About Section */}
                 <SummarySection
                   icon={BookOpen}
-                  iconColor="bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                  iconColor="bg-green-500/10 border border-green-500/20 text-green-400"
                   title="על מה הסרטון?"
                 >
-                  <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                  <p className="text-white/60 leading-relaxed">
                     {summaryData.about}
                   </p>
                 </SummarySection>
@@ -212,7 +213,7 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
                 {/* Tools Section */}
                 <SummarySection
                   icon={Settings}
-                  iconColor="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400"
+                  iconColor="bg-green-500/10 border border-green-500/20 text-green-400"
                   title="כלים שזוהו בתמליל"
                 >
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -230,7 +231,7 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
                 {/* Process Section */}
                 <SummarySection
                   icon={BarChart3}
-                  iconColor="bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                  iconColor="bg-amber-500/10 border border-amber-500/20 text-amber-400"
                   title="התהליך"
                 >
                   <div className="space-y-3">
@@ -248,16 +249,16 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
                 {/* Benefits Section */}
                 <SummarySection
                   icon={CheckCircle2}
-                  iconColor="bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400"
+                  iconColor="bg-green-500/10 border border-green-500/20 text-green-400"
                   title="יתרונות"
                 >
                   <div className="flex flex-wrap gap-2">
                     {summaryData.benefits.map((benefit, idx) => (
                       <span
                         key={idx}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-300"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/8 border border-green-500/20 text-sm text-green-300"
                       >
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
                         {benefit}
                       </span>
                     ))}
@@ -268,19 +269,20 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
           </ScrollArea>
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
+          <div className="p-4" style={{ borderTop: '1px solid rgba(34,197,94,0.08)', background: 'rgba(0,0,0,0.2)' }}>
             <div className="flex gap-3">
               <Button
-                variant="outline"
+                variant="orbyto-secondary"
                 onClick={onClose}
                 className="flex-1 rounded-xl"
               >
                 סגור
               </Button>
               <Button
+                variant="orbyto-primary"
                 onClick={handleCopy}
                 disabled={isGenerating || !summaryData}
-                className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
+                className="flex-1 rounded-xl"
               >
                 <Share2 className="w-4 h-4 ms-2" />
                 העתק סיכום

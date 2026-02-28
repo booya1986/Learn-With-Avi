@@ -43,7 +43,7 @@ export function useVideoPlayerState({
         setCurrentTime(time)
         onTimeUpdate?.(time)
       }
-    }, 1000)
+    }, 250)
 
     return () => clearInterval(interval)
   }, [isPlaying, onTimeUpdate])

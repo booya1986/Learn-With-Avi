@@ -8,10 +8,10 @@ import { useSearchParams } from 'next/navigation'
 import {
   ChevronLeft,
   ChevronDown,
-  Share2,
-  FileText,
-  Settings,
+  LogOut,
+  User,
 } from 'lucide-react'
+import { signOut, useSession } from 'next-auth/react'
 
 import { type ChapterItem } from '@/components/course/ChapterListItem'
 import { ChatSidebar } from '@/components/course/ChatSidebar'
@@ -36,6 +36,7 @@ interface CoursePageClientProps {
 const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const { data: session } = useSession()
 
   // Get all state from contexts — destructure specific values to avoid
   // whole-object deps which create infinite loops when the object ref changes.
@@ -236,16 +237,25 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-5">
-              <Share2 className="w-4 h-4 me-2" />
-              Share
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-full">
-              <FileText className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="rounded-full">
-              <Settings className="w-4 h-4" />
-            </Button>
+            {session ? (
+              <div className="flex items-center gap-2">
+                <div className="hidden md:flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold">
+                    {session.user?.name?.[0]?.toUpperCase() ?? <User className="w-4 h-4" />}
+                  </div>
+                  <span className="max-w-[120px] truncate">{session.user?.name}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1.5"
+                  onClick={() => void signOut({ callbackUrl: '/' })}
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden md:inline">Sign out</span>
+                </Button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

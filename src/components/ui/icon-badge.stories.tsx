@@ -1,4 +1,6 @@
-import type { Meta, StoryObj } from "@storybook/react";
+import React from 'react'
+
+import type { Meta, StoryObj } from '@storybook/react'
 
 import { IconBadge } from "./icon-badge";
 
@@ -8,12 +10,10 @@ const meta = {
   parameters: {
     layout: "centered",
     backgrounds: {
-      default: "orbyto",
+      default: "dark",
       values: [
-        {
-          name: "orbyto",
-          value: "linear-gradient(135deg, #2D4A7C 0%, #3D5A99 35%, #4A4668 65%, #5B4E7A 100%)",
-        },
+        { name: "dark", value: "#1b1b1b" },
+        { name: "surface", value: "#161616" },
       ],
     },
   },
@@ -41,7 +41,7 @@ type Story = StoryObj<typeof meta>;
 
 const LightningIcon = () => (
   <svg
-    className="w-6 h-6 text-blue-600"
+    className="w-6 h-6 text-green-400"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -130,7 +130,7 @@ export const Small: Story = {
     size: "sm",
     icon: (
       <svg
-        className="w-4 h-4 text-blue-600"
+        className="w-4 h-4 text-green-400"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -152,7 +152,7 @@ export const Large: Story = {
     size: "lg",
     icon: (
       <svg
-        className="w-8 h-8 text-blue-600"
+        className="w-8 h-8 text-green-400"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -178,7 +178,7 @@ export const IntegrationIcons: Story = {
         size="md"
         animated
         icon={
-          <div className="w-6 h-6 bg-purple-500 rounded flex items-center justify-center text-white text-xs font-bold">
+          <div className="w-6 h-6 bg-green-600 rounded flex items-center justify-center text-white text-xs font-bold">
             N
           </div>
         }
@@ -205,7 +205,7 @@ export const AllSizes: Story = {
         size="sm"
         icon={
           <svg
-            className="w-4 h-4 text-blue-600"
+            className="w-4 h-4 text-green-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -225,7 +225,7 @@ export const AllSizes: Story = {
         size="lg"
         icon={
           <svg
-            className="w-8 h-8 text-blue-600"
+            className="w-8 h-8 text-green-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

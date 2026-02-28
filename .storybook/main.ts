@@ -1,5 +1,6 @@
 import type { StorybookConfig } from '@storybook/react-vite'
-import { join, dirname } from 'path'
+import { join } from 'path'
+import react from '@vitejs/plugin-react'
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.mdx', '../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
@@ -7,22 +8,22 @@ const config: StorybookConfig = {
     '@storybook/addon-links',
     '@storybook/addon-essentials',
     '@storybook/addon-interactions',
-    '@storybook/addon-a11y', // Accessibility testing addon
+    '@storybook/addon-a11y',
   ],
   framework: {
     name: '@storybook/react-vite',
     options: {},
   },
   docs: {
-    autodocs: 'tag', // Auto-generate docs for components with 'autodocs' tag
+    autodocs: 'tag',
     defaultName: 'Documentation',
   },
   staticDirs: ['../public'],
   async viteFinal(config) {
-    // Merge custom Vite configuration
     const { mergeConfig } = await import('vite')
 
     return mergeConfig(config, {
+      plugins: [react({ jsxRuntime: 'automatic' })],
       resolve: {
         alias: {
           '@': join(__dirname, '..', 'src'),

@@ -7,12 +7,15 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const glassCardVariants = cva(
-  "backdrop-blur-xl border rounded-xl p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] hover:-translate-y-1 transition-all duration-300",
+  "backdrop-blur-xl border rounded-xl p-6 hover:-translate-y-1 transition-all duration-300",
   {
     variants: {
       variant: {
-        light: "bg-white/10 border-white/20 hover:border-white/30",
-        dark: "bg-gray-800/60 border-white/10 hover:border-white/20",
+        light: "bg-white/10 border-white/20 hover:border-white/30 shadow-[0_4px_24px_0_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]",
+        dark:  "bg-gray-800/60 border-white/10 hover:border-white/20 shadow-[0_4px_24px_0_rgba(0,0,0,0.2)] hover:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]",
+        success: "bg-green-500/5 border-green-500/20 hover:border-green-500/45 hover:shadow-[var(--glow-success-sm)]",
+        brand:   "bg-blue-600/5 border-blue-600/20 hover:border-blue-600/45 hover:shadow-[var(--glow-brand-sm)]",
+        subtle:  "bg-[#161616] border-white/5 hover:border-white/12 shadow-[0_2px_12px_0_rgba(0,0,0,0.3)]",
       },
       padding: {
         none: "p-0",

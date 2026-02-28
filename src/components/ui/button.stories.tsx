@@ -1,4 +1,7 @@
+import React from 'react'
+
 import type { Meta, StoryObj } from '@storybook/react'
+import { ArrowRight, Play, Plus } from 'lucide-react'
 
 import { Button } from './button'
 
@@ -248,6 +251,98 @@ export const AllSizes: Story = {
     docs: {
       description: {
         story: 'Visual comparison of all button sizes.',
+      },
+    },
+  },
+}
+
+/**
+ * Orbyto primary button — the main green CTA button for the platform
+ */
+export const OrbytoDesign: Story = {
+  render: () => (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 24,
+        padding: 32,
+        background: '#1b1b1b',
+        borderRadius: 12,
+        minWidth: 480,
+      }}
+    >
+      <div>
+        <p style={{ fontSize: 11, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, fontFamily: 'monospace' }}>
+          Primary — Main CTA
+        </p>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Button variant="orbyto-primary" size="orbyto">
+            Browse Courses
+          </Button>
+          <Button variant="orbyto-primary" size="orbyto">
+            <Play className="w-4 h-4 me-2" />
+            Start Learning
+          </Button>
+          <Button variant="orbyto-primary" size="orbyto">
+            <Plus className="w-4 h-4 me-2" />
+            Add Video
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <p style={{ fontSize: 11, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, fontFamily: 'monospace' }}>
+          Secondary — Ghost CTA
+        </p>
+        <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <Button variant="orbyto-secondary" size="orbyto">
+            Learn More
+          </Button>
+          <Button variant="orbyto-secondary" size="orbyto">
+            <ArrowRight className="w-4 h-4 me-2" />
+            View Details
+          </Button>
+          <Button variant="orbyto-secondary" size="orbyto">
+            <Plus className="w-4 h-4 me-2" />
+            Create Course
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <p style={{ fontSize: 11, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, fontFamily: 'monospace' }}>
+          Pair — Primary + Secondary side by side
+        </p>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Button variant="orbyto-primary" size="orbyto">
+            <Play className="w-4 h-4 me-2" />
+            Start Free
+          </Button>
+          <Button variant="orbyto-secondary" size="orbyto">
+            View Courses
+            <ArrowRight className="w-4 h-4 ms-2" />
+          </Button>
+        </div>
+      </div>
+
+      <div>
+        <p style={{ fontSize: 11, color: '#444', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, fontFamily: 'monospace' }}>
+          Disabled states
+        </p>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Button variant="orbyto-primary" size="orbyto" disabled>Primary Disabled</Button>
+          <Button variant="orbyto-secondary" size="orbyto" disabled>Secondary Disabled</Button>
+        </div>
+      </div>
+    </div>
+  ),
+  parameters: {
+    layout: 'fullscreen',
+    backgrounds: { default: 'dark', values: [{ name: 'dark', value: '#1b1b1b' }] },
+    docs: {
+      description: {
+        story: 'The Orbyto design system buttons: primary (green solid) and secondary (green outline). These are the main CTAs used throughout LearnWithAvi.',
       },
     },
   },

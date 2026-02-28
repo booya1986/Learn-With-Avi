@@ -58,15 +58,12 @@ export default function StudentLoginPage() {
     <div
       className="flex min-h-screen items-center justify-center px-4 relative overflow-hidden"
       style={{
-        background: `
-          radial-gradient(circle at 30% 20%, #4A6FDC 0%, transparent 50%),
-          radial-gradient(circle at 70% 80%, #6B75D6 0%, transparent 50%),
-          linear-gradient(135deg, #2E3548 0%, #3A3F4E 100%)`,
+        background: `radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 50%, transparent 70%), #1b1b1b`,
       }}
     >
       <div className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4A6FDC] to-[#8B4FD4] bg-clip-text text-transparent">
+          <h1 className="text-3xl font-bold text-green-400" style={{ textShadow: '0 0 24px rgba(74,222,128,0.3)' }}>
             LearnWithAvi
           </h1>
           <p className="mt-2 text-white/80">Sign in to continue learning</p>
@@ -151,7 +148,7 @@ export default function StudentLoginPage() {
               Don&apos;t have an account?{" "}
               <Link
                 href={`/${locale}/auth/signup${searchParams.get("callbackUrl") ? `?callbackUrl=${encodeURIComponent(searchParams.get("callbackUrl")!)}` : ""}`}
-                className="text-[#4A6FDC] hover:text-[#6B8FFF] font-medium"
+                className="text-green-400 hover:text-green-300 font-medium"
               >
                 Sign up free
               </Link>

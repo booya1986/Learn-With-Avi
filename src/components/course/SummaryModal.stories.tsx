@@ -70,22 +70,22 @@ const sampleSummaryData: SummaryData = {
     {
       name: 'Make (Integromat)',
       desc: 'פלטפורמה לאוטומציה ויזואלית',
-      color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+      color: 'bg-green-500/10 text-green-400 border border-green-500/20',
     },
     {
       name: 'News API',
       desc: 'איסוף כתבות חדשות מהעולם',
-      color: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300',
+      color: 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
     },
     {
       name: 'ChatGPT (OpenAI)',
       desc: 'סיכום טקסט חכם בעברית',
-      color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+      color: 'bg-blue-500/10 text-blue-400 border border-blue-500/20',
     },
     {
       name: 'ElevenLabs',
       desc: 'המרת טקסט לשמע טבעי',
-      color: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+      color: 'bg-green-500/10 text-green-400 border border-green-500/20',
     },
   ],
   process: [
@@ -207,7 +207,7 @@ export const MinimalSummary: Story = {
           {
             name: 'ChatGPT',
             desc: 'מודל שפה לעזרה בקוד',
-            color: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300',
+            color: 'bg-green-500/10 text-green-400 border border-green-500/20',
           },
         ],
         process: [
@@ -245,12 +245,12 @@ export const ComplexSummary: Story = {
       summaryData={{
         about: 'מדריך מקיף לבניית מערכת מורכבת עם עשרות כלים וטכנולוגיות שונות. הסרטון מציג את כל השלבים מתכנון ראשוני ועד לדפלוימנט לפרודקשן.',
         tools: [
-          { name: 'React', desc: 'ממשק משתמש', color: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' },
-          { name: 'Next.js', desc: 'פריימוורק', color: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' },
-          { name: 'TypeScript', desc: 'שפת תכנות', color: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300' },
-          { name: 'Tailwind CSS', desc: 'עיצוב', color: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300' },
-          { name: 'Prisma', desc: 'מסד נתונים', color: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' },
-          { name: 'tRPC', desc: 'API', color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' },
+          { name: 'React', desc: 'ממשק משתמש', color: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
+          { name: 'Next.js', desc: 'פריימוורק', color: 'bg-green-500/10 text-green-400 border border-green-500/20' },
+          { name: 'TypeScript', desc: 'שפת תכנות', color: 'bg-blue-500/10 text-blue-400 border border-blue-500/20' },
+          { name: 'Tailwind CSS', desc: 'עיצוב', color: 'bg-green-500/10 text-green-400 border border-green-500/20' },
+          { name: 'Prisma', desc: 'מסד נתונים', color: 'bg-green-500/10 text-green-400 border border-green-500/20' },
+          { name: 'tRPC', desc: 'API', color: 'bg-amber-500/10 text-amber-400 border border-amber-500/20' },
         ],
         process: [
           { step: 1, title: 'תכנון ארכיטקטורה', desc: 'עיצוב המבנה הכללי של המערכת' },

@@ -3,100 +3,76 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-import { GraduationCap, Menu } from 'lucide-react'
+import { LogOut, Menu, User } from 'lucide-react'
+import { useSession, signOut } from 'next-auth/react'
 import { useLocale } from 'next-intl'
 
 export const ConditionalNav = () => {
   const pathname = usePathname()
   const locale = useLocale()
+  const { data: session } = useSession()
 
-  // Don't show navigation on admin pages (they have their own layout)
-  // pathname includes locale prefix e.g. /en/admin/... or /he/admin/...
-  if (pathname?.includes('/admin')) {
+  // Don't show on admin pages (they have their own layout)
+  // Don't show on course pages (they have their own top header)
+  if (pathname?.includes('/admin') || pathname?.includes('/course/')) {
     return null
   }
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 dark:border-gray-800 bg-white/80 dark:bg-gray-950/80 backdrop-blur-sm">
-      <nav className="container mx-auto px-4 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b border-green-500/10 dark:border-green-500/10 bg-white/90 dark:bg-[#1b1b1b]/92 backdrop-blur-md">
+      <nav className="container mx-auto px-6 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-            <GraduationCap className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-green-500/8 border border-green-500/25 transition-all duration-150 group-hover:[box-shadow:var(--glow-success-sm)] group-hover:border-green-500/50">
+            <span className="w-2 h-2 rounded-full bg-green-500 [box-shadow:var(--glow-success-sm)]" />
+            <span className="text-sm font-bold text-green-400">LearnWithAvi</span>
           </div>
-          <span className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-            LearnWithAvi
-          </span>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
+        <div className="hidden md:flex items-center gap-8">
+          <Link href="/" className="text-sm font-medium text-gray-500 dark:text-gray-500 hover:text-green-400 dark:hover:text-green-400 transition-colors">
             Home
           </Link>
-          <Link
-            href="/#courses"
-            className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
+          <Link href="/#courses" className="text-sm font-medium text-gray-500 dark:text-gray-500 hover:text-green-400 dark:hover:text-green-400 transition-colors">
             Courses
           </Link>
-          <Link
-            href="/#about"
-            className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
+          <Link href="/#about" className="text-sm font-medium text-gray-500 dark:text-gray-500 hover:text-green-400 dark:hover:text-green-400 transition-colors">
             About
-          </Link>
-          <Link
-            href={`/${locale}/admin/dashboard`}
-            className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
-            Admin
           </Link>
         </div>
 
         {/* Actions */}
         <div className="flex items-center gap-3">
-          {/* Dark mode toggle placeholder */}
-          <button
-            className="hidden md:flex w-9 h-9 items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="Toggle theme"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 hidden dark:block"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+          {session ? (
+            <div className="flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <div className="w-8 h-8 rounded-full bg-green-500/12 border border-green-500/30 flex items-center justify-center text-green-400 text-xs font-bold">
+                  {session.user?.name?.[0]?.toUpperCase() ?? <User className="w-4 h-4" />}
+                </div>
+                <span className="max-w-[120px] truncate">{session.user?.name}</span>
+              </div>
+              <button
+                onClick={() => void signOut({ callbackUrl: `/${locale}` })}
+                className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-gray-500 dark:text-gray-500 hover:text-green-400 dark:hover:text-green-400 hover:bg-green-500/8 transition-all"
+                aria-label="Sign out"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden md:inline">Sign out</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              href={`/${locale}/auth/login`}
+              className="flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-sm font-semibold text-green-400 border border-green-500/30 hover:bg-green-500/10 hover:border-green-500/55 hover:[box-shadow:var(--glow-success-sm)] transition-all"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-              />
-            </svg>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 dark:hidden"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-              />
-            </svg>
-          </button>
+              Sign in
+            </Link>
+          )}
 
           {/* Mobile menu button */}
           <button
-            className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-500 hover:bg-green-500/8 hover:text-green-400 transition-colors"
             aria-label="Open menu"
           >
             <Menu className="w-5 h-5" />

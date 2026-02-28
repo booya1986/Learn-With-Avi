@@ -44,14 +44,18 @@ const Progress = React.forwardRef<HTMLDivElement, ProgressProps>(
         aria-valuemax={max}
         aria-label={`${Math.round(percentage)}% complete`}
         className={cn(
-          "relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-800",
+          "relative h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-[#1e1e1e]",
           className
         )}
         {...props}
       >
         <div
-          className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-300 ease-out"
-          style={{ width: `${percentage}%` }}
+          className="h-full transition-all duration-300 ease-out"
+          style={{
+            width: `${percentage}%`,
+            background: 'linear-gradient(to right, #22c55e, #4ade80)',
+            boxShadow: percentage >= 100 ? 'var(--glow-success-sm)' : undefined,
+          }}
         />
       </div>
     );

@@ -1,3 +1,5 @@
+import React from 'react'
+
 import type { Meta, StoryObj } from '@storybook/react'
 
 import { Timestamp } from './Timestamp'
@@ -15,6 +17,13 @@ const meta: Meta<typeof Timestamp> = {
   component: Timestamp,
   tags: ['autodocs'],
   parameters: {
+    backgrounds: {
+      default: 'dark',
+      values: [
+        { name: 'dark', value: '#1b1b1b' },
+        { name: 'surface', value: '#161616' },
+      ],
+    },
     docs: {
       description: {
         component: `
@@ -78,7 +87,7 @@ export const Active: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Active state indicates the current video position with blue background.',
+        story: 'Active state indicates the current video position with green glow highlight.',
       },
     },
   },

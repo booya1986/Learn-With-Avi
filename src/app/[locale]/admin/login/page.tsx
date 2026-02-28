@@ -83,10 +83,7 @@ const LoginPage = () => {
     }
   };
 
-  const bg = `
-    radial-gradient(circle at 30% 20%, #4A6FDC 0%, transparent 50%),
-    radial-gradient(circle at 70% 80%, #6B75D6 0%, transparent 50%),
-    linear-gradient(135deg, #2E3548 0%, #3A3F4E 100%)`;
+  const bg = `radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.12) 0%, rgba(34,197,94,0.03) 50%, transparent 70%), #1b1b1b`;
 
   const inputCls = "glass-input mt-1 block w-full rounded-md px-3 py-2 text-sm";
   const labelCls = "block text-sm font-medium text-white/90";
@@ -96,7 +93,7 @@ const LoginPage = () => {
     <div className="flex min-h-screen items-center justify-center px-4 relative overflow-hidden" style={{ background: bg }}>
       <div className="w-full max-w-md relative z-10">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#4A6FDC] to-[#8B4FD4] bg-clip-text text-transparent">LearnWithAvi</h1>
+          <h1 className="text-3xl font-bold text-green-400" style={{ textShadow: '0 0 24px rgba(74,222,128,0.3)' }}>LearnWithAvi</h1>
           <p className="mt-2 text-white/80">Admin Panel</p>
         </div>
 
@@ -105,7 +102,7 @@ const LoginPage = () => {
             {(["login", "signup"] as const).map((tab) => (
               <button key={tab} type="button" onClick={() => { setActiveTab(tab); setError(null); }}
                 className={`flex-1 px-4 py-3 text-sm font-medium transition-colors capitalize ${
-                  activeTab === tab ? "border-b-2 border-[#4A6FDC] text-white" : "text-white/60 hover:text-white/80"}`}>
+                  activeTab === tab ? "border-b-2 border-green-500 text-green-400" : "text-white/40 hover:text-white/70"}`}>
                 {tab === "login" ? "Login" : "Sign Up"}
               </button>
             ))}
