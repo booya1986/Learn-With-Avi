@@ -27,18 +27,8 @@
 
 import { useState, useCallback, useMemo, useRef } from 'react';
 
-import { type Video, type Chapter } from '@/types';
-
-export interface ChapterItem {
-  id: string;
-  title: string;
-  startTime: number;
-  endTime: number;
-  duration: string;
-  isActive: boolean;
-  isCompleted: boolean;
-  progress: number; // 0-100
-}
+import { formatTimestamp } from '@/lib/rag-common';
+import { type Video, type Chapter, type ChapterItem } from '@/types';
 
 export interface UseVideoProgressReturn {
   /** Chapter items with progress and completion status */
@@ -61,20 +51,6 @@ export interface UseVideoProgressReturn {
 
   /** Reset progress for current video */
   resetProgress: () => void;
-}
-
-/**
- * Format time as MM:SS or H:MM:SS
- */
-function formatTime(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = Math.floor(seconds % 60);
-
-  if (hours > 0) {
-    return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 /**
@@ -164,7 +140,7 @@ export function useVideoProgress(
         title: chapter.title,
         startTime: chapter.startTime,
         endTime: chapter.endTime,
-        duration: formatTime(chapterDuration),
+        duration: formatTimestamp(chapterDuration),
         isActive: index === currentChapterIndex,
         isCompleted,
         progress,

@@ -80,6 +80,41 @@ export function validateEnvironment(): EnvironmentConfig {
       isDevelopment: process.env.NODE_ENV !== 'production',
     }
 
+    // Validate NEXTAUTH_SECRET is set and not the placeholder
+    const nextAuthSecret = process.env.NEXTAUTH_SECRET
+    if (!nextAuthSecret || nextAuthSecret.trim() === '') {
+      throw new Error(
+        '❌ CRITICAL: Missing required environment variable: NEXTAUTH_SECRET\n' +
+          '   Please set NEXTAUTH_SECRET in your .env.local file.\n' +
+          '   Generate one with: openssl rand -base64 32'
+      )
+    }
+    if (
+      config.isProduction &&
+      nextAuthSecret === 'your-secret-key-here-change-in-production'
+    ) {
+      throw new Error(
+        '❌ CRITICAL: NEXTAUTH_SECRET is still set to the placeholder value.\n' +
+          '   Generate a secure secret with: openssl rand -base64 32'
+      )
+    }
+
+    // Validate DATABASE_URL is present and is a PostgreSQL connection string
+    const dbUrl = process.env.DATABASE_URL
+    if (!dbUrl || dbUrl.trim() === '') {
+      throw new Error(
+        '❌ CRITICAL: Missing required environment variable: DATABASE_URL\n' +
+          '   Please set DATABASE_URL in your .env.local file.\n' +
+          '   Example: postgresql://user:password@localhost:5432/learnwithavi'
+      )
+    }
+    if (!dbUrl.startsWith('postgresql://') && !dbUrl.startsWith('postgres://')) {
+      throw new Error(
+        '❌ CRITICAL: DATABASE_URL must be a valid PostgreSQL connection string.\n' +
+          '   Must start with postgresql:// or postgres://'
+      )
+    }
+
     // Validate ChromaDB port is a valid number
     if (isNaN(config.chromaPort) || config.chromaPort < 1 || config.chromaPort > 65535) {
       throw new Error(

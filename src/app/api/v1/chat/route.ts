@@ -1,6 +1,7 @@
 import { type NextRequest } from 'next/server'
 
 import Anthropic from '@anthropic-ai/sdk'
+import { z } from 'zod'
 
 import { getConfig } from '@/lib/config'
 import {
@@ -10,6 +11,7 @@ import {
   ValidationError,
   RateLimitError,
 } from '@/lib/errors'
+import { formatTimestamp } from '@/lib/rag-common'
 import { applyRateLimit, chatRateLimiter } from '@/lib/rate-limit'
 import { type VideoSource, type TranscriptChunk } from '@/types'
 
@@ -43,17 +45,23 @@ RESPONSE FORMAT:
 
 Remember: You are a helpful tutor, not a general AI assistant. Stay focused on the course content.`
 
-interface ChatRequestBody {
-  message: string
-  context: {
-    chunks: TranscriptChunk[]
-    videoContext?: string
-  }
-  conversationHistory: Array<{
-    role: 'user' | 'assistant'
-    content: string
-  }>
-}
+const conversationMessageSchema = z.object({
+  role: z.enum(['user', 'assistant']),
+  content: z.string().max(50000),
+})
+
+const chatBodySchema = z.object({
+  message: z.string().min(1).max(10000),
+  conversationHistory: z.array(conversationMessageSchema).max(20).default([]),
+  context: z
+    .object({
+      chunks: z.array(z.any()).max(50).default([]),
+      videoContext: z.string().max(500).optional(),
+    })
+    .default({ chunks: [] }),
+})
+
+type ChatRequestBody = z.infer<typeof chatBodySchema>
 
 /**
  * Sanitize user input to prevent injection attacks
@@ -131,13 +139,11 @@ export async function POST(request: NextRequest) {
       throw error
     }
 
-    const body: ChatRequestBody = await request.json()
-    const { message, context, conversationHistory } = body
-
-    // Input validation
-    if (!message || typeof message !== 'string') {
-      throw new ValidationError('Message is required and must be a string')
+    const parsed = chatBodySchema.safeParse(await request.json())
+    if (!parsed.success) {
+      throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid request body')
     }
+    const { message, context, conversationHistory }: ChatRequestBody = parsed.data
 
     if (message.trim().length === 0) {
       throw new ValidationError('Message cannot be empty')
@@ -152,7 +158,7 @@ export async function POST(request: NextRequest) {
     // Build messages array with conversation history and cached context
     const messages: Anthropic.MessageParam[] = [
       ...conversationHistory.map((msg) => ({
-        role: msg.role as 'user' | 'assistant',
+        role: msg.role,
         content: msg.content,
       })),
       {
@@ -309,16 +315,6 @@ function buildContextText(chunks: TranscriptChunk[], videoContext?: string): str
   return contextParts.join('\n')
 }
 
-function formatTimestamp(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const mins = Math.floor((seconds % 3600) / 60)
-  const secs = Math.floor(seconds % 60)
-
-  if (hours > 0) {
-    return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}
 
 function extractSources(chunks: TranscriptChunk[]): VideoSource[] {
   // Create unique sources with relevance based on order (assuming earlier = more relevant)

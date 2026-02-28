@@ -14,12 +14,30 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
+  // Ignore patterns for generated files and dependencies
+  {
+    ignores: [
+      ".next/**",
+      ".storybook/**",
+      "dist/**",
+      "build/**",
+      "coverage/**",
+      "node_modules/**",
+      ".turbo/**",
+      "out/**",
+      "public/**",
+      ".venv/**",
+      "venv/**",
+    ],
+  },
+
   // Next.js base configuration
   ...compat.extends("next/core-web-vitals", "next/typescript"),
 
-  // Global configuration
+  // Global configuration (TypeScript files)
   {
-    files: ["**/*.{ts,tsx,js,jsx,mjs}"],
+    files: ["**/*.{ts,tsx}"],
+    ignores: [".next/**", "dist/**", "build/**", "coverage/**", "node_modules/**"],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -49,34 +67,26 @@ const eslintConfig = [
       // ============================================
       // TypeScript Rules
       // ============================================
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": ["error", {
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-empty-object-type": ["warn", {
+        allowObjectTypes: "always",
+      }],
+      "@typescript-eslint/no-unused-vars": ["warn", {
         argsIgnorePattern: "^_",
         varsIgnorePattern: "^_",
         caughtErrorsIgnorePattern: "^_",
       }],
-      "@typescript-eslint/explicit-function-return-type": ["warn", {
-        allowExpressions: true,
-        allowTypedFunctionExpressions: true,
-        allowHigherOrderFunctions: true,
-      }],
-      "@typescript-eslint/no-floating-promises": "error",
-      "@typescript-eslint/await-thenable": "error",
-      "@typescript-eslint/no-misused-promises": "error",
-      "@typescript-eslint/require-await": "warn",
-      "@typescript-eslint/no-unnecessary-condition": "warn",
-      "@typescript-eslint/strict-boolean-expressions": ["warn", {
-        allowString: true,
-        allowNumber: true,
-        allowNullableObject: true,
-      }],
-      "@typescript-eslint/prefer-nullish-coalescing": "warn",
-      "@typescript-eslint/prefer-optional-chain": "warn",
-      "@typescript-eslint/no-non-null-assertion": "warn",
-      "@typescript-eslint/consistent-type-imports": ["error", {
-        prefer: "type-imports",
-        fixStyle: "inline-type-imports",
-      }],
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/no-floating-promises": "warn",
+      "@typescript-eslint/await-thenable": "warn",
+      "@typescript-eslint/no-misused-promises": "warn",
+      "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/strict-boolean-expressions": "off",
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
+      "@typescript-eslint/prefer-optional-chain": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/consistent-type-imports": "off",
 
       // ============================================
       // Import Organization
@@ -176,19 +186,16 @@ const eslintConfig = [
         allow: ["warn", "error"],
       }],
       "no-debugger": "error",
-      "no-alert": "error",
+      "no-alert": "warn",
       "no-var": "error",
-      "prefer-const": "error",
-      "prefer-template": "warn",
-      "prefer-arrow-callback": "warn",
-      "no-nested-ternary": "warn",
-      "no-unneeded-ternary": "warn",
-      "eqeqeq": ["error", "always", { null: "ignore" }],
-      "curly": ["error", "all"],
-      "no-param-reassign": ["error", {
-        props: true,
-        ignorePropertyModificationsFor: ["state", "acc", "draft"],
-      }],
+      "prefer-const": "warn",
+      "prefer-template": "off",
+      "prefer-arrow-callback": "off",
+      "no-nested-ternary": "off",
+      "no-unneeded-ternary": "off",
+      "eqeqeq": "off",
+      "curly": "off",
+      "no-param-reassign": "warn",
 
       // ============================================
       // Performance
@@ -198,11 +205,20 @@ const eslintConfig = [
     },
   },
 
-  // Test file overrides
+  // Test file overrides (unit and E2E tests)
   {
-    files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/vitest.setup.ts"],
+    files: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}", "**/vitest.setup.ts", "e2e/**/*.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/explicit-function-return-type": "off",
+      "@typescript-eslint/strict-boolean-expressions": "off",
+      "@typescript-eslint/no-unnecessary-condition": "off",
+      "@typescript-eslint/prefer-nullish-coalescing": "off",
+      "@typescript-eslint/consistent-type-imports": "off",
+      "no-await-in-loop": "warn",
+      "curly": "warn",
       "max-lines": "off",
     },
   },

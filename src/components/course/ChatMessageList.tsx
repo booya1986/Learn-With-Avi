@@ -7,10 +7,9 @@
 
 import { Loader2 } from "lucide-react";
 
+import { ChatMessage } from "@/components/chat/ChatMessage";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatMessage as ChatMessageType } from "@/types";
-
-import { ChatMessage } from "./ChatMessage";
 
 interface ChatMessageListProps {
   messages: ChatMessageType[];

@@ -1,3 +1,5 @@
+import { createHash } from 'crypto'
+
 import OpenAI from 'openai'
 
 import { getConfig } from './config'
@@ -26,6 +28,14 @@ const RETRY_DELAY_MS = 1000
 const BATCH_SIZE = 100 // OpenAI allows up to 2048, but we use 100 for safety
 
 /**
+ * Hash text to create a compact cache key
+ * Prevents memory bloat from long transcript chunks
+ */
+function hashKey(text: string): string {
+  return createHash('sha256').update(text).digest('hex')
+}
+
+/**
  * Delay utility for retries
  */
 function delay(ms: number): Promise<void> {
@@ -42,8 +52,9 @@ export async function getEmbedding(text: string): Promise<number[]> {
     throw new Error('Text cannot be empty')
   }
 
-  // Check cache first
-  const cached = cache.get(text)
+  // Use hashed key for cache lookup
+  const cacheKey = hashKey(text)
+  const cached = cache.get(cacheKey)
   if (cached) {
     return cached
   }
@@ -59,8 +70,8 @@ export async function getEmbedding(text: string): Promise<number[]> {
 
       const embedding = response.data[0].embedding
 
-      // Store in cache for future use
-      cache.set(text, embedding)
+      // Store in cache for future use (using hashed key)
+      cache.set(cacheKey, embedding)
 
       return embedding
     } catch (error) {

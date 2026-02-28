@@ -17,8 +17,8 @@ export default async function Home() {
       <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white dark:from-gray-900 dark:to-gray-950 py-16 md:py-24">
         {/* Background decoration */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -end-40 w-80 h-80 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -start-40 w-80 h-80 bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl" />
         </div>
 
         <div className="container mx-auto px-4 relative z-10">
@@ -155,10 +155,10 @@ export default async function Home() {
                   />
                   <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-all">
                     <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Play className="w-5 h-5 text-gray-900 ml-0.5" />
+                      <Play className="w-5 h-5 text-gray-900 ms-0.5" />
                     </div>
                   </div>
-                  <div className="absolute bottom-2 right-2 rtl:right-auto rtl:left-2 px-1.5 py-0.5 bg-black/80 rounded text-xs text-white font-medium">
+                  <div className="absolute bottom-2 end-2 px-1.5 py-0.5 bg-black/80 rounded text-xs text-white font-medium">
                     {Math.floor(video.duration / 60)}:
                     {(video.duration % 60).toString().padStart(2, '0')}
                   </div>

@@ -51,3 +51,7 @@ storybook-static/
 
 # TypeDoc
 docs/api-reference/
+
+# Playwright
+/test-results/
+/playwright-report/

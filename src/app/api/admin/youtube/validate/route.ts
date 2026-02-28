@@ -2,6 +2,8 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { z } from 'zod'
 
+import { logError } from '@/lib/errors'
+import { applyRateLimit, adminRateLimiter } from '@/lib/rate-limit'
 import { extractYouTubeId, validateYouTubeVideo } from '@/lib/youtube'
 
 /**
@@ -49,6 +51,8 @@ const validateSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     // Parse and validate request body
     const body = await request.json()
     const parseResult = validateSchema.safeParse(body)
@@ -94,7 +98,7 @@ export async function POST(request: NextRequest) {
       metadata: result.metadata,
     })
   } catch (error) {
-    console.error('YouTube validation error:', error)
+    logError('YouTube validation error', error)
 
     return NextResponse.json(
       {

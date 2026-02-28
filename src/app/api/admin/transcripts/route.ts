@@ -2,7 +2,9 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { z } from 'zod'
 
+import { logError } from '@/lib/errors'
 import { prisma } from '@/lib/prisma'
+import { applyRateLimit, adminRateLimiter } from '@/lib/rate-limit'
 
 /**
  * Transcripts API - Create & Update
@@ -80,6 +82,8 @@ const updateTranscriptSchema = z.object({
  */
 export async function POST(request: NextRequest) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     // Parse and validate request body
     const body = await request.json()
     const parseResult = createTranscriptSchema.safeParse(body)
@@ -152,7 +156,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(transcript, { status: 201 })
   } catch (error) {
-    console.error('Error creating transcript:', error)
+    logError('Error creating transcript', error)
 
     return NextResponse.json({ error: 'Failed to create transcript' }, { status: 500 })
   }
@@ -190,6 +194,8 @@ export async function POST(request: NextRequest) {
  */
 export async function PUT(request: NextRequest) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     // Parse and validate request body
     const body = await request.json()
     const parseResult = updateTranscriptSchema.safeParse(body)
@@ -259,7 +265,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json(transcript)
   } catch (error) {
-    console.error('Error updating transcript:', error)
+    logError('Error updating transcript', error)
 
     return NextResponse.json({ error: 'Failed to update transcript' }, { status: 500 })
   }

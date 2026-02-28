@@ -19,10 +19,8 @@ import { type TranscriptChunk } from '@/types';
 import { getEmbedding, getBatchEmbeddings } from './embeddings';
 import { logError, ServiceUnavailableError } from './errors';
 import { prisma } from './prisma';
+import { DEFAULT_TOP_K, distanceToSimilarity, isValidEmbedding } from './rag-common';
 import { generateId } from './utils';
-
-// Configuration
-const DEFAULT_TOP_K = 5;
 
 /**
  * Query result with relevance score
@@ -83,8 +81,11 @@ export async function addVectorChunk(
   // Get embedding if not provided
   const embeddingVector = embedding || await getEmbedding(text);
 
-  // Convert number array to PostgreSQL vector format
-  const vectorString = `[${embeddingVector.join(',') }]`;
+  // Validate embedding using shared utility
+  if (!isValidEmbedding(embeddingVector)) {
+    throw new Error('Invalid embedding: all values must be finite numbers');
+  }
+  const vectorString = `[${embeddingVector.join(',')}]`;
 
   // Insert using raw SQL to handle vector type
   const result = await prisma.$queryRaw<Array<{ id: string }>>`
@@ -162,6 +163,10 @@ export async function addVectorChunks(
   let insertedCount = 0;
   await prisma.$transaction(async (tx) => {
     for (const chunk of allChunksWithEmbeddings) {
+      // Validate embedding using shared utility
+      if (!isValidEmbedding(chunk.embedding)) {
+        throw new Error('Invalid embedding: all values must be finite numbers');
+      }
       const vectorString = `[${chunk.embedding.join(',')}]`;
 
       await tx.$executeRaw`
@@ -255,8 +260,7 @@ export async function queryVectorChunks(
       `;
     }
 
-    // Convert distance to similarity score (cosine distance: 0 = identical, 2 = opposite)
-    // Similarity = 1 - (distance / 2), normalized to 0-1 range
+    // Convert distance to similarity score using shared utility
     return results.map((row) => ({
       chunk: {
         id: row.id,
@@ -265,7 +269,7 @@ export async function queryVectorChunks(
         startTime: row.startTime,
         endTime: row.endTime,
       },
-      relevance: Math.max(0, 1 - row.distance / 2),
+      relevance: distanceToSimilarity(row.distance, 'pgvector'),
     }));
   } catch (error) {
     logError('pgvector query failed', error, { query, videoId });

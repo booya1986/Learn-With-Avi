@@ -67,7 +67,7 @@ export const SummarySection = React.memo<SummarySectionProps>(
         </div>
 
         {/* Section content */}
-        <div className="pr-10">{children}</div>
+        <div className="pe-10">{children}</div>
       </section>
     );
   }

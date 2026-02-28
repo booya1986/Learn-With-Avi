@@ -1,0 +1,20 @@
+{
+  "functions": {
+    "src/app/api/v1/chat/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/v1/voice/chat/route.ts": {
+      "maxDuration": 60
+    },
+    "src/app/api/v1/voice/tts/route.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/v1/quiz/generate/route.ts": {
+      "maxDuration": 30
+    },
+    "src/app/api/admin/videos/ingest/route.ts": {
+      "maxDuration": 30
+    }
+  },
+  "regions": ["iad1"]
+}

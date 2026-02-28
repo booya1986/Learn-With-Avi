@@ -258,7 +258,12 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         // Build conversation history
         const conversationHistory = buildConversationHistory()
 
-        // Make streaming request
+        // Make streaming request with timeout + cancel support
+        const timeoutController = new AbortController()
+        const timeoutId = setTimeout(() => timeoutController.abort(), 30000)
+        const combinedSignal = AbortSignal.any
+          ? AbortSignal.any([abortControllerRef.current.signal, timeoutController.signal])
+          : abortControllerRef.current.signal
         const response = await fetch('/api/chat', {
           method: 'POST',
           headers: {
@@ -269,8 +274,9 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
             context,
             conversationHistory,
           }),
-          signal: abortControllerRef.current.signal,
+          signal: combinedSignal,
         })
+        clearTimeout(timeoutId)
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)

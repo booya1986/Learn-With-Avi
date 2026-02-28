@@ -1,3 +1,5 @@
+import React from "react";
+
 import { BookOpen, BarChart3, Clock, FileText } from "lucide-react";
 
 import { formatTime } from "@/lib/utils";
@@ -9,6 +11,8 @@ import { type Course, type Video } from "@/types";
  * @param course - Course object with title, description, topics, difficulty
  * @param currentVideo - Currently playing video (optional)
  * @param videoDuration - Duration of current video in seconds
+ *
+ * Memoized to prevent unnecessary re-renders when video playback changes.
  */
 interface CourseInfoCardProps {
   course: Course;
@@ -16,7 +20,7 @@ interface CourseInfoCardProps {
   videoDuration: number;
 }
 
-export const CourseInfoCard = ({ course, currentVideo, videoDuration }: CourseInfoCardProps) => {
+export const CourseInfoCard = React.memo(function CourseInfoCard({ course, currentVideo, videoDuration }: CourseInfoCardProps) {
   return (
     <>
       {/* Course Title Card */}
@@ -98,4 +102,4 @@ export const CourseInfoCard = ({ course, currentVideo, videoDuration }: CourseIn
       </div>
     </>
   );
-}
+})

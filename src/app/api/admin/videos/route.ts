@@ -2,8 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { z } from 'zod'
 
+import { logError } from '@/lib/errors'
 import { prisma } from '@/lib/prisma'
 import { invalidateVideoCache } from '@/lib/queries'
+import { applyRateLimit, adminRateLimiter } from '@/lib/rate-limit'
 
 /**
  * Videos API - List & Create
@@ -16,12 +18,17 @@ import { invalidateVideoCache } from '@/lib/queries'
  */
 
 // Chapter schema
-const chapterSchema = z.object({
-  title: z.string().min(1, 'Chapter title is required'),
-  startTime: z.number().int().min(0),
-  endTime: z.number().int().min(0),
-  order: z.number().int().min(0),
-})
+const chapterSchema = z
+  .object({
+    title: z.string().min(1, 'Chapter title is required'),
+    startTime: z.number().int().min(0),
+    endTime: z.number().int().min(0),
+    order: z.number().int().min(0),
+  })
+  .refine((data) => data.endTime > data.startTime, {
+    message: 'Chapter endTime must be greater than startTime',
+    path: ['endTime'],
+  })
 
 // Video creation schema
 const createVideoSchema = z.object({
@@ -70,6 +77,8 @@ const createVideoSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     // Parse query parameters
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
@@ -112,7 +121,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(videos)
   } catch (error) {
-    console.error('Error fetching videos:', error)
+    logError('Error fetching videos', error)
 
     return NextResponse.json({ error: 'Failed to fetch videos' }, { status: 500 })
   }
@@ -154,6 +163,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     // Parse and validate request body
     const body = await request.json()
     const parseResult = createVideoSchema.safeParse(body)
@@ -248,7 +259,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(video, { status: 201 })
   } catch (error) {
-    console.error('Error creating video:', error)
+    logError('Error creating video', error)
 
     return NextResponse.json({ error: 'Failed to create video' }, { status: 500 })
   }

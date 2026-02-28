@@ -51,7 +51,7 @@ export const VideoPlayerSection = ({
           size="sm"
           className="text-gray-300 hover:text-white hover:bg-gray-700"
         >
-          <Download className="w-4 h-4 mr-2" />
+          <Download className="w-4 h-4 me-2" />
           Download
         </Button>
       </div>

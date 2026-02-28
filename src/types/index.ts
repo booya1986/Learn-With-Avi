@@ -117,3 +117,37 @@ export const BLOOM_LABELS: Record<number, string> = {
   3: 'יישום',
   4: 'ניתוח',
 }
+
+// ==========================================
+// VIDEO / CHAPTER UI TYPES
+// ==========================================
+
+export interface ChapterItem {
+  id: string
+  title: string
+  startTime: number
+  endTime: number
+  duration: string
+  isActive: boolean
+  isCompleted: boolean
+  progress: number // 0-100
+}
+
+// ==========================================
+// SUMMARY TYPES
+// ==========================================
+
+export interface SummaryData {
+  about: string
+  tools: Array<{
+    name: string
+    desc: string
+    color: string
+  }>
+  process: Array<{
+    step: number
+    title: string
+    desc: string
+  }>
+  benefits: string[]
+}

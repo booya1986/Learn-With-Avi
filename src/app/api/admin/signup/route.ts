@@ -3,16 +3,30 @@ import { type NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcrypt'
 import { z } from 'zod'
 
+import { applyAuthRateLimit, signupRateLimiter } from '@/lib/auth-rate-limit'
+import { logError } from '@/lib/errors'
 import { prisma } from '@/lib/prisma'
 
 const signupSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().min(12, 'Admin passwords must be at least 12 characters'),
 })
 
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit signup attempts
+    await applyAuthRateLimit(request, signupRateLimiter)
+
+    // Only allow signup if no admins exist yet (first-admin setup)
+    const adminCount = await prisma.admin.count()
+    if (adminCount > 0) {
+      return NextResponse.json(
+        { error: 'Admin registration is disabled. Contact an existing administrator.' },
+        { status: 403 }
+      )
+    }
+
     const body = await request.json()
 
     // Validate input
@@ -52,10 +66,10 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 })
+      return NextResponse.json({ error: error.issues[0]?.message ?? 'Validation error' }, { status: 400 })
     }
 
-    console.error('Signup error:', error)
+    logError('Signup error', error)
     return NextResponse.json({ error: 'Failed to create account' }, { status: 500 })
   }
 }

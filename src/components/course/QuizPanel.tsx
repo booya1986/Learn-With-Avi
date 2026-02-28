@@ -9,9 +9,8 @@ import { type UseQuizStateReturn } from '@/hooks/quiz/useQuizState'
 import { cn } from '@/lib/utils'
 import { BLOOM_LABELS } from '@/types'
 
+import { QuizActiveView } from './QuizActiveView'
 import { QuizFeedback } from './QuizFeedback'
-import { QuizProgress } from './QuizProgress'
-import { QuizQuestionCard } from './QuizQuestionCard'
 
 
 /**
@@ -133,39 +132,19 @@ export const QuizPanel = ({ quizState, onTimestampClick }: QuizPanelProps) => {
    * Render question state - Display current question
    */
   if (status === 'question' && currentQuestion && sessionState) {
-    const totalAnswered = sessionState.answers.length
-    const totalCorrect = sessionState.answers.filter((a) => a.isCorrect).length
-
     return (
       <div className={containerClasses}>
-        <div className="p-6 space-y-6">
-          {/* Progress */}
-          <QuizProgress
-            totalAnswered={totalAnswered}
-            totalCorrect={totalCorrect}
-            bloomLevel={sessionState.currentBloom}
-            streak={sessionState.streak}
-          />
-
-          {/* Question Card */}
-          <QuizQuestionCard
-            question={currentQuestion}
-            selectedOption={selectedOption}
-            revealAnswer={false}
-            disabled={false}
-            onSelectOption={setSelectedOption}
-          />
-
-          {/* Submit Button */}
-          <Button
-            onClick={handleSubmitAnswer}
-            disabled={!selectedOption}
-            className="w-full"
-            size="lg"
-          >
+        <QuizActiveView
+          sessionState={sessionState}
+          currentQuestion={currentQuestion}
+          selectedOption={selectedOption}
+          revealAnswer={false}
+          onSelectOption={setSelectedOption}
+        >
+          <Button onClick={handleSubmitAnswer} disabled={!selectedOption} className="w-full" size="lg">
             בדוק תשובה
           </Button>
-        </div>
+        </QuizActiveView>
       </div>
     )
   }
@@ -174,30 +153,15 @@ export const QuizPanel = ({ quizState, onTimestampClick }: QuizPanelProps) => {
    * Render feedback state - Show answer explanation
    */
   if (status === 'feedback' && currentQuestion && feedback && sessionState) {
-    const totalAnswered = sessionState.answers.length
-    const totalCorrect = sessionState.answers.filter((a) => a.isCorrect).length
-
     return (
       <div className={containerClasses}>
-        <div className="p-6 space-y-6">
-          {/* Progress */}
-          <QuizProgress
-            totalAnswered={totalAnswered}
-            totalCorrect={totalCorrect}
-            bloomLevel={sessionState.currentBloom}
-            streak={sessionState.streak}
-          />
-
-          {/* Question Card (with answer revealed) */}
-          <QuizQuestionCard
-            question={currentQuestion}
-            selectedOption={selectedOption}
-            revealAnswer
-            disabled
-            onSelectOption={() => {}}
-          />
-
-          {/* Feedback */}
+        <QuizActiveView
+          sessionState={sessionState}
+          currentQuestion={currentQuestion}
+          selectedOption={selectedOption}
+          revealAnswer
+          onSelectOption={() => {}}
+        >
           <QuizFeedback
             isCorrect={feedback.isCorrect}
             correctOptionText={feedback.correctOptionText}
@@ -206,7 +170,7 @@ export const QuizPanel = ({ quizState, onTimestampClick }: QuizPanelProps) => {
             onNextQuestion={handleNextQuestion}
             onTimestampClick={onTimestampClick}
           />
-        </div>
+        </QuizActiveView>
       </div>
     )
   }

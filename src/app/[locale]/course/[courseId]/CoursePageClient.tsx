@@ -234,7 +234,7 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
 
           <div className="flex items-center gap-2">
             <Button className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-5">
-              <Share2 className="w-4 h-4 mr-2" />
+              <Share2 className="w-4 h-4 me-2" />
               Share
             </Button>
             <Button variant="outline" size="icon" className="rounded-full">

@@ -12,11 +12,15 @@ vi.mock('@/lib/embeddings', () => ({
 
 vi.mock('@/lib/redis', () => ({
   isRedisConnected: vi.fn(),
-  getRedisHealth: vi.fn(),
+  getRedisHealth: vi.fn().mockResolvedValue({ connected: false }),
 }));
 
 vi.mock('@/lib/rag', () => ({
   getVectorDBStatus: vi.fn(),
+}));
+
+vi.mock('@/lib/queries', () => ({
+  getCacheStats: vi.fn().mockReturnValue({ hits: 10, misses: 5, invalidations: 0, errors: 0 }),
 }));
 
 vi.mock('@/lib/prisma');
@@ -32,12 +36,12 @@ describe('Health Check Endpoints', () => {
     });
 
     it('should export GET handler', async () => {
-      const { GET } = await import('../health/route');
+      const { GET } = await import('../v1/health/route');
       expect(typeof GET).toBe('function');
     });
 
     it('should export HEAD handler', async () => {
-      const { HEAD } = await import('../health/route');
+      const { HEAD } = await import('../v1/health/route');
       expect(typeof HEAD).toBe('function');
     });
 
@@ -66,7 +70,7 @@ describe('Health Check Endpoints', () => {
         maxSize: 1000,
       });
 
-      const { GET } = await import('../health/route');
+      const { GET } = await import('../v1/health/route');
       const response = await GET();
 
       expect(response).toBeDefined();
@@ -98,7 +102,7 @@ describe('Health Check Endpoints', () => {
         maxSize: 1000,
       });
 
-      const { GET } = await import('../health/route');
+      const { GET } = await import('../v1/health/route');
       const response = await GET();
       const body = await response.json();
 
@@ -131,7 +135,7 @@ describe('Health Check Endpoints', () => {
         maxSize: 1000,
       });
 
-      const { GET } = await import('../health/route');
+      const { GET } = await import('../v1/health/route');
       const response = await GET();
       const body = await response.json();
 
@@ -164,7 +168,7 @@ describe('Health Check Endpoints', () => {
         maxSize: 1000,
       });
 
-      const { GET } = await import('../health/route');
+      const { GET } = await import('../v1/health/route');
       const response = await GET();
       const body = await response.json();
 
@@ -198,7 +202,7 @@ describe('Health Check Endpoints', () => {
         maxSize: 1000,
       });
 
-      const { GET } = await import('../health/route');
+      const { GET } = await import('../v1/health/route');
       const response = await GET();
 
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -208,7 +212,7 @@ describe('Health Check Endpoints', () => {
 
   describe('HEAD /api/health', () => {
     it('should return 200 without body', async () => {
-      const { HEAD } = await import('../health/route');
+      const { HEAD } = await import('../v1/health/route');
       const response = await HEAD();
 
       expect(response.status).toBe(200);

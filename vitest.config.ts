@@ -31,6 +31,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      ioredis: path.resolve(__dirname, './vitest.mocks.ts'),
+      '@ai-sdk/anthropic': path.resolve(__dirname, './vitest.ai-sdk-mock.ts'),
+      'ai': path.resolve(__dirname, './vitest.ai-mock.ts'),
+      'openai': path.resolve(__dirname, './vitest.openai-mock.ts'),
     },
   },
 });

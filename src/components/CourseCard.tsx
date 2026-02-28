@@ -55,7 +55,7 @@ export const CourseCard = ({ course, className }: CourseCardProps) => {
             <PlayCircle className="w-16 h-16 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           </div>
           {/* Difficulty badge */}
-          <div className="absolute top-3 right-3 rtl:right-auto rtl:left-3">
+          <div className="absolute top-3 end-3">
             <span
               className={cn(
                 'px-2.5 py-1 text-xs font-medium rounded-full',

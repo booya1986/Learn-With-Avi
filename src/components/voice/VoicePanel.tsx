@@ -1,27 +1,26 @@
 'use client'
 
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 
 import {
   Mic,
-  MicOff,
   Volume2,
   VolumeX,
   MessageSquare,
   X,
   Settings,
-  Languages,
-  ChevronDown,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { useVoiceInput, type Language } from '@/hooks/useVoiceInput'
+import { type Language } from '@/hooks/useVoiceInput'
 import { useVoiceOutput, getHebrewVoices, getEnglishVoices } from '@/hooks/useVoiceOutput'
 import { cn } from '@/lib/utils'
 import { type ChatMessage } from '@/types'
 
 import { VoiceButton, type VoiceButtonMode } from './VoiceButton'
+import { VoiceMessageList } from './VoiceMessageList'
+import { VoiceSettingsPanel } from './VoiceSettingsPanel'
+import { WaveformVisualizer } from './WaveformVisualizer'
 
 interface VoicePanelProps {
   messages?: ChatMessage[]
@@ -50,7 +49,6 @@ export const VoicePanel = ({
   const [pendingTranscript, setPendingTranscript] = useState('')
   const [isListening, setIsListening] = useState(false)
 
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   const {
@@ -65,16 +63,9 @@ export const VoicePanel = ({
     language: language === 'auto' ? 'en-US' : language,
   })
 
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
-  // Handle transcript from voice input
   const handleTranscript = useCallback(
     (transcript: string, isFinal: boolean) => {
       if (isFinal && transcript.trim()) {
-        // Send message when transcript is final
         onSendMessage?.(transcript.trim(), true)
         setPendingTranscript('')
       } else {
@@ -84,16 +75,13 @@ export const VoicePanel = ({
     [onSendMessage]
   )
 
-  // Handle listening state change
   const handleListeningChange = useCallback((listening: boolean) => {
     setIsListening(listening)
     if (!listening) {
-      // Clear pending transcript when stopping
       setPendingTranscript('')
     }
   }, [])
 
-  // Handle send message from text input
   const handleSendText = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault()
@@ -108,7 +96,6 @@ export const VoicePanel = ({
     [onSendMessage]
   )
 
-  // Speak assistant message
   const speakMessage = useCallback(
     (text: string) => {
       if (!isMuted && ttsSupported) {
@@ -118,7 +105,6 @@ export const VoicePanel = ({
     [isMuted, ttsSupported, speak]
   )
 
-  // Toggle mute
   const toggleMute = useCallback(() => {
     if (isSpeaking) {
       stopSpeaking()
@@ -126,11 +112,9 @@ export const VoicePanel = ({
     setIsMuted(!isMuted)
   }, [isSpeaking, stopSpeaking, isMuted])
 
-  // Get language-specific voices
   const hebrewVoices = getHebrewVoices(availableVoices)
   const englishVoices = getEnglishVoices(availableVoices)
 
-  // Get current language label
   const getLanguageLabel = () => {
     switch (language) {
       case 'he-IL':
@@ -156,7 +140,6 @@ export const VoicePanel = ({
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-gray-900 dark:text-white">Voice Assistant</h3>
 
-          {/* Voice/Text Mode Toggle */}
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
             <button
               onClick={() => setMode('voice')}
@@ -167,7 +150,7 @@ export const VoicePanel = ({
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
               )}
             >
-              <Mic size={14} className="inline mr-1" />
+              <Mic size={14} className="inline me-1" />
               Voice
             </button>
             <button
@@ -179,14 +162,13 @@ export const VoicePanel = ({
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900'
               )}
             >
-              <MessageSquare size={14} className="inline mr-1" />
+              <MessageSquare size={14} className="inline me-1" />
               Text
             </button>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Mute Button */}
           <Button
             variant="ghost"
             size="icon"
@@ -197,7 +179,6 @@ export const VoicePanel = ({
             {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
           </Button>
 
-          {/* Settings Button */}
           <Button
             variant="ghost"
             size="icon"
@@ -208,158 +189,35 @@ export const VoicePanel = ({
             <Settings size={16} />
           </Button>
 
-          {/* Close Button */}
           {onClose ? <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8" title="Close">
               <X size={16} />
             </Button> : null}
         </div>
       </div>
 
-      {/* Settings Panel */}
-      {showSettings ? <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
-          <div className="space-y-3">
-            {/* Language Selection */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Language</span>
-              <div className="relative">
-                <select
-                  value={language}
-                  onChange={(e) => setLanguage(e.target.value as Language)}
-                  className="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="auto">Auto-detect</option>
-                  <option value="en-US">English</option>
-                  <option value="he-IL">Hebrew</option>
-                </select>
-                <ChevronDown
-                  size={14}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-                />
-              </div>
-            </div>
+      {showSettings ? <VoiceSettingsPanel
+          language={language}
+          onLanguageChange={setLanguage}
+          availableVoices={availableVoices}
+          selectedVoice={selectedVoice}
+          onVoiceChange={setVoice}
+          hebrewVoices={hebrewVoices}
+          englishVoices={englishVoices}
+          voiceButtonMode={voiceButtonMode}
+          onVoiceButtonModeChange={setVoiceButtonMode}
+        /> : null}
 
-            {/* Voice Selection */}
-            {availableVoices.length > 0 && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Voice</span>
-                <div className="relative">
-                  <select
-                    value={selectedVoice?.name || ''}
-                    onChange={(e) => {
-                      const voice = availableVoices.find((v) => v.name === e.target.value)
-                      if (voice) {setVoice(voice)}
-                    }}
-                    className="appearance-none bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md px-3 py-1.5 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 max-w-[180px] truncate"
-                  >
-                    {(language === 'he-IL' ? hebrewVoices : englishVoices).map((voice) => (
-                      <option key={voice.name} value={voice.name}>
-                        {voice.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={14}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-                  />
-                </div>
-              </div>
-            )}
+      <VoiceMessageList
+        messages={messages}
+        pendingTranscript={pendingTranscript}
+        mode={mode}
+        languageLabel={getLanguageLabel()}
+        isMuted={isMuted}
+        isSpeaking={isSpeaking}
+        ttsSupported={ttsSupported}
+        onSpeakMessage={speakMessage}
+      />
 
-            {/* Voice Button Mode */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600 dark:text-gray-400">Input Mode</span>
-              <div className="flex items-center bg-white dark:bg-gray-700 rounded-lg border border-gray-300 dark:border-gray-600 p-0.5">
-                <button
-                  onClick={() => setVoiceButtonMode('toggle')}
-                  className={cn(
-                    'px-2 py-1 rounded text-xs transition-colors',
-                    voiceButtonMode === 'toggle'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-600 dark:text-gray-400'
-                  )}
-                >
-                  Toggle
-                </button>
-                <button
-                  onClick={() => setVoiceButtonMode('push-to-talk')}
-                  className={cn(
-                    'px-2 py-1 rounded text-xs transition-colors',
-                    voiceButtonMode === 'push-to-talk'
-                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400'
-                      : 'text-gray-600 dark:text-gray-400'
-                  )}
-                >
-                  Push-to-talk
-                </button>
-              </div>
-            </div>
-          </div>
-        </div> : null}
-
-      {/* Messages Area */}
-      <ScrollArea className="flex-1 min-h-[200px] max-h-[400px]">
-        <div className="p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <Mic size={32} className="mx-auto mb-2 opacity-50" />
-              <p className="text-sm">
-                {mode === 'voice'
-                  ? 'Tap the microphone to start talking'
-                  : 'Type your message below'}
-              </p>
-              <p className="text-xs mt-1 text-gray-400">Currently: {getLanguageLabel()}</p>
-            </div>
-          ) : (
-            messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn('flex', message.role === 'user' ? 'justify-end' : 'justify-start')}
-              >
-                <div
-                  className={cn(
-                    'max-w-[80%] rounded-lg px-3 py-2',
-                    message.role === 'user'
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white'
-                  )}
-                >
-                  {/* Voice indicator */}
-                  {message.isVoice ? <span className="text-xs opacity-70 flex items-center gap-1 mb-1">
-                      <Mic size={10} />
-                      Voice message
-                    </span> : null}
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-
-                  {/* Speak button for assistant messages */}
-                  {message.role === 'assistant' && ttsSupported && !isMuted ? <button
-                      onClick={() => speakMessage(message.content)}
-                      className="mt-1 text-xs opacity-70 hover:opacity-100 flex items-center gap-1 text-gray-600 dark:text-gray-400"
-                      disabled={isSpeaking}
-                    >
-                      <Volume2 size={12} />
-                      {isSpeaking ? 'Speaking...' : 'Listen'}
-                    </button> : null}
-                </div>
-              </div>
-            ))
-          )}
-
-          {/* Pending transcript */}
-          {pendingTranscript ? <div className="flex justify-end">
-              <div className="max-w-[80%] rounded-lg px-3 py-2 bg-blue-400 text-white opacity-70">
-                <span className="text-xs flex items-center gap-1 mb-1">
-                  <Mic size={10} className="animate-pulse" />
-                  Listening...
-                </span>
-                <p className="text-sm">{pendingTranscript}</p>
-              </div>
-            </div> : null}
-
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
-
-      {/* Waveform / Visual Indicator */}
       {isListening ? <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
           <WaveformVisualizer isActive={isListening} />
         </div> : null}
@@ -401,40 +259,3 @@ export const VoicePanel = ({
     </div>
   )
 }
-
-// Waveform visualizer component
-interface WaveformVisualizerProps {
-  isActive: boolean
-  className?: string
-}
-
-const WaveformVisualizer = ({ isActive, className }: WaveformVisualizerProps) => {
-  const barsCount = 20
-
-  return (
-    <div className={cn('flex items-center justify-center gap-0.5 h-8', className)}>
-      {Array.from({ length: barsCount }).map((_, i) => (
-        <div
-          key={i}
-          className={cn(
-            'w-1 bg-blue-500 rounded-full transition-all duration-150',
-            isActive ? 'animate-waveform' : 'h-1'
-          )}
-          style={{
-            animationDelay: `${i * 50}ms`,
-            height: isActive ? undefined : '4px',
-          }}
-        />
-      ))}
-    </div>
-  )
-}
-
-// Add this to your global CSS or tailwind config
-// @keyframes waveform {
-//   0%, 100% { height: 4px; }
-//   50% { height: 24px; }
-// }
-// .animate-waveform {
-//   animation: waveform 0.5s ease-in-out infinite;
-// }

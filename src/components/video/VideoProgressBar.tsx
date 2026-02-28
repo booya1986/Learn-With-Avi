@@ -109,7 +109,7 @@ export const VideoProgressBar = ({
                 {/* Progress fill for this segment */}
                 {currentTime >= segment.chapter.startTime && (
                   <div
-                    className="absolute inset-y-0 left-0 bg-blue-500 rounded-l-full"
+                    className="absolute inset-y-0 start-0 bg-blue-500 rounded-s-full"
                     style={{
                       width:
                         currentTime >= segment.chapter.endTime
@@ -124,7 +124,7 @@ export const VideoProgressBar = ({
         ) : (
           /* Fallback: simple progress bar without chapters */
           <div
-            className="absolute inset-y-0 left-0 bg-blue-500 rounded-full"
+            className="absolute inset-y-0 start-0 bg-blue-500 rounded-full"
             style={{ width: `${progress}%` }}
           />
         )}
@@ -132,20 +132,20 @@ export const VideoProgressBar = ({
         {/* Hover tooltip showing chapter name */}
         {hoveredChapter ? <div
             className="absolute bottom-full mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap transform -translate-x-1/2 pointer-events-none z-10"
-            style={{ left: `${hoverPosition}px` }}
+            style={{ insetInlineStart: `${hoverPosition}px` }}
           >
             <div className="font-medium">{hoveredChapter.title}</div>
             <div className="text-gray-400">
               {formatTime(hoveredChapter.startTime)} - {formatTime(hoveredChapter.endTime)}
             </div>
             {/* Tooltip arrow */}
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+            <div className="absolute top-full start-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
           </div> : null}
 
         {/* Playhead indicator */}
         <div
           className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ left: `${progress}%` }}
+          style={{ insetInlineStart: `${progress}%` }}
         />
       </div>
     </div>

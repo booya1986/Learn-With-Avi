@@ -15,6 +15,11 @@ import { captureApiError } from '@/lib/sentry-utils';
  */
 
 export async function GET(request: NextRequest) {
+  // Block access in production - debug endpoints should never be publicly accessible
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   const searchParams = request.nextUrl.searchParams;
   const testType = searchParams.get('type') || 'error';
 

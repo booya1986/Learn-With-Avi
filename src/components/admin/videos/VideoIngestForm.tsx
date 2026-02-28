@@ -121,7 +121,7 @@ export const VideoIngestForm = ({ courses, onSuccess }: VideoIngestFormProps) =>
         <div className="space-y-2">
           <Label htmlFor="youtubeUrl">YouTube URL</Label>
           <div className="relative">
-            <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <Youtube className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <Input
               id="youtubeUrl"
               type="text"
@@ -129,7 +129,7 @@ export const VideoIngestForm = ({ courses, onSuccess }: VideoIngestFormProps) =>
               value={youtubeUrl}
               onChange={(e) => setYoutubeUrl(e.target.value)}
               disabled={isLoading}
-              className="pl-10"
+              className="ps-10"
               required
             />
           </div>
@@ -157,12 +157,12 @@ export const VideoIngestForm = ({ courses, onSuccess }: VideoIngestFormProps) =>
         <Button type="submit" disabled={isLoading || !youtubeUrl || !courseId} className="w-full">
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 me-2 animate-spin" />
               Ingesting Video...
             </>
           ) : (
             <>
-              <Youtube className="w-4 h-4 mr-2" />
+              <Youtube className="w-4 h-4 me-2" />
               Ingest Video
             </>
           )}

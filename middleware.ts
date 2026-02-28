@@ -36,8 +36,31 @@ const UNVERSIONED_ROUTES = ['/api/admin', '/api/auth', '/api/debug'];
  * - Returns 401 Unauthorized if token is missing
  * - Single source of truth for admin auth - no checks needed in individual routes
  */
+/** Allowed origin for CORS (same-origin by default) */
+const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
+  // ==================== CORS ====================
+  // Handle preflight requests for API routes
+  if (path.startsWith('/api') && request.method === 'OPTIONS') {
+    // Admin routes support all methods including DELETE
+    // Public API routes only support GET, POST, OPTIONS (no PUT/DELETE for CSRF protection)
+    const allowedMethods = path.startsWith('/api/admin/')
+      ? 'GET, POST, PUT, DELETE, OPTIONS'
+      : 'GET, POST, OPTIONS';
+
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+        'Access-Control-Allow-Methods': allowedMethods,
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Max-Age': '86400',
+      },
+    });
+  }
 
   // ==================== API VERSIONING ====================
   // Redirect unversioned API routes to v1 (backward compatibility)
@@ -63,7 +86,7 @@ export async function middleware(request: NextRequest) {
   if (path.startsWith('/api/admin') && !path.startsWith('/api/admin/signup')) {
     const token = await getToken({
       req: request,
-      secret: process.env.NEXTAUTH_SECRET,
+      secret: process.env.NEXTAUTH_SECRET ?? '',
     });
 
     if (!token) {
@@ -80,14 +103,18 @@ export async function middleware(request: NextRequest) {
     return i18nMiddleware(request);
   }
 
-  // For all other API routes, continue without modifications
-  return NextResponse.next();
+  // For all other API routes, add CORS header and continue
+  const response = NextResponse.next();
+  if (path.startsWith('/api')) {
+    response.headers.set('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
+  }
+  return response;
 }
 
 export const config = {
   matcher: [
-    // i18n matcher - frontend routes
-    '/((?!api|_next|_vercel|admin|.*\\..*).*)' ,
+    // i18n matcher - frontend routes (admin is now handled by i18n, redirects to /[locale]/admin)
+    '/((?!api|_next|_vercel|.*\\..*).*)' ,
     // API routes matcher - versioning + admin auth
     '/api/:path*',
   ],

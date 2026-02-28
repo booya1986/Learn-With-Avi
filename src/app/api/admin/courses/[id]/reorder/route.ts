@@ -2,7 +2,9 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { z } from 'zod'
 
+import { logError } from '@/lib/errors'
 import { prisma } from '@/lib/prisma'
+import { applyRateLimit, adminRateLimiter } from '@/lib/rate-limit'
 
 /**
  * Video Reordering API
@@ -41,6 +43,8 @@ const reorderSchema = z.object({
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     const { id: courseId } = await params
 
     // Parse and validate request body
@@ -109,7 +113,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       updatedCount: videoIds.length,
     })
   } catch (error) {
-    console.error('Error reordering videos:', error)
+    logError('Error reordering videos', error)
 
     return NextResponse.json({ error: 'Failed to reorder videos' }, { status: 500 })
   }

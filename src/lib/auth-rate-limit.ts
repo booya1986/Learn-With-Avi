@@ -13,6 +13,7 @@
 
 import { RateLimitError } from './errors';
 import { rateLimitCache, isRedisConnected } from './redis';
+import { getRequestIdentifier } from './rate-limit-store';
 
 interface RateLimitEntry {
   count: number;
@@ -233,28 +234,6 @@ async function recordFailure(identifier: string): Promise<void> {
   }
 }
 
-/**
- * Extract identifier from request (IP address)
- */
-function getRequestIdentifier(request: Request): string {
-  // Try to get IP from various headers (Vercel, CloudFlare, etc.)
-  const forwardedFor = request.headers.get('x-forwarded-for');
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim();
-  }
-
-  const realIp = request.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp;
-  }
-
-  const cfConnectingIp = request.headers.get('cf-connecting-ip');
-  if (cfConnectingIp) {
-    return cfConnectingIp;
-  }
-
-  return 'anonymous';
-}
 
 /**
  * Rate limiter configurations for auth endpoints

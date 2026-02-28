@@ -5,12 +5,26 @@ import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { RateLimitError } from '@/lib/errors';
 import { applyRateLimit, chatRateLimiter } from '@/lib/rate-limit';
 
-import { POST } from '../chat/route';
+import { POST } from '../v1/chat/route';
 
 
 // Mock dependencies
 vi.mock('@/lib/rate-limit');
 vi.mock('@/lib/errors');
+vi.mock('@/lib/config', () => ({
+  getConfig: vi.fn().mockReturnValue({
+    anthropicApiKey: 'test-key',
+  }),
+}));
+vi.mock('@anthropic-ai/sdk', () => ({
+  default: vi.fn().mockImplementation(() => ({
+    messages: {
+      create: vi.fn().mockResolvedValue({
+        content: [{ type: 'text', text: 'Test response' }],
+      }),
+    },
+  })),
+}));
 
 describe('POST /api/chat', () => {
   beforeEach(() => {

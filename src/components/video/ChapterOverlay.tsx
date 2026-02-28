@@ -19,7 +19,7 @@ export const ChapterOverlay = ({
   return (
     <div
       className={cn(
-        'absolute bottom-20 right-4 bg-gray-900/95 rounded-lg p-3 max-h-60 overflow-y-auto w-72 shadow-xl border border-gray-700',
+        'absolute bottom-20 end-4 bg-gray-900/95 rounded-lg p-3 max-h-60 overflow-y-auto w-72 shadow-xl border border-gray-700',
         className
       )}
     >

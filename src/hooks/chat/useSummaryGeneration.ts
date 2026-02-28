@@ -24,14 +24,7 @@
 import { useState, useCallback } from 'react';
 
 import { getSampleChunksForVideo } from '@/data/sample-transcripts';
-import { type Video } from '@/types';
-
-export interface SummaryData {
-  about: string;
-  tools: { name: string; desc: string; color: string }[];
-  process: { step: number; title: string; desc: string }[];
-  benefits: string[];
-}
+import { type Video, type SummaryData } from '@/types';
 
 export interface UseSummaryGenerationReturn {
   /** Whether summary modal is visible */

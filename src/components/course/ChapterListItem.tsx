@@ -1,20 +1,9 @@
+import React from "react";
+
 import { CheckCircle2 } from "lucide-react";
 
 import { cn, formatTime } from "@/lib/utils";
-
-/**
- * ChapterItem represents a single chapter in the video timeline
- */
-export interface ChapterItem {
-  id: string;
-  title: string;
-  startTime: number;
-  endTime: number;
-  duration: string;
-  isActive: boolean;
-  isCompleted: boolean;
-  progress: number; // 0-100 progress within this chapter
-}
+import { type ChapterItem } from "@/types";
 
 /**
  * ChapterListItem - Individual chapter item with progress visualization
@@ -22,6 +11,8 @@ export interface ChapterItem {
  * @param chapter - Chapter data with title, timing, and progress info
  * @param index - Index of the chapter (0-based)
  * @param onChapterClick - Callback when chapter is clicked, receives startTime
+ *
+ * Memoized to prevent unnecessary re-renders when sibling chapters update.
  */
 interface ChapterListItemProps {
   chapter: ChapterItem;
@@ -29,7 +20,7 @@ interface ChapterListItemProps {
   onChapterClick: (startTime: number) => void;
 }
 
-export const ChapterListItem = ({ chapter, index, onChapterClick }: ChapterListItemProps) => {
+export const ChapterListItem = React.memo(function ChapterListItem({ chapter, index, onChapterClick }: ChapterListItemProps) {
   return (
     <button
       onClick={() => onChapterClick(chapter.startTime)}
@@ -117,4 +108,4 @@ export const ChapterListItem = ({ chapter, index, onChapterClick }: ChapterListI
       </div>
     </button>
   );
-}
+})

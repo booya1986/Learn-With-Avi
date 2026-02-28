@@ -22,10 +22,15 @@
  * - API response time: 150ms → 30ms (cached)
  */
 
+import { Prisma } from '@prisma/client';
+
 import { type Course, type Video, type Chapter } from '@/types';
 
 import { prisma } from './prisma';
 import { RedisCache } from './redis';
+
+type DbCourse = Prisma.CourseGetPayload<{ include: { videos: { include: { chapters: true } } } }>
+type DbVideo = Prisma.VideoGetPayload<{ include: { chapters: true } }>
 
 /**
  * Cache TTLs (Time To Live) in seconds
@@ -84,7 +89,7 @@ export function resetCacheStats(): void {
 /**
  * Convert database Course to app Course type
  */
-function dbToAppCourse(dbCourse: any): Course {
+function dbToAppCourse(dbCourse: DbCourse): Course {
   return {
     id: dbCourse.id,
     title: dbCourse.title,
@@ -99,7 +104,7 @@ function dbToAppCourse(dbCourse: any): Course {
 /**
  * Convert database Video to app Video type
  */
-function dbToAppVideo(dbVideo: any): Video {
+function dbToAppVideo(dbVideo: DbVideo): Video {
   return {
     id: dbVideo.id,
     youtubeId: dbVideo.youtubeId,
@@ -112,7 +117,7 @@ function dbToAppVideo(dbVideo: any): Video {
     order: dbVideo.order,
     chapters:
       dbVideo.chapters?.map(
-        (ch: any): Chapter => ({
+        (ch): Chapter => ({
           title: ch.title,
           startTime: ch.startTime,
           endTime: ch.endTime,

@@ -9,6 +9,8 @@
 
 import * as Sentry from '@sentry/nextjs';
 
+export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+
 // Initialize Sentry for client-side error tracking
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -35,7 +37,7 @@ Sentry.init({
   ],
 
   // Sanitize sensitive data
-  beforeSend(event, hint) {
+  beforeSend(event, _hint) {
     // Redact API keys from error messages
     if (event.exception?.values?.[0]?.value) {
       let message = event.exception.values[0].value;

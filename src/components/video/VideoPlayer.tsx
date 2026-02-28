@@ -109,7 +109,7 @@ export const VideoPlayer = ({
       {/* Custom Controls Overlay */}
       <div
         className={cn(
-          'absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300',
+          'absolute bottom-0 start-0 end-0 bg-gradient-to-t from-black/80 to-transparent p-4 transition-opacity duration-300',
           state.showControls ? 'opacity-100' : 'opacity-0'
         )}
       >

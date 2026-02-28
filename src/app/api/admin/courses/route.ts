@@ -2,8 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { z } from 'zod'
 
+import { logError } from '@/lib/errors'
 import { prisma } from '@/lib/prisma'
 import { invalidateCourseCache } from '@/lib/queries'
+import { applyRateLimit, adminRateLimiter } from '@/lib/rate-limit'
 
 /**
  * Courses API - List & Create
@@ -55,6 +57,8 @@ const courseSchema = z.object({
  */
 export async function GET(request: NextRequest) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     // Parse query parameters
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search')
@@ -87,7 +91,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(courses)
   } catch (error) {
-    console.error('Error fetching courses:', error)
+    logError('Error fetching courses', error)
 
     return NextResponse.json({ error: 'Failed to fetch courses' }, { status: 500 })
   }
@@ -117,6 +121,8 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     // Parse and validate request body
     const body = await request.json()
     const parseResult = courseSchema.safeParse(body)
@@ -159,7 +165,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(course, { status: 201 })
   } catch (error) {
-    console.error('Error creating course:', error)
+    logError('Error creating course', error)
 
     return NextResponse.json({ error: 'Failed to create course' }, { status: 500 })
   }

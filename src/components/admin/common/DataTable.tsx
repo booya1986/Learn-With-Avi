@@ -15,7 +15,7 @@ export interface Column<T> {
   width?: string
 }
 
-interface DataTableProps<T> {
+interface DataTableProps<T extends { id: string | number }> {
   columns: Column<T>[]
   data: T[]
   onRowClick?: (item: T) => void
@@ -50,8 +50,8 @@ export const DataTable = <T extends { id: string | number }>({
     if (!sortKey) {return data}
 
     return [...data].sort((a, b) => {
-      const aValue = (a as any)[sortKey]
-      const bValue = (b as any)[sortKey]
+      const aValue = String((a as Record<string, unknown>)[sortKey] ?? '')
+      const bValue = String((b as Record<string, unknown>)[sortKey] ?? '')
 
       if (aValue < bValue) {return sortDirection === 'asc' ? -1 : 1}
       if (aValue > bValue) {return sortDirection === 'asc' ? 1 : -1}
@@ -126,7 +126,7 @@ export const DataTable = <T extends { id: string | number }>({
                       key={column.key}
                       className="whitespace-nowrap px-6 py-4 text-sm text-gray-900"
                     >
-                      {column.render ? column.render(item) : (item as any)[column.key]}
+                      {column.render ? column.render(item) : String((item as Record<string, unknown>)[column.key] ?? '')}
                     </td>
                   ))}
                 </tr>

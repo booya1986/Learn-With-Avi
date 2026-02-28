@@ -2,8 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { z } from 'zod'
 
+import { logError } from '@/lib/errors'
 import { prisma } from '@/lib/prisma'
 import { invalidateCourseCache } from '@/lib/queries'
+import { applyRateLimit, adminRateLimiter } from '@/lib/rate-limit'
 
 /**
  * Course CRUD API - Single Course Operations
@@ -48,6 +50,8 @@ const updateCourseSchema = z.object({
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     const { id } = await params
 
     // Fetch course with videos and chapters
@@ -71,7 +75,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(course)
   } catch (error) {
-    console.error('Error fetching course:', error)
+    logError('Error fetching course', error)
 
     return NextResponse.json({ error: 'Failed to fetch course' }, { status: 500 })
   }
@@ -102,6 +106,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     const { id } = await params
 
     // Parse and validate request body
@@ -150,7 +156,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(course)
   } catch (error) {
-    console.error('Error updating course:', error)
+    logError('Error updating course', error)
 
     return NextResponse.json({ error: 'Failed to update course' }, { status: 500 })
   }
@@ -172,6 +178,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     const { id } = await params
 
     // Check if course exists
@@ -202,7 +210,7 @@ export async function DELETE(
       deletedVideoCount: existingCourse._count.videos,
     })
   } catch (error) {
-    console.error('Error deleting course:', error)
+    logError('Error deleting course', error)
 
     return NextResponse.json({ error: 'Failed to delete course' }, { status: 500 })
   }

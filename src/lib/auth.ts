@@ -33,14 +33,24 @@ export async function getSession() {
  * }
  * ```
  *
+ * With locale support:
+ * ```typescript
+ * export default async function AdminPage({ params }: { params: { locale: string } }) {
+ *   await requireAuth(undefined, params.locale);
+ *   // Rest of your component
+ * }
+ * ```
+ *
  * @param redirectTo - URL to redirect to after login (optional)
+ * @param locale - Locale code for i18n routing (optional, defaults to no locale prefix)
  */
-export async function requireAuth(redirectTo?: string) {
+export async function requireAuth(redirectTo?: string, locale?: string) {
   const session = await getSession()
 
   if (!session) {
     const callbackUrl = redirectTo || '/admin'
-    redirect(`/admin/login?callbackUrl=${encodeURIComponent(callbackUrl)}`)
+    const loginPath = locale ? `/${locale}/admin/login` : '/admin/login'
+    redirect(`${loginPath}?callbackUrl=${encodeURIComponent(callbackUrl)}`)
   }
 
   return session

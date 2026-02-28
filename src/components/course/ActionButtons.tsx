@@ -34,11 +34,11 @@ export const ActionButtons = ({
     <div className="flex items-center justify-between mt-4">
       <div className="flex items-center gap-2">
         <Button onClick={onSummarize} variant="outline" className="rounded-full">
-          <Sparkles className="w-4 h-4 mr-2" />
+          <Sparkles className="w-4 h-4 me-2" />
           סיכום AI
         </Button>
         <Button onClick={onStartQuiz} variant="outline" className="rounded-full">
-          <Brain className="w-4 h-4 mr-2" />
+          <Brain className="w-4 h-4 me-2" />
           בחן את עצמך
         </Button>
       </div>

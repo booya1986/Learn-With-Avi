@@ -65,8 +65,12 @@ model Chapter {
   video     Video  @relation(fields: [videoId], references: [id], onDelete: Cascade)
   title     String
   startTime Int    // Start time in seconds
-  endTime   Int    // End time in seconds
+  endTime   Int    // End time in seconds (must be > startTime, enforced at application layer)
   order     Int
+
+  // Note: Prisma does not support CHECK constraints natively.
+  // Constraint: endTime > startTime is enforced in application code.
+  // See validation in: src/app/api/admin/videos/route.ts
 
   @@index([videoId])
   @@index([order])

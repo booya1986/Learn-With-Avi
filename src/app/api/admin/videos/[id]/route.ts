@@ -2,8 +2,10 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { z } from 'zod'
 
+import { logError } from '@/lib/errors'
 import { prisma } from '@/lib/prisma'
 import { invalidateVideoCache } from '@/lib/queries'
+import { applyRateLimit, adminRateLimiter } from '@/lib/rate-limit'
 
 /**
  * Video CRUD API - Single Video Operations
@@ -67,6 +69,8 @@ const updateVideoSchema = z.object({
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     const { id } = await params
 
     // Fetch video with chapters and course
@@ -99,7 +103,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(video)
   } catch (error) {
-    console.error('Error fetching video:', error)
+    logError('Error fetching video', error)
 
     return NextResponse.json({ error: 'Failed to fetch video' }, { status: 500 })
   }
@@ -142,6 +146,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
  */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     const { id } = await params
 
     // Parse and validate request body
@@ -236,7 +242,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(video)
   } catch (error) {
-    console.error('Error updating video:', error)
+    logError('Error updating video', error)
 
     return NextResponse.json({ error: 'Failed to update video' }, { status: 500 })
   }
@@ -258,6 +264,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await applyRateLimit(request, adminRateLimiter)
+
     const { id } = await params
 
     // Check if video exists
@@ -296,7 +304,7 @@ export async function DELETE(
       hadTranscript: !!existingVideo.transcript,
     })
   } catch (error) {
-    console.error('Error deleting video:', error)
+    logError('Error deleting video', error)
 
     return NextResponse.json({ error: 'Failed to delete video' }, { status: 500 })
   }

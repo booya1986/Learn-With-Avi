@@ -67,32 +67,38 @@ describe('ChatSidebar', () => {
   });
 
   it('displays user messages with correct styling', () => {
-    render(<ChatSidebar {...defaultProps} />);
+    const { container } = render(<ChatSidebar {...defaultProps} />);
 
     const userMessage = screen.getByText('מה זה Make?');
-    expect(userMessage.closest('.bg-blue-600')).toBeInTheDocument();
+    // The richer ChatMessage component uses bg-blue-50 for user messages
+    expect(userMessage.closest('.bg-blue-50')).toBeInTheDocument();
   });
 
   it('displays assistant messages with different styling', () => {
-    render(<ChatSidebar {...defaultProps} />);
+    const { container } = render(<ChatSidebar {...defaultProps} />);
 
     const assistantMessage = screen.getByText(/Make היא פלטפורמה/);
-    expect(assistantMessage.closest('.dark\\:bg-gray-800')).toBeInTheDocument();
+    // The richer ChatMessage component uses bg-gray-50 for assistant messages
+    expect(assistantMessage.closest('.bg-gray-50')).toBeInTheDocument();
   });
 
   it('parses and makes timestamps clickable', () => {
     render(<ChatSidebar {...defaultProps} />);
 
-    const timestampButton = screen.getByRole('button', { name: /3:45/ });
-    expect(timestampButton).toBeInTheDocument();
+    // The richer ChatMessage uses title= attribute on timestamp buttons
+    const allButtons = screen.getAllByRole('button');
+    const timestampBtn = allButtons.find(b => b.textContent?.includes('3:45'));
+    expect(timestampBtn).toBeInTheDocument();
   });
 
   it('calls onTimestampClick when timestamp is clicked', () => {
     const onTimestampClick = vi.fn();
     render(<ChatSidebar {...defaultProps} onTimestampClick={onTimestampClick} />);
 
-    const timestampButton = screen.getByRole('button', { name: /3:45/ });
-    fireEvent.click(timestampButton);
+    const allButtons = screen.getAllByRole('button');
+    const timestampBtn = allButtons.find(b => b.textContent?.includes('3:45'));
+    expect(timestampBtn).toBeDefined();
+    fireEvent.click(timestampBtn!);
 
     expect(onTimestampClick).toHaveBeenCalledWith(225);
   });
@@ -234,12 +240,11 @@ describe('ChatSidebar', () => {
   });
 
   it('supports RTL Hebrew message rendering', () => {
-    render(<ChatSidebar {...defaultProps} />);
+    const { container } = render(<ChatSidebar {...defaultProps} />);
 
-    const messages = screen.getAllByText(/.*Hebrew.*/i);
-    messages.forEach(msg => {
-      expect(msg).toHaveAttribute('dir', 'rtl');
-    });
+    // The richer ChatMessage auto-detects Hebrew and sets dir=rtl on the content div
+    const rtlElements = container.querySelectorAll('[dir="rtl"]');
+    expect(rtlElements.length).toBeGreaterThan(0);
   });
 
   it('displays source information when available', () => {

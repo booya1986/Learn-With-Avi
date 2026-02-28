@@ -11,6 +11,7 @@
  */
 
 import { RateLimitError } from './errors'
+import { getRequestIdentifier } from './rate-limit-store'
 
 interface RateLimitConfig {
   /**
@@ -61,7 +62,7 @@ setInterval(cleanupOldEntries, 5 * 60 * 1000)
  * Create a rate limiter with specified configuration
  */
 export function createRateLimiter(config: RateLimitConfig) {
-  const { maxRequests, windowMs, message } = config
+  const { maxRequests, windowMs } = config
 
   return {
     /**
@@ -69,10 +70,82 @@ export function createRateLimiter(config: RateLimitConfig) {
      * @param identifier - Unique identifier (IP address, user ID, session ID)
      * @returns Object with success status and optional reset time
      */
-    check: (
+    check: async (
       identifier: string
-    ): { success: boolean; limit: number; remaining: number; reset: number } => {
+    ): Promise<{ success: boolean; limit: number; remaining: number; reset: number }> => {
       const now = Date.now()
+
+      // If Redis is available, use distributed rate limiting
+      if (isRedisConnected()) {
+        const cacheKey = `ratelimit:${identifier}`
+
+        try {
+          // Get current rate limit data from Redis
+          const cached = await rateLimitCache.get<RateLimitEntry>(cacheKey)
+
+          // No entry yet - create new one
+          if (!cached) {
+            const entry: RateLimitEntry = {
+              count: 1,
+              resetTime: now + windowMs,
+            }
+            await rateLimitCache.set(cacheKey, entry, Math.ceil(windowMs / 1000))
+
+            return {
+              success: true,
+              limit: maxRequests,
+              remaining: maxRequests - 1,
+              reset: now + windowMs,
+            }
+          }
+
+          // Window has expired - reset counter
+          if (now > cached.resetTime) {
+            const entry: RateLimitEntry = {
+              count: 1,
+              resetTime: now + windowMs,
+            }
+            await rateLimitCache.set(cacheKey, entry, Math.ceil(windowMs / 1000))
+
+            return {
+              success: true,
+              limit: maxRequests,
+              remaining: maxRequests - 1,
+              reset: now + windowMs,
+            }
+          }
+
+          // Within window - check if limit exceeded
+          if (cached.count >= maxRequests) {
+            return {
+              success: false,
+              limit: maxRequests,
+              remaining: 0,
+              reset: cached.resetTime,
+            }
+          }
+
+          // Increment counter
+          const updatedEntry: RateLimitEntry = {
+            count: cached.count + 1,
+            resetTime: cached.resetTime,
+          }
+          const ttl = Math.ceil((cached.resetTime - now) / 1000)
+          await rateLimitCache.set(cacheKey, updatedEntry, ttl)
+
+          return {
+            success: true,
+            limit: maxRequests,
+            remaining: maxRequests - updatedEntry.count,
+            reset: cached.resetTime,
+          }
+        } catch (error) {
+          // Redis error - fall through to in-memory fallback
+          console.warn('Redis rate limit failed, using in-memory fallback:', error)
+        }
+      }
+
+      // Fallback to in-memory rate limiting
       const entry = rateLimitStore.get(identifier)
 
       // No entry yet - create new one
@@ -129,15 +202,43 @@ export function createRateLimiter(config: RateLimitConfig) {
     /**
      * Reset rate limit for a specific identifier (useful for testing/admin)
      */
-    reset: (identifier: string): void => {
+    reset: async (identifier: string): Promise<void> => {
+      if (isRedisConnected()) {
+        const cacheKey = `ratelimit:${identifier}`
+        await rateLimitCache.del(cacheKey)
+      }
       rateLimitStore.delete(identifier)
     },
 
     /**
      * Get current status without consuming a request
      */
-    status: (identifier: string): { remaining: number; reset: number } => {
+    status: async (identifier: string): Promise<{ remaining: number; reset: number }> => {
       const now = Date.now()
+
+      // Try Redis first
+      if (isRedisConnected()) {
+        const cacheKey = `ratelimit:${identifier}`
+        try {
+          const entry = await rateLimitCache.get<RateLimitEntry>(cacheKey)
+
+          if (!entry || now > entry.resetTime) {
+            return {
+              remaining: maxRequests,
+              reset: now + windowMs,
+            }
+          }
+
+          return {
+            remaining: Math.max(0, maxRequests - entry.count),
+            reset: entry.resetTime,
+          }
+        } catch (error) {
+          // Fall through to in-memory fallback
+        }
+      }
+
+      // In-memory fallback
       const entry = rateLimitStore.get(identifier)
 
       if (!entry || now > entry.resetTime) {
@@ -199,6 +300,16 @@ export const quizGenerateRateLimiter = createRateLimiter({
 })
 
 /**
+ * Rate limiter for admin API: 30 requests per minute per IP
+ * (Higher limit for admin but still protected against abuse)
+ */
+export const adminRateLimiter = createRateLimiter({
+  maxRequests: 30,
+  windowMs: 60 * 1000, // 1 minute
+  message: 'Too many admin requests. Please wait before trying again.',
+})
+
+/**
  * Middleware helper to apply rate limiting to Next.js API routes
  */
 export async function applyRateLimit(
@@ -208,8 +319,8 @@ export async function applyRateLimit(
   // Get identifier from request (IP address or fallback)
   const identifier = getRequestIdentifier(request)
 
-  // Check rate limit
-  const result = limiter.check(identifier)
+  // Check rate limit (now async)
+  const result = await limiter.check(identifier)
 
   // Add rate limit headers to response (will be set by caller)
   if (!result.success) {
@@ -217,7 +328,7 @@ export async function applyRateLimit(
     const retryAfter = Math.ceil((result.reset - Date.now()) / 1000)
 
     throw new RateLimitError(
-      `Rate limit exceeded. Try again in ${retryAfter} seconds. Reset at: ${resetTime}`
+      `Rate limit exceeded. Try again in ${retryAfter} seconds.`
     )
   }
 }
@@ -225,11 +336,11 @@ export async function applyRateLimit(
 /**
  * Get rate limit headers for response
  */
-export function getRateLimitHeaders(
+export async function getRateLimitHeaders(
   limiter: ReturnType<typeof createRateLimiter>,
   identifier: string
-): Record<string, string> {
-  const status = limiter.status(identifier)
+): Promise<Record<string, string>> {
+  const status = await limiter.status(identifier)
 
   return {
     'X-RateLimit-Limit': String(10), // Default, should be passed from limiter config
@@ -238,31 +349,6 @@ export function getRateLimitHeaders(
   }
 }
 
-/**
- * Extract identifier from request
- * Uses IP address, x-forwarded-for header, or fallback
- */
-function getRequestIdentifier(request: Request): string {
-  // Try to get IP from various headers (Vercel, CloudFlare, etc.)
-  const forwardedFor = request.headers.get('x-forwarded-for')
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim()
-  }
-
-  const realIp = request.headers.get('x-real-ip')
-  if (realIp) {
-    return realIp
-  }
-
-  const cfConnectingIp = request.headers.get('cf-connecting-ip')
-  if (cfConnectingIp) {
-    return cfConnectingIp
-  }
-
-  // Fallback to a generic identifier
-  // In production, you might want to require authentication
-  return 'anonymous'
-}
 
 /**
  * Example usage in API route:

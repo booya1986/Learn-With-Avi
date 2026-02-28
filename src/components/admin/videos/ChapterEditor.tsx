@@ -7,6 +7,8 @@ import { Plus, Trash2, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { formatTimestamp } from '@/lib/rag-common'
+import { parseTime } from '@/lib/utils'
 
 export interface Chapter {
   title: string
@@ -29,25 +31,6 @@ export const ChapterEditor = ({
   onAutoExtract,
   isExtracting = false,
 }: ChapterEditorProps) => {
-  const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600)
-    const minutes = Math.floor((seconds % 3600) / 60)
-    const secs = seconds % 60
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const parseTime = (timeStr: string): number => {
-    const parts = timeStr.split(':').map(Number)
-    if (parts.length === 3) {
-      return parts[0] * 3600 + parts[1] * 60 + parts[2]
-    }
-    return parts[0] * 60 + (parts[1] || 0)
-  }
-
   const handleAddChapter = () => {
     const lastEndTime = chapters.length > 0 ? chapters[chapters.length - 1].endTime : 0
     const newChapter: Chapter = {
@@ -142,7 +125,7 @@ export const ChapterEditor = ({
               <div className="col-span-3">
                 <Input
                   placeholder="Start (0:00)"
-                  value={formatTime(chapter.startTime)}
+                  value={formatTimestamp(chapter.startTime)}
                   onChange={(e) => handleUpdateChapter(index, 'startTime', e.target.value)}
                 />
               </div>
@@ -150,7 +133,7 @@ export const ChapterEditor = ({
               <div className="col-span-3">
                 <Input
                   placeholder="End (0:00)"
-                  value={formatTime(chapter.endTime)}
+                  value={formatTimestamp(chapter.endTime)}
                   onChange={(e) => handleUpdateChapter(index, 'endTime', e.target.value)}
                 />
               </div>

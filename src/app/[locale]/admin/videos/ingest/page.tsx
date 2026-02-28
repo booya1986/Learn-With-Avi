@@ -13,6 +13,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import { VideoIngestForm } from "@/components/admin/videos/VideoIngestForm";
+import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 
@@ -33,6 +34,7 @@ export default async function VideoIngestPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  await requireAuth(undefined, locale);
   const courses = await getCourses();
 
   return (
@@ -43,7 +45,7 @@ export default async function VideoIngestPage({
           href={`/${locale}/admin/videos`}
           className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 mb-4"
         >
-          <ArrowLeft className="w-4 h-4 mr-1" />
+          <ArrowLeft className="w-4 h-4 me-1" />
           Back to Videos
         </Link>
 
@@ -77,7 +79,7 @@ export default async function VideoIngestPage({
         <div className="space-y-4 text-sm text-gray-700 dark:text-gray-300">
           <div>
             <h3 className="font-semibold mb-1">1. Get YouTube API Key (if not configured)</h3>
-            <ul className="list-disc list-inside space-y-1 ml-2 text-gray-600 dark:text-gray-400">
+            <ul className="list-disc list-inside space-y-1 ms-2 text-gray-600 dark:text-gray-400">
               <li>Go to Google Cloud Console</li>
               <li>Create a project</li>
               <li>Enable YouTube Data API v3</li>
@@ -88,24 +90,24 @@ export default async function VideoIngestPage({
 
           <div>
             <h3 className="font-semibold mb-1">2. Paste YouTube URL</h3>
-            <p className="text-gray-600 dark:text-gray-400 ml-2">
+            <p className="text-gray-600 dark:text-gray-400 ms-2">
               Supports any YouTube URL format (watch, youtu.be, embed, or just the video ID)
             </p>
           </div>
 
           <div>
             <h3 className="font-semibold mb-1">3. Select Course</h3>
-            <p className="text-gray-600 dark:text-gray-400 ml-2">
+            <p className="text-gray-600 dark:text-gray-400 ms-2">
               Choose which course this video belongs to
             </p>
           </div>
 
           <div>
             <h3 className="font-semibold mb-1">4. Click &ldquo;Ingest Video&rdquo;</h3>
-            <p className="text-gray-600 dark:text-gray-400 ml-2">
+            <p className="text-gray-600 dark:text-gray-400 ms-2">
               The system will automatically:
             </p>
-            <ul className="list-disc list-inside space-y-1 ml-4 text-gray-600 dark:text-gray-400">
+            <ul className="list-disc list-inside space-y-1 ms-4 text-gray-600 dark:text-gray-400">
               <li>Fetch video title, description, thumbnail, and duration</li>
               <li>Extract chapter timestamps from description</li>
               <li>Attempt to fetch YouTube auto-captions</li>
@@ -116,7 +118,7 @@ export default async function VideoIngestPage({
 
           <div>
             <h3 className="font-semibold mb-1">5. Complete Manual Steps</h3>
-            <ul className="list-disc list-inside space-y-1 ml-2 text-gray-600 dark:text-gray-400">
+            <ul className="list-disc list-inside space-y-1 ms-2 text-gray-600 dark:text-gray-400">
               <li>Add export to <code className="bg-gray-200 dark:bg-gray-800 px-1 py-0.5 rounded">src/data/transcripts/index.ts</code></li>
               <li>If no transcript was generated, add it manually to the transcript file</li>
               <li>Restart the development server</li>
@@ -133,7 +135,7 @@ export default async function VideoIngestPage({
         <ul className="text-xs text-yellow-800 dark:text-yellow-200 space-y-1 list-disc list-inside">
           <li>
             <strong>Chapters:</strong> Add timestamps to your YouTube video description in the format:
-            <code className="bg-yellow-100 dark:bg-yellow-900 px-1 py-0.5 rounded ml-1">0:00 Chapter Title</code>
+            <code className="bg-yellow-100 dark:bg-yellow-900 px-1 py-0.5 rounded ms-1">0:00 Chapter Title</code>
           </li>
           <li>
             <strong>Transcripts:</strong> Enable auto-captions on your YouTube video for automatic transcript extraction

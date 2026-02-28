@@ -26,14 +26,16 @@ interface QuizQuestionCardProps {
  * - Selected: blue border, light blue background
  * - Correct (revealed): green background with checkmark
  * - Incorrect (revealed): red background with X icon
+ *
+ * Memoized to prevent unnecessary re-renders when parent state changes.
  */
-export const QuizQuestionCard = ({
+export const QuizQuestionCard = React.memo(function QuizQuestionCard({
   question,
   selectedOption,
   revealAnswer,
   disabled,
   onSelectOption,
-}: QuizQuestionCardProps) => {
+}: QuizQuestionCardProps) {
   // Hebrew option labels
   const optionLabels: Record<string, string> = {
     a: 'א',
@@ -107,7 +109,7 @@ export const QuizQuestionCard = ({
             >
               {/* Option Text */}
               <span className="text-sm flex-1 text-right">
-                <span className="font-semibold ml-2">{optionLabels[option.id]}.</span>
+                <span className="font-semibold ms-2">{optionLabels[option.id]}.</span>
                 {option.text}
               </span>
 
@@ -125,4 +127,4 @@ export const QuizQuestionCard = ({
       </div>
     </div>
   )
-}
+})

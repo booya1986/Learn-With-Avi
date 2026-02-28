@@ -14,40 +14,11 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { type SummaryData } from "@/types";
 
 import { SummaryProcessStep } from "./SummaryProcessStep";
 import { SummarySection } from "./SummarySection";
 import { SummaryToolCard } from "./SummaryToolCard";
-
-/**
- * Summary data structure containing all extracted information
- */
-export interface SummaryData {
-  /**
-   * Overview/introduction text about the video
-   */
-  about: string;
-  /**
-   * List of tools mentioned in the video
-   */
-  tools: Array<{
-    name: string;
-    desc: string;
-    color: string;
-  }>;
-  /**
-   * Process steps extracted from the video
-   */
-  process: Array<{
-    step: number;
-    title: string;
-    desc: string;
-  }>;
-  /**
-   * Key benefits or takeaways
-   */
-  benefits: string[];
-}
 
 /**
  * AI-generated video summary modal
@@ -172,7 +143,7 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
             <button
               onClick={onClose}
               aria-label="Close summary modal"
-              className="absolute top-4 left-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600"
+              className="absolute top-4 start-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-blue-600"
             >
               <X className="w-5 h-5 text-white" />
             </button>
@@ -311,7 +282,7 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
                 disabled={isGenerating || !summaryData}
                 className="flex-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white"
               >
-                <Share2 className="w-4 h-4 ml-2" />
+                <Share2 className="w-4 h-4 ms-2" />
                 העתק סיכום
               </Button>
             </div>

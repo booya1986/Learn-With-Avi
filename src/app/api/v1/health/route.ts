@@ -9,7 +9,9 @@
  * - 503: One or more critical services unavailable
  */
 
-import { NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+
+import { getToken } from 'next-auth/jwt'
 
 import { hasApiKey, getConfig } from '@/lib/config'
 import { getEmbeddingCacheStats } from '@/lib/embeddings'
@@ -29,7 +31,6 @@ interface HealthCheckResponse {
   uptime: number
   services: ServiceStatus[]
   version?: string
-  environment?: string
 }
 
 /**
@@ -55,7 +56,7 @@ async function checkChromaDB(): Promise<ServiceStatus> {
         status: 'healthy',
         message: 'Vector database operational',
         details: {
-          url: chromaUrl,
+          available: true,
         },
       }
     } else {
@@ -64,7 +65,6 @@ async function checkChromaDB(): Promise<ServiceStatus> {
         status: 'degraded',
         message: `ChromaDB responded with status ${response.status}`,
         details: {
-          url: chromaUrl,
           fallback: 'Keyword search available',
         },
       }
@@ -132,7 +132,7 @@ function getEmbeddingCacheStatus(): ServiceStatus {
         misses: stats.misses,
         size: stats.size,
         maxSize: stats.maxSize,
-        estimatedSavings: `$${(stats.hits * 0.00002).toFixed(4)}`,
+        cacheSavingsActive: stats.hits > 0,
       },
     }
   } catch (error) {
@@ -221,8 +221,16 @@ async function getRedisStatus(): Promise<ServiceStatus> {
 
 /**
  * GET endpoint for health check
+ * Unauthenticated: returns minimal { status: 'ok' } for load balancers
+ * Authenticated admin: returns full service details
  */
-export async function GET(): Promise<NextResponse<HealthCheckResponse>> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  // Return minimal response for unauthenticated requests (load balancer / uptime pings)
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+  if (!token) {
+    return NextResponse.json({ status: 'ok' })
+  }
+
   const startTime = Date.now()
 
   try {
@@ -265,7 +273,6 @@ export async function GET(): Promise<NextResponse<HealthCheckResponse>> {
       uptime: process.uptime(),
       services,
       version: process.env.npm_package_version || 'unknown',
-      environment: process.env.NODE_ENV || 'development',
     }
 
     // Return 503 if unhealthy, 200 otherwise

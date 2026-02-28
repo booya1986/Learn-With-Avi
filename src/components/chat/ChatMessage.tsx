@@ -4,8 +4,11 @@ import React, { useMemo } from 'react'
 
 import { User, Bot } from 'lucide-react'
 
+import { formatTimestamp } from '@/lib/rag-common'
 import { cn } from '@/lib/utils'
 import { type ChatMessage as ChatMessageType, type VideoSource } from '@/types'
+
+import { MarkdownText, processInlineMarkdown } from './MarkdownText'
 
 interface ChatMessageProps {
   message: ChatMessageType
@@ -99,133 +102,8 @@ const MessageContent = ({
   )
 }
 
-// Simple markdown renderer for common patterns
-const MarkdownText = ({ text }: { text: string }) => {
-  const rendered = useMemo(() => {
-    // Split by newlines first
-    const lines = text.split('\n')
 
-    return lines.map((line, lineIndex) => {
-      // Process inline elements
-      const processedLine = processInlineMarkdown(line)
-
-      // Check for headers
-      if (line.startsWith('### ')) {
-        return (
-          <h3 key={lineIndex} className="font-semibold text-base mt-3 mb-1">
-            {processInlineMarkdown(line.slice(4))}
-          </h3>
-        )
-      }
-      if (line.startsWith('## ')) {
-        return (
-          <h2 key={lineIndex} className="font-semibold text-lg mt-3 mb-1">
-            {processInlineMarkdown(line.slice(3))}
-          </h2>
-        )
-      }
-      if (line.startsWith('# ')) {
-        return (
-          <h1 key={lineIndex} className="font-bold text-xl mt-3 mb-2">
-            {processInlineMarkdown(line.slice(2))}
-          </h1>
-        )
-      }
-
-      // Check for bullet points
-      if (line.startsWith('- ') || line.startsWith('* ')) {
-        return (
-          <li key={lineIndex} className="ml-4 list-disc">
-            {processInlineMarkdown(line.slice(2))}
-          </li>
-        )
-      }
-
-      // Check for numbered lists
-      const numberedMatch = line.match(/^(\d+)\.\s/)
-      if (numberedMatch) {
-        return (
-          <li key={lineIndex} className="ml-4 list-decimal">
-            {processInlineMarkdown(line.slice(numberedMatch[0].length))}
-          </li>
-        )
-      }
-
-      // Check for code blocks
-      if (line.startsWith('```')) {
-        return null // Handle in a more complex way if needed
-      }
-
-      // Regular paragraph
-      if (line.trim() === '') {
-        return <br key={lineIndex} />
-      }
-
-      return (
-        <span key={lineIndex}>
-          {processedLine}
-          {lineIndex < lines.length - 1 && <br />}
-        </span>
-      )
-    })
-  }, [text])
-
-  return <>{rendered}</>
-}
-
-// Process inline markdown elements (bold, italic, code)
-function processInlineMarkdown(text: string): React.ReactNode {
-  const elements: React.ReactNode[] = []
-  let lastIndex = 0
-
-  // Combined regex for bold, italic, and inline code
-  const inlineRegex = /(\*\*(.+?)\*\*)|(\*(.+?)\*)|(`(.+?)`)/g
-  let match
-
-  while ((match = inlineRegex.exec(text)) !== null) {
-    // Add text before the match
-    if (match.index > lastIndex) {
-      elements.push(text.slice(lastIndex, match.index))
-    }
-
-    if (match[1]) {
-      // Bold **text**
-      elements.push(
-        <strong key={match.index} className="font-semibold">
-          {match[2]}
-        </strong>
-      )
-    } else if (match[3]) {
-      // Italic *text*
-      elements.push(
-        <em key={match.index} className="italic">
-          {match[4]}
-        </em>
-      )
-    } else if (match[5]) {
-      // Inline code `text`
-      elements.push(
-        <code
-          key={match.index}
-          className="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono"
-        >
-          {match[6]}
-        </code>
-      )
-    }
-
-    lastIndex = match.index + match[0].length
-  }
-
-  // Add remaining text
-  if (lastIndex < text.length) {
-    elements.push(text.slice(lastIndex))
-  }
-
-  return elements.length > 0 ? elements : text
-}
-
-export const ChatMessage = ({ message, onTimestampClick }: ChatMessageProps) => {
+export const ChatMessage = React.memo(function ChatMessage({ message, onTimestampClick }: ChatMessageProps) {
   const isUser = message.role === 'user'
   const isHebrew = containsHebrew(message.content)
 
@@ -285,7 +163,7 @@ export const ChatMessage = ({ message, onTimestampClick }: ChatMessageProps) => 
       </div>
     </div>
   )
-}
+})
 
 const SourceBadge = ({
   source,
@@ -294,7 +172,7 @@ const SourceBadge = ({
   source: VideoSource
   onTimestampClick?: (timestamp: number) => void
 }) => {
-  const formattedTime = formatTimestampDisplay(source.timestamp)
+  const formattedTime = formatTimestamp(source.timestamp)
 
   return (
     <button
@@ -319,13 +197,3 @@ function formatMessageTime(date: Date): string {
   })
 }
 
-function formatTimestampDisplay(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const mins = Math.floor((seconds % 3600) / 60)
-  const secs = Math.floor(seconds % 60)
-
-  if (hours > 0) {
-    return `${hours}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-  return `${mins}:${secs.toString().padStart(2, '0')}`
-}

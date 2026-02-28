@@ -106,7 +106,7 @@ export const MicrophoneButton = ({
       </Button>
 
       {/* Recording indicator */}
-      {isRecording ? <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
+      {isRecording ? <div className="absolute -bottom-2 start-1/2 -translate-x-1/2">
           <div className="flex items-center gap-1 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
             <Activity size={12} className="animate-pulse" />
             Recording...
