@@ -4,6 +4,7 @@ import { CourseCard } from "@/components/CourseCard";
 import { HeroCTAButtons } from "@/components/HeroCTAButtons";
 import { getCourses } from "@/data/courses";
 
+const G = '#22c55e'
 const G_SOFT = '#4ade80'
 const G_GLOW_MD = '0 0 24px rgba(34,197,94,0.35), 0 0 48px rgba(34,197,94,0.12)'
 
