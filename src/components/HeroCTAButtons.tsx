@@ -12,6 +12,7 @@ const G = '#22c55e'
 const G_SOFT = '#4ade80'
 const G_GLOW_MD = '0 0 24px rgba(34,197,94,0.35), 0 0 48px rgba(34,197,94,0.12)'
 
+/** Hero section CTA buttons — Browse Courses and Start Learning links. */
 export const HeroCTAButtons = ({ locale, browseCourses, startLearning }: HeroCTAButtonsProps) => {
   return (
     <div className="flex flex-col sm:flex-row items-center gap-4">
@@ -46,7 +47,7 @@ export const HeroCTAButtons = ({ locale, browseCourses, startLearning }: HeroCTA
         {browseCourses}
       </Link>
       <Link
-        href={`/${locale}/course/intro-to-embeddings`}
+        href={`/${locale}/course/ai-no-code`}
         className="transition-all duration-150"
         style={{
           padding: '14px 32px',
