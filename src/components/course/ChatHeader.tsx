@@ -1,46 +1,86 @@
 /**
- * ChatHeader component - AI Assistant header with live indicator
+ * ChatHeader component - AI Tutor header with green theme
  *
- * Displays the AI assistant branding with an animated audio waveform
- * to indicate the system is connected and ready to respond.
+ * Displays the AI tutor branding with a sparkle icon in a green-glowing circle,
+ * "AI Tutor" title, "Powered by Claude" subtitle, and an online indicator.
  */
 
-import { Sparkles } from "lucide-react";
+const G = '#22c55e'
+const G_SOFT = '#4ade80'
+const G_GLOW_SM = '0 0 10px rgba(34,197,94,0.45)'
 
 export const ChatHeader = () => {
-  // Use deterministic heights to avoid hydration mismatch
-  const waveformHeights = [12, 18, 10, 22, 14, 20, 16, 11];
-
   return (
-    <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex-shrink-0">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-gray-900 dark:text-white">AI Assistant</h3>
-            <p className="text-xs text-green-500 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-              Connected
-            </p>
+    <div
+      style={{
+        padding: '14px 18px',
+        borderBottom: '1px solid rgba(34,197,94,0.1)',
+        background: 'rgba(34,197,94,0.04)',
+        flexShrink: 0,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* ✦ icon in green circle */}
+        <div
+          style={{
+            width: 30,
+            height: 30,
+            borderRadius: '50%',
+            background: 'rgba(34,197,94,0.1)',
+            border: '1px solid rgba(34,197,94,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 14,
+            color: G_SOFT,
+            boxShadow: G_GLOW_SM,
+            flexShrink: 0,
+          }}
+          aria-hidden="true"
+        >
+          ✦
+        </div>
+
+        {/* Title + subtitle */}
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: '#e5e5e5' }}>AI Tutor</div>
+          <div
+            style={{
+              fontSize: 10,
+              color: G_SOFT,
+              opacity: 0.8,
+              letterSpacing: '0.04em',
+            }}
+          >
+            Powered by Claude
           </div>
         </div>
 
-        {/* Audio Waveform Animation */}
-        <div className="flex items-center gap-0.5 h-6" aria-label="Audio indicator">
-          {waveformHeights.map((height, i) => (
-            <div
-              key={i}
-              className="w-1 bg-orange-500 rounded-full animate-pulse"
-              style={{
-                height: `${height}px`,
-                animationDelay: `${i * 0.1}s`,
-              }}
-            />
-          ))}
+        {/* Online indicator */}
+        <div
+          style={{
+            marginInlineStart: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            fontSize: 10,
+            color: G_SOFT,
+          }}
+        >
+          <span
+            style={{
+              width: 5,
+              height: 5,
+              borderRadius: '50%',
+              background: G,
+              display: 'inline-block',
+              boxShadow: G_GLOW_SM,
+            }}
+            aria-hidden="true"
+          />
+          online
         </div>
       </div>
     </div>
-  );
+  )
 }

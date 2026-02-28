@@ -1,125 +1,166 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
-import { type Course, type Video } from "@/types";
+import React from 'react'
 
-import { ChapterListItem, type ChapterItem } from "./ChapterListItem";
-import { CourseInfoCard } from "./CourseInfoCard";
-import { OverallProgressBar } from "./OverallProgressBar";
+import { type ChapterItem, type Course, type Video } from '@/types'
+
+const G = '#22c55e'
+const G_SOFT = '#4ade80'
+const G_BG = '#0a2812'
+const G_GLOW_SM = '0 0 10px rgba(34,197,94,0.45)'
 
 /**
- * MaterialsSidebar - Right sidebar displaying course info, progress, and chapter navigation
+ * MaterialsSidebar - Left sidebar displaying chapter navigation and progress
  *
- * This component displays:
- * - Course title, description, and tags
- * - Course metadata (type, level, duration, videos count)
- * - Overall video progress bar
- * - Chapter list with individual progress tracking
- *
- * @param course - Course object containing all course data
- * @param currentVideo - Currently playing video
- * @param currentTime - Current playback time in seconds
- * @param videoDuration - Total video duration in seconds
- * @param chapterItems - Array of chapters with progress data
- * @param overallProgress - Overall progress percentage (0-100)
- * @param onChapterClick - Callback when a chapter is clicked, receives startTime
+ * Styled to match the Storybook dark green theme.
  */
 interface MaterialsSidebarProps {
-  course: Course;
-  currentVideo: Video | null;
-  currentTime: number;
-  videoDuration: number;
-  chapterItems: ChapterItem[];
-  overallProgress: number;
-  onChapterClick: (startTime: number) => void;
-  isLoading?: boolean; // True when course/video data is initially loading
+  course: Course
+  currentVideo: Video | null
+  currentTime: number
+  videoDuration: number
+  chapterItems: ChapterItem[]
+  overallProgress: number
+  onChapterClick: (startTime: number) => void
+  isLoading?: boolean
 }
 
 export const MaterialsSidebar = ({
-  course,
-  currentVideo,
-  currentTime,
-  videoDuration,
   chapterItems,
   overallProgress,
   onChapterClick,
-  isLoading = false,
 }: MaterialsSidebarProps) => {
   return (
-    <div className="w-80 flex-shrink-0 border-l border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hidden xl:block overflow-hidden">
-      <ScrollArea className="h-[calc(100vh-57px)]">
-        <div className="p-4">
-          {isLoading ? (
-            <MaterialsSidebarSkeleton />
-          ) : (
-            <>
-              {/* Course Info Card with metadata */}
-              <CourseInfoCard
-                course={course}
-                currentVideo={currentVideo}
-                videoDuration={videoDuration}
-              />
-
-              {/* Video Chapters - Matching Timeline */}
-              <div className="border-t border-gray-200 dark:border-gray-800 pt-4">
-                {/* Overall Progress Bar */}
-                <OverallProgressBar
-                  overallProgress={overallProgress}
-                  currentTime={currentTime}
-                  videoDuration={videoDuration}
-                />
-
-                {/* Chapter List - Directly from video chapters */}
-                <div className="space-y-1">
-                  {chapterItems.map((chapter, idx) => (
-                    <ChapterListItem
-                      key={chapter.id}
-                      chapter={chapter}
-                      index={idx}
-                      onChapterClick={onChapterClick}
-                    />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </ScrollArea>
-    </div>
-  );
-}
-
-/**
- * MaterialsSidebarSkeleton - Skeleton UI shown while course data loads
- */
-const MaterialsSidebarSkeleton = () => {
-  return (
-    <div className="space-y-4">
-      {/* Course info skeleton */}
-      <div className="space-y-3">
-        <Skeleton className="h-6 w-full" />
-        <Skeleton className="h-4 w-4/5" />
-        <Skeleton className="h-4 w-3/4" />
-        <div className="flex gap-2 mt-3">
-          <Skeleton className="h-6 w-16 rounded-full" />
-          <Skeleton className="h-6 w-20 rounded-full" />
-        </div>
+    <aside
+      style={{
+        background: '#141414',
+        borderRight: '1px solid rgba(34,197,94,0.08)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        flexShrink: 0,
+      }}
+    >
+      {/* CHAPTERS label */}
+      <div
+        style={{
+          padding: '14px 16px 10px',
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: '0.14em',
+          color: '#444',
+          textTransform: 'uppercase',
+          fontFamily: 'monospace',
+          flexShrink: 0,
+        }}
+      >
+        Chapters
       </div>
 
-      {/* Progress bar skeleton */}
-      <div className="border-t border-gray-200 dark:border-gray-800 pt-4 space-y-3">
-        <Skeleton className="h-2 w-full rounded-full" />
-        <Skeleton className="h-4 w-24" />
-      </div>
+      {/* Scrollable chapter list */}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px' }}>
+        {chapterItems.map((chapter, idx) => (
+          <button
+            key={chapter.id}
+            onClick={() => onChapterClick(chapter.startTime)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '9px 10px',
+              borderRadius: 7,
+              marginBottom: 2,
+              background: chapter.isActive
+                ? 'rgba(34,197,94,0.08)'
+                : 'transparent',
+              border: chapter.isActive
+                ? '1px solid rgba(34,197,94,0.25)'
+                : '1px solid transparent',
+              cursor: 'pointer',
+              transition: 'all 150ms cubic-bezier(0.4,0,0.2,1)',
+              width: '100%',
+              textAlign: 'start',
+            }}
+          >
+            {/* Circle indicator */}
+            <span
+              style={{
+                width: 18,
+                height: 18,
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 10,
+                flexShrink: 0,
+                background: chapter.isCompleted
+                  ? G_BG
+                  : chapter.isActive
+                    ? 'rgba(34,197,94,0.06)'
+                    : 'transparent',
+                border: chapter.isCompleted
+                  ? `1px solid ${G}`
+                  : chapter.isActive
+                    ? '1px solid rgba(34,197,94,0.5)'
+                    : '1px solid #333',
+                color: chapter.isCompleted ? G_SOFT : chapter.isActive ? G_SOFT : '#444',
+                boxShadow: chapter.isCompleted ? G_GLOW_SM : 'none',
+              }}
+            >
+              {chapter.isCompleted ? '✓' : idx + 1}
+            </span>
 
-      {/* Chapters skeleton */}
-      <div className="space-y-2">
-        <Skeleton className="h-5 w-32 mb-3" />
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="space-y-2">
-            <Skeleton className="h-14 w-full rounded-lg" />
-          </div>
+            {/* Chapter title */}
+            <span
+              style={{
+                fontSize: 13,
+                color: chapter.isActive ? '#e5e5e5' : chapter.isCompleted ? '#888' : '#444',
+                fontWeight: chapter.isActive ? 600 : 400,
+                lineHeight: 1.3,
+              }}
+            >
+              {chapter.title}
+            </span>
+          </button>
         ))}
       </div>
-    </div>
-  );
+
+      {/* Overall progress at bottom */}
+      <div
+        style={{
+          padding: '14px 16px',
+          borderTop: '1px solid rgba(34,197,94,0.08)',
+          flexShrink: 0,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginBottom: 8,
+            fontSize: 12,
+          }}
+        >
+          <span style={{ color: '#555' }}>Overall</span>
+          <span style={{ color: G_SOFT, fontWeight: 700 }}>{Math.round(overallProgress)}%</span>
+        </div>
+        <div
+          style={{
+            height: 4,
+            background: '#252525',
+            borderRadius: 99,
+            overflow: 'hidden',
+          }}
+        >
+          <div
+            style={{
+              height: '100%',
+              width: `${overallProgress}%`,
+              background: `linear-gradient(to right, ${G}, ${G_SOFT})`,
+              borderRadius: 99,
+              boxShadow: G_GLOW_SM,
+            }}
+          />
+        </div>
+      </div>
+    </aside>
+  )
 }

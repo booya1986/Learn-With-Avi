@@ -4,7 +4,6 @@ import React from 'react'
 
 import { FileText, Brain } from 'lucide-react'
 
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { type UseQuizStateReturn } from '@/hooks'
 import { type Video, type Chapter } from '@/types'
 
@@ -13,6 +12,8 @@ import { LiveTranscript } from './LiveTranscript'
 import { QuizPanel } from './QuizPanel'
 import { VideoPlayerSection } from './VideoPlayerSection'
 
+const G = '#22c55e'
+const G_SOFT = '#4ade80'
 
 /**
  * Props for VideoSection component
@@ -44,13 +45,9 @@ interface VideoSectionProps {
 }
 
 /**
- * VideoSection - Center column with video player and live transcript
+ * VideoSection - Center column with video player, action buttons, tabs, and transcript/quiz.
  *
- * Displays the main video player with action buttons and a live transcript
- * that highlights the currently spoken text based on video playback time.
- *
- * @param props - VideoSection properties
- * @returns Video section component
+ * Styled to match the Storybook dark green theme with a fixed-height column layout.
  */
 export const VideoSection = ({
   currentVideo,
@@ -72,71 +69,135 @@ export const VideoSection = ({
   onStartQuiz,
 }: VideoSectionProps) => {
   return (
-    <div className="flex-1 min-w-0">
-      <ScrollArea className="h-[calc(100vh-57px)]">
-        <div className="p-4 lg:p-6">
-          {/* Video Player Section */}
-          {currentVideo ? <VideoPlayerSection
-              currentVideo={currentVideo}
-              currentStageIndex={currentStageIndex}
-              currentChapter={currentChapter}
-              onTimeUpdate={onTimeUpdate}
-              onDurationChange={onDurationChange}
-              seekToTime={seekToTime}
-            /> : null}
-
-          {/* Action Buttons below video */}
-          <ActionButtons
-            onSummarize={onSummarize}
-            onStartQuiz={onStartQuiz}
-            courseVideosCount={courseVideosCount}
-            currentVideoOrder={currentVideoOrder}
+    <main
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        height: '100%',
+        borderRight: '1px solid rgba(34,197,94,0.08)',
+      }}
+    >
+      {/* Video player area — aspect ratio 16:9, black bg */}
+      <div
+        style={{
+          background: '#000',
+          aspectRatio: '16/9',
+          flexShrink: 0,
+          borderBottom: '1px solid #1e1e1e',
+          overflow: 'hidden',
+          position: 'relative',
+        }}
+      >
+        {currentVideo ? (
+          <VideoPlayerSection
+            currentVideo={currentVideo}
+            currentStageIndex={currentStageIndex}
+            currentChapter={currentChapter}
+            onTimeUpdate={onTimeUpdate}
+            onDurationChange={onDurationChange}
+            seekToTime={seekToTime}
           />
+        ) : null}
+      </div>
 
-          {/* Tabs: Transcript / Quiz */}
-          <div className="mt-6">
-            <div className="flex gap-6 border-b border-gray-200 dark:border-[#1e1e1e]" dir="rtl">
-              <button
-                onClick={() => onTabChange('transcript')}
-                className={`flex items-center gap-2 pb-3 px-2 border-b-2 transition-all duration-300 ${
-                  activeContentTab === 'transcript'
-                    ? 'border-green-500 text-green-400 [box-shadow:0_2px_0_rgba(34,197,94,0.35)]'
-                    : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-400 dark:hover:text-gray-400'
-                }`}
-              >
-                <FileText className="w-4 h-4" />
-                <span className="font-medium">תמלול</span>
-              </button>
-              <button
-                onClick={() => onTabChange('quiz')}
-                className={`flex items-center gap-2 pb-3 px-2 border-b-2 transition-all duration-300 ${
-                  activeContentTab === 'quiz'
-                    ? 'border-green-500 text-green-400 [box-shadow:0_2px_0_rgba(34,197,94,0.35)]'
-                    : 'border-transparent text-gray-500 dark:text-gray-500 hover:text-gray-400 dark:hover:text-gray-400'
-                }`}
-              >
-                <Brain className="w-4 h-4" />
-                <span className="font-medium">בוחן</span>
-              </button>
-            </div>
+      {/* Action buttons row below video */}
+      <div
+        style={{
+          padding: '10px 16px',
+          flexShrink: 0,
+          borderBottom: '1px solid #1e1e1e',
+        }}
+      >
+        <ActionButtons
+          onSummarize={onSummarize}
+          onStartQuiz={onStartQuiz}
+          courseVideosCount={courseVideosCount}
+          currentVideoOrder={currentVideoOrder}
+        />
+      </div>
 
-            {/* Tab Content */}
-            {activeContentTab === 'transcript' && (
-              <LiveTranscript
-                currentVideo={currentVideo}
-                currentTime={currentTime}
-                videoDuration={videoDuration}
-                liveTranscript={liveTranscript}
-                onTimestampClick={onTimestampClick}
-              />
-            )}
+      {/* Tabs row */}
+      <div
+        style={{
+          display: 'flex',
+          borderBottom: '1px solid #1e1e1e',
+          flexShrink: 0,
+        }}
+        dir="rtl"
+      >
+        <button
+          onClick={() => onTabChange('transcript')}
+          style={{
+            flex: 1,
+            padding: '12px 0',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: activeContentTab === 'transcript' ? `2px solid ${G}` : '2px solid transparent',
+            color: activeContentTab === 'transcript' ? G_SOFT : '#555',
+            fontSize: 13,
+            fontWeight: activeContentTab === 'transcript' ? 600 : 400,
+            cursor: 'pointer',
+            transition: 'all 300ms cubic-bezier(0.4,0,0.2,1)',
+            letterSpacing: '0.03em',
+            boxShadow: activeContentTab === 'transcript' ? '0 2px 0 rgba(34,197,94,0.35)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+          }}
+        >
+          <FileText style={{ width: 14, height: 14 }} />
+          תמלול
+        </button>
 
-            {activeContentTab === 'quiz' && (
-              <QuizPanel quizState={quizState} onTimestampClick={onTimestampClick} />
-            )}
-          </div>
-        </div>
-      </ScrollArea>
-    </div>
+        <button
+          onClick={() => onTabChange('quiz')}
+          style={{
+            flex: 1,
+            padding: '12px 0',
+            background: 'transparent',
+            border: 'none',
+            borderBottom: activeContentTab === 'quiz' ? `2px solid ${G}` : '2px solid transparent',
+            color: activeContentTab === 'quiz' ? G_SOFT : '#555',
+            fontSize: 13,
+            fontWeight: activeContentTab === 'quiz' ? 600 : 400,
+            cursor: 'pointer',
+            transition: 'all 300ms cubic-bezier(0.4,0,0.2,1)',
+            letterSpacing: '0.03em',
+            boxShadow: activeContentTab === 'quiz' ? '0 2px 0 rgba(34,197,94,0.35)' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+          }}
+        >
+          <Brain style={{ width: 14, height: 14 }} />
+          בוחן
+        </button>
+      </div>
+
+      {/* Scrollable content area */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+        }}
+      >
+        {activeContentTab === 'transcript' && (
+          <LiveTranscript
+            currentVideo={currentVideo}
+            currentTime={currentTime}
+            videoDuration={videoDuration}
+            liveTranscript={liveTranscript}
+            onTimestampClick={onTimestampClick}
+          />
+        )}
+
+        {activeContentTab === 'quiz' && (
+          <QuizPanel quizState={quizState} onTimestampClick={onTimestampClick} />
+        )}
+      </div>
+    </main>
   )
 }

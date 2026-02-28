@@ -65,7 +65,16 @@ export const ChatSidebar = ({
   onKeyPress,
 }: ChatSidebarProps) => {
   return (
-    <div className="w-80 flex-shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hidden lg:flex flex-col h-[calc(100vh-57px)] overflow-hidden">
+    <aside
+      style={{
+        background: '#121812',
+        border: '1px solid rgba(34,197,94,0.12)',
+        borderTop: 'none',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
       <ChatHeader />
 
       <ChatMessageList
@@ -83,6 +92,6 @@ export const ChatSidebar = ({
         onToggleVoice={onToggleVoice}
         onKeyPress={onKeyPress}
       />
-    </div>
+    </aside>
   );
 }

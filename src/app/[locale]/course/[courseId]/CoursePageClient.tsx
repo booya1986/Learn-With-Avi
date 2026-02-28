@@ -1,28 +1,24 @@
+ 
 'use client'
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 
-import {
-  ChevronLeft,
-  ChevronDown,
-  LogOut,
-  User,
-} from 'lucide-react'
-import { signOut, useSession } from 'next-auth/react'
+import { ChevronLeft } from 'lucide-react'
+import { useLocale } from 'next-intl'
 
-import { type ChapterItem } from '@/components/course/ChapterListItem'
 import { ChatSidebar } from '@/components/course/ChatSidebar'
 import { MaterialsSidebar } from '@/components/course/MaterialsSidebar'
 import { SummaryModal } from '@/components/course/SummaryModal'
+import { VideoProgressBar } from '@/components/course/VideoProgressBar'
 import { VideoSection } from '@/components/course/VideoSection'
-import { Button } from '@/components/ui/button'
 import { CourseProvider, useVideoContext, useChatContext, useQuizContext } from '@/contexts'
-import { useRouter } from '@/i18n/navigation'
-import { formatTime } from '@/lib/utils'
+import { useChapterItems } from '@/hooks/course/useChapterItems'
 import { type Course } from '@/types'
+
+const G_GLOW = '0 0 10px rgba(34,197,94,0.45)'
 
 interface CoursePageClientProps {
   course: Course
@@ -30,186 +26,68 @@ interface CoursePageClientProps {
 }
 
 /**
- * Internal component that uses contexts
- * This must be wrapped by CourseProvider
+ * Internal component that uses contexts.
+ * Must be wrapped by CourseProvider.
  */
-const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
+const CoursePageContent = ({ course }: Omit<CoursePageClientProps, 'courseId'>) => {
   const searchParams = useSearchParams()
-  const router = useRouter()
-  const { data: session } = useSession()
+  const locale = useLocale()
 
-  // Get all state from contexts — destructure specific values to avoid
-  // whole-object deps which create infinite loops when the object ref changes.
-  const videoContext = useVideoContext()
   const {
-    currentVideo,
-    currentTime,
-    videoDuration,
-    chapterWatchedTime,
-    currentChapter,
-    currentStageIndex,
-    liveTranscript,
-    overallProgress,
-    seekToTime,
-    setCurrentVideo,
-    handleSeek,
-    handleTimeUpdate,
-    handleDurationChange,
-  } = videoContext
+    currentVideo, currentTime, videoDuration, chapterWatchedTime,
+    currentChapter, currentStageIndex, liveTranscript, overallProgress,
+    seekToTime, setCurrentVideo, handleSeek, handleTimeUpdate, handleDurationChange,
+  } = useVideoContext()
 
-  const chatContext = useChatContext()
   const {
-    messages,
-    inputMessage,
-    isLoading,
-    isListening,
-    setInputMessage,
-    toggleVoiceInput,
-    sendMessage,
-    handleKeyPress: chatHandleKeyPress,
-    generateSummary,
-    showSummary,
-    setShowSummary,
-    isGeneratingSummary,
-    generatedSummaryData,
-  } = chatContext
+    messages, inputMessage, isLoading, isListening, setInputMessage, toggleVoiceInput,
+    sendMessage, handleKeyPress: chatHandleKeyPress, generateSummary,
+    showSummary, setShowSummary, isGeneratingSummary, generatedSummaryData,
+  } = useChatContext()
 
   const quizContext = useQuizContext()
   const { status: quizStatus, startQuiz } = quizContext
 
-  // Local UI state only
   const [activeContentTab, setActiveContentTab] = useState<'transcript' | 'quiz'>('transcript')
 
   const handleStartQuiz = useCallback(() => {
     setActiveContentTab('quiz')
-    if (quizStatus === 'idle') {
-      void startQuiz()
-    }
+    if (quizStatus === 'idle') void startQuiz()
   }, [quizStatus, startQuiz])
 
-  // Generate chapter items directly from video chapters
-  const chapterItems: ChapterItem[] = useMemo(() => {
+  const chapterItems = useChapterItems(currentVideo, currentTime, videoDuration, chapterWatchedTime)
 
-    const calculateChapterProgress = (
-      chapterIndex: number,
-      chapterDuration: number,
-    ): { isCompleted: boolean; progress: number } => {
-      const watchedSeconds = chapterWatchedTime[chapterIndex] || 0
-
-      const completionThreshold = 0.9
-      const isCompleted = watchedSeconds >= chapterDuration * completionThreshold
-
-      let progress = 0
-      if (isCompleted) {
-        progress = 100
-      } else if (chapterDuration > 0) {
-        progress = Math.min(100, Math.round((watchedSeconds / chapterDuration) * 100))
-      }
-
-      return { isCompleted, progress }
-    }
-
-    if (currentVideo?.chapters && currentVideo.chapters.length > 0) {
-      return currentVideo.chapters.map((chapter, index) => {
-        const chapterDuration = chapter.endTime - chapter.startTime
-        const isActive = currentTime >= chapter.startTime && currentTime < chapter.endTime
-        const { isCompleted, progress } = calculateChapterProgress(index, chapterDuration)
-
-        return {
-          id: `chapter-${index}`,
-          title: chapter.title,
-          startTime: chapter.startTime,
-          endTime: chapter.endTime,
-          duration: formatTime(chapterDuration),
-          isActive,
-          isCompleted,
-          progress,
-        }
-      })
-    }
-
-    if (videoDuration > 0) {
-      const numChapters = Math.max(3, Math.min(10, Math.ceil(videoDuration / 120)))
-      const chapterLength = videoDuration / numChapters
-
-      return Array.from({ length: numChapters }, (_, index) => {
-        const startTime = Math.round(index * chapterLength)
-        const endTime = Math.round((index + 1) * chapterLength)
-        const chapterDuration = endTime - startTime
-        const isActive = currentTime >= startTime && currentTime < endTime
-        const { isCompleted, progress } = calculateChapterProgress(index, chapterDuration)
-
-        return {
-          id: `auto-chapter-${index}`,
-          title: `חלק ${index + 1}`,
-          startTime,
-          endTime,
-          duration: formatTime(chapterDuration),
-          isActive,
-          isCompleted,
-          progress,
-        }
-      })
-    }
-
-    return []
-  }, [currentVideo, currentTime, videoDuration, chapterWatchedTime])
-
-  // Initialize current video — only needs the setter (stable reference), course, and searchParams
   useEffect(() => {
-    if (course && course.videos.length > 0) {
+    if (course?.videos.length > 0) {
       const videoIdParam = searchParams.get('video')
-      if (videoIdParam) {
-        const video = course.videos.find((v) => v.id === videoIdParam)
-        if (video) {
-          setCurrentVideo(video)
-          return
-        }
-      }
-      setCurrentVideo(course.videos[0])
+      const video = videoIdParam ? course.videos.find((v) => v.id === videoIdParam) : null
+      setCurrentVideo(video ?? course.videos[0])
     }
   }, [course, searchParams, setCurrentVideo])
 
-  // Handle chapter click
-  const handleChapterClick = useCallback((startTime: number) => {
-    handleSeek(startTime)
-  }, [handleSeek])
+  const handleChapterClick = useCallback((t: number) => handleSeek(t), [handleSeek])
 
-  // Handle chat message send
   const handleSendMessage = useCallback(() => {
-    sendMessage(currentVideo?.youtubeId, currentVideo?.title, currentVideo?.description)
+    void sendMessage(currentVideo?.youtubeId, currentVideo?.title, currentVideo?.description)
   }, [sendMessage, currentVideo])
 
-  // Wrap chat key press handler to call sendMessage
-  const handleChatKeyPress = useCallback(
-    (e: React.KeyboardEvent) => {
-      void chatHandleKeyPress(e)
-      if (e.key === 'Enter' && !e.shiftKey) {
-        handleSendMessage()
-      }
-    },
-    [chatHandleKeyPress, handleSendMessage]
-  )
+  const handleChatKeyPress = useCallback((e: React.KeyboardEvent) => {
+    void chatHandleKeyPress(e)
+    if (e.key === 'Enter' && !e.shiftKey) handleSendMessage()
+  }, [chatHandleKeyPress, handleSendMessage])
 
-  // Handle summary generation
   const handleSummarize = useCallback(() => {
-    if (!currentVideo) {return}
+    if (!currentVideo) return
     generateSummary(currentVideo.youtubeId, currentVideo.title, currentVideo.description)
   }, [generateSummary, currentVideo])
 
   if (!course) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
-            Course Not Found
-          </h1>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Back to Courses
+      <div style={{ minHeight: '100vh', background: '#1b1b1b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: '#e5e5e5', marginBottom: 16 }}>Course Not Found</h1>
+          <Link href={`/${locale}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: '#4ade80' }}>
+            <ChevronLeft style={{ width: 16, height: 16 }} />Back to Courses
           </Link>
         </div>
       </div>
@@ -217,65 +95,38 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      {/* Top Header Bar */}
-      <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-2">
-        <div className="flex items-center justify-between max-w-[1800px] mx-auto">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Link>
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 dark:bg-gray-800 rounded-lg">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {course.title}
-              </span>
-              <ChevronDown className="w-4 h-4 text-gray-400" />
-            </div>
-          </div>
+    <div style={{ background: '#1b1b1b', minHeight: '100vh', fontFamily: 'Rubik, system-ui, sans-serif', color: '#e5e5e5', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-          <div className="flex items-center gap-2">
-            {session ? (
-              <div className="flex items-center gap-2">
-                <div className="hidden md:flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold">
-                    {session.user?.name?.[0]?.toUpperCase() ?? <User className="w-4 h-4" />}
-                  </div>
-                  <span className="max-w-[120px] truncate">{session.user?.name}</span>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1.5"
-                  onClick={() => void signOut({ callbackUrl: '/' })}
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="hidden md:inline">Sign out</span>
-                </Button>
-              </div>
-            ) : null}
-          </div>
+      {/* Fixed 3px progress bar */}
+      <VideoProgressBar progress={overallProgress} />
+
+      {/* Breadcrumb nav */}
+      <nav style={{ marginTop: 3, display: 'flex', alignItems: 'center', padding: '0 24px', height: 50, background: 'rgba(22,22,22,0.95)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(34,197,94,0.1)', flexShrink: 0, gap: 16, zIndex: 50 }}>
+        <Link href={`/${locale}`} style={{ padding: '5px 14px', background: 'rgba(34,197,94,0.07)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: 6, fontSize: 13, fontWeight: 700, color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', flexShrink: 0 }}>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: G_GLOW }} />
+          LearnWithAvi
+        </Link>
+        <span style={{ color: '#333', fontSize: 14 }}>/</span>
+        <Link href={`/${locale}`} style={{ fontSize: 13, color: '#555', textDecoration: 'none' }}>Courses</Link>
+        <span style={{ color: '#333', fontSize: 14 }}>/</span>
+        <span style={{ fontSize: 13, color: '#e5e5e5', fontWeight: 500 }}>{course.title}</span>
+        <div style={{ marginInlineStart: 'auto', fontSize: 12, color: '#4ade80', display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600 }}>
+          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: G_GLOW }} />
+          {Math.round(overallProgress)}% complete
         </div>
-      </div>
+      </nav>
 
-      {/* Main Content - Three Column Layout */}
-      <div className="flex max-w-[1800px] mx-auto">
-        {/* LEFT SIDEBAR - AI Chat */}
-        <ChatSidebar
-          messages={messages}
-          inputMessage={inputMessage}
-          isLoading={isLoading}
-          isListening={isListening}
-          onInputChange={setInputMessage}
-          onSendMessage={handleSendMessage}
-          onToggleVoice={toggleVoiceInput}
-          onTimestampClick={handleSeek}
-          onKeyPress={handleChatKeyPress}
+      {/* 3-column grid: chapters | video | chat */}
+      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 320px', flex: 1, height: 'calc(100vh - 53px)', overflow: 'hidden' }}>
+        <MaterialsSidebar
+          course={course}
+          currentVideo={currentVideo}
+          currentTime={currentTime}
+          videoDuration={videoDuration}
+          chapterItems={chapterItems}
+          overallProgress={overallProgress}
+          onChapterClick={handleChapterClick}
         />
-
-        {/* CENTER - Video Player + Transcript/Quiz */}
         <VideoSection
           currentVideo={currentVideo}
           currentTime={currentTime}
@@ -289,28 +140,25 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
           onTimestampClick={handleSeek}
           seekToTime={seekToTime}
           courseVideosCount={course.videos.length}
-          currentVideoOrder={
-            currentVideo ? course.videos.findIndex((v) => v.id === currentVideo.id) + 1 : 1
-          }
+          currentVideoOrder={currentVideo ? course.videos.findIndex((v) => v.id === currentVideo.id) + 1 : 1}
           quizState={quizContext}
           activeContentTab={activeContentTab}
           onTabChange={setActiveContentTab}
           onStartQuiz={handleStartQuiz}
         />
-
-        {/* RIGHT SIDEBAR - Course Materials */}
-        <MaterialsSidebar
-          course={course}
-          currentVideo={currentVideo}
-          currentTime={currentTime}
-          videoDuration={videoDuration}
-          chapterItems={chapterItems}
-          overallProgress={overallProgress}
-          onChapterClick={handleChapterClick}
+        <ChatSidebar
+          messages={messages}
+          inputMessage={inputMessage}
+          isLoading={isLoading}
+          isListening={isListening}
+          onInputChange={setInputMessage}
+          onSendMessage={handleSendMessage}
+          onToggleVoice={toggleVoiceInput}
+          onTimestampClick={handleSeek}
+          onKeyPress={handleChatKeyPress}
         />
       </div>
 
-      {/* Summary Modal */}
       <SummaryModal
         isOpen={showSummary}
         onClose={() => setShowSummary(false)}
@@ -325,13 +173,10 @@ const CoursePageContent = ({ course, courseId }: CoursePageClientProps) => {
 /**
  * Main CoursePageClient component with context providers
  */
-const CoursePageClient = ({ course, courseId }: CoursePageClientProps) => {
-  return (
-    <CourseProvider initialVideo={course.videos[0]} videoId={course.videos[0]?.youtubeId}>
-      <CoursePageContent course={course} courseId={courseId} />
-    </CourseProvider>
-  )
-}
+const CoursePageClient = ({ course, courseId: _courseId }: CoursePageClientProps) => (
+  <CourseProvider initialVideo={course.videos[0]} videoId={course.videos[0]?.youtubeId}>
+    <CoursePageContent course={course} />
+  </CourseProvider>
+)
 
 export default CoursePageClient
-
