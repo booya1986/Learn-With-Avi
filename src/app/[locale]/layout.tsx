@@ -1,10 +1,10 @@
 import { Rubik } from 'next/font/google';
 import { notFound } from 'next/navigation';
 
-import { SessionProvider } from 'next-auth/react';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
 
+import { AuthProvider } from '@/components/AuthProvider';
 import { ConditionalFooter } from '@/components/ConditionalFooter';
 import { ConditionalNav } from '@/components/ConditionalNav';
 import { routing } from '@/i18n/routing';
@@ -50,11 +50,11 @@ export default async function LocaleLayout({
         suppressHydrationWarning
       >
         <NextIntlClientProvider messages={messages}>
-          <SessionProvider>
+          <AuthProvider>
             <ConditionalNav />
             {children}
             <ConditionalFooter />
-          </SessionProvider>
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>

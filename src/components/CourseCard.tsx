@@ -36,10 +36,10 @@ export const CourseCard = ({ course, className }: CourseCardProps) => {
   const durationText = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
 
   return (
-    <Link href={`/${locale}/course/${course.id}`}>
+    <Link href={`/${locale}/course/${course.id}`} className="block h-full">
       <div
         className={cn(
-          'group relative flex flex-col overflow-hidden rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1',
+          'group relative flex flex-col overflow-hidden rounded-xl h-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1',
           className
         )}
       >
