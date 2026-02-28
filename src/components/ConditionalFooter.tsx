@@ -11,21 +11,31 @@ export const ConditionalFooter = () => {
   }
 
   return (
-    <footer className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-gray-900 dark:text-white">
-              LearnWithAvi
-            </span>
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            AI-Powered Interactive Learning Platform
-          </p>
-          <p className="text-xs text-gray-400 dark:text-gray-500">
-            Built with Next.js and AI assistance
-          </p>
-        </div>
+    <footer
+      style={{
+        borderTop: '1px solid rgba(34,197,94,0.1)',
+        padding: '28px 40px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        background: '#1b1b1b',
+      }}
+    >
+      <div style={{ fontSize: 13, color: '#3a3a3a' }}>
+        LearnWithAvi &copy; 2025 — AI-Powered Learning
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 11,
+          color: '#333',
+          fontFamily: 'monospace',
+        }}
+      >
+        <span style={{ color: '#22c55e', opacity: 0.6 }}>●</span>
+        All systems operational
       </div>
     </footer>
   )

@@ -7,12 +7,14 @@
   },
   "homepage": {
     "hero": {
-      "badge": "AI-Powered Learning Experience",
+      "badge": "AI-Powered Learning",
+      "titlePart1": "Learn Smarter with",
+      "titleAccent": "AI Tutoring",
       "title": "Learn AI by Using AI—Your Personal Tutor, Always Available",
-      "subtitle": "Transform passive video watching into active learning. Ask questions, get instant answers, and master AI/ML concepts faster with your voice-powered AI tutor in Hebrew or English.",
+      "subtitle": "Personalized courses with voice AI tutor, RAG-based Q&A, and adaptive learning paths — in Hebrew and English.",
       "trustBadge": "Join 10,000+ developers learning with AI",
       "browseCourses": "Browse Courses",
-      "startLearning": "Start Learning Free",
+      "startLearning": "Start Learning →",
       "watchDemo": "Watch Demo (2 min)"
     },
     "features": {
@@ -30,8 +32,9 @@
       }
     },
     "courses": {
-      "title": "Start Learning Today",
-      "subtitle": "Choose from AI/ML courses built on proven YouTube content by @avilevi86 (10K+ subscribers)"
+      "title": "Our Courses",
+      "subtitle": "Start Learning Today",
+      "available": "available"
     },
     "about": {
       "title": "Join Thousands of Developers Mastering AI",

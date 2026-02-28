@@ -64,6 +64,7 @@ export const ConditionalNav = () => {
           {[
             { label: 'Home', href: `/${locale}` },
             { label: 'Courses', href: `/${locale}#courses` },
+            { label: 'About', href: `/${locale}#about` },
           ].map(({ label, href }) => {
             const isActive = label === 'Home'
               ? pathname === `/${locale}` || pathname === `/${locale}/`
@@ -73,7 +74,7 @@ export const ConditionalNav = () => {
                 key={label}
                 href={href}
                 className="text-sm font-medium transition-colors duration-150"
-                style={{ color: isActive ? G_SOFT : '#555' }}
+                style={{ color: isActive ? '#ffffff' : '#555' }}
                 onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = '#a0a0a0' }}
                 onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = '#555' }}
               >

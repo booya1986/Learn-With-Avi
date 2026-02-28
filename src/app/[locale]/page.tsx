@@ -1,12 +1,13 @@
 import Link from "next/link";
 
-import { ArrowRight, Play, Sparkles, BookOpen, MessageSquare, Mic } from "lucide-react";
 import { getTranslations } from 'next-intl/server';
 
 import { CourseCard } from "@/components/CourseCard";
-import { Button } from "@/components/ui/button";
-import { GlassCard } from "@/components/ui/glass-card";
-import { getCourses, getAllVideos } from "@/data/courses";
+import { getCourses } from "@/data/courses";
+
+const G = '#22c55e'
+const G_SOFT = '#4ade80'
+const G_GLOW_MD = '0 0 24px rgba(34,197,94,0.35), 0 0 48px rgba(34,197,94,0.12)'
 
 export default async function Home({
   params
@@ -15,144 +16,179 @@ export default async function Home({
 }) {
   const { locale } = await params;
   const courses = await getCourses();
-  const allVideos = await getAllVideos();
   const t = await getTranslations({ locale, namespace: 'homepage' });
 
-  // Debug: Log what title we're getting
-  console.log('📖 Homepage title for locale', locale, ':', t('hero.title'));
-
   return (
-    <div className="min-h-screen">
+    <div style={{ background: '#1b1b1b', minHeight: '100vh', color: '#e5e5e5' }}>
       {/* Hero Section */}
       <section
-        className="relative overflow-hidden min-h-[90vh] flex items-center"
+        className="relative flex flex-col items-center justify-center text-center overflow-hidden"
         style={{
-          background: `radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.03) 45%, transparent 70%), #1b1b1b`
+          minHeight: '75vh',
+          padding: '100px 40px 80px',
+          background: 'radial-gradient(ellipse at 50% 0%, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.03) 45%, transparent 70%)',
         }}
       >
-        {/* Background Slot Pattern - Dotted grid effect */}
+        {/* Badge */}
         <div
-          className="absolute inset-0 pointer-events-none opacity-40"
+          className="inline-flex items-center gap-2 mb-9"
           style={{
-            backgroundImage: `
-              repeating-linear-gradient(
-                0deg,
-                transparent,
-                transparent 100px,
-                rgba(255, 255, 255, 0.06) 100px,
-                rgba(255, 255, 255, 0.06) 102px,
-                transparent 102px,
-                transparent 105px
-              ),
-              repeating-linear-gradient(
-                90deg,
-                transparent,
-                transparent 100px,
-                rgba(255, 255, 255, 0.06) 100px,
-                rgba(255, 255, 255, 0.06) 102px,
-                transparent 102px,
-                transparent 105px
-              )
-            `,
+            padding: '5px 16px',
+            background: 'rgba(34,197,94,0.07)',
+            border: `1px solid rgba(34,197,94,0.35)`,
+            borderRadius: 99,
+            fontSize: 12,
+            color: G_SOFT,
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            textTransform: 'uppercase',
           }}
-        />
+        >
+          <span
+            className="animate-pulse"
+            style={{ width: 6, height: 6, borderRadius: '50%', background: G, display: 'inline-block', boxShadow: '0 0 8px rgba(34,197,94,0.6)' }}
+          />
+          {t('hero.badge')}
+        </div>
 
-        <div className="container mx-auto px-4 relative z-10 py-16 md:py-24">
-          <div className="max-w-5xl mx-auto text-center">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/8 border border-green-500/30 text-green-400 text-xs font-bold mb-8 tracking-widest uppercase animate-fade-in-up">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 [box-shadow:var(--glow-success-sm)]" />
-              {t('hero.badge')}
-            </div>
+        {/* Headline */}
+        <h1
+          style={{
+            fontWeight: 800,
+            color: '#f0f0f0',
+            marginBottom: 24,
+            maxWidth: 680,
+            letterSpacing: '-0.03em',
+            lineHeight: 1.1,
+            textShadow: '0 0 80px rgba(34,197,94,0.15)',
+            fontSize: 'var(--text-display)',
+          }}
+        >
+          {t('hero.titlePart1')}{' '}
+          <span style={{ color: G_SOFT, textShadow: G_GLOW_MD }}>
+            {t('hero.titleAccent')}
+          </span>
+        </h1>
 
-            {/* Headline */}
-            <h1 className="font-bold text-white mb-6 leading-tight animate-fade-in-up delay-75" style={{ fontSize: 'var(--text-display)', letterSpacing: '-0.03em' }}>
-              {t('hero.title')}
-            </h1>
+        {/* Subtitle */}
+        <p
+          style={{
+            color: '#707070',
+            maxWidth: 500,
+            marginBottom: 48,
+            lineHeight: 1.75,
+            fontSize: 'var(--text-hero-sub)',
+          }}
+        >
+          {t('hero.subtitle')}
+        </p>
 
-            {/* Subheadline */}
-            <p className="text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed animate-fade-in-up delay-150" style={{ fontSize: 'var(--text-hero-sub)' }}>
-              {t('hero.subtitle')}
-            </p>
-
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-20 animate-fade-in-up delay-300">
-              <Button variant="orbyto-primary" size="orbyto" asChild>
-                <Link href={`/${locale}#courses`} className="flex items-center">
-                  {t('hero.browseCourses')}
-                  <ArrowRight className="w-4 h-4 ms-2 rtl:rotate-180" />
-                </Link>
-              </Button>
-              <Button variant="orbyto-secondary" size="orbyto" asChild>
-                <Link href={`/${locale}/course/intro-to-embeddings`} className="flex items-center">
-                  <Play className="w-4 h-4 me-2" />
-                  {t('hero.startLearning')}
-                </Link>
-              </Button>
-            </div>
-
-            {/* Feature highlights - Glass Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left animate-fade-in-up delay-300">
-              <GlassCard variant="dark" padding="lg">
-                <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
-                  <Mic className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {t('features.voice.title')}
-                </h3>
-                <p className="text-sm text-white/70">
-                  {t('features.voice.description')}
-                </p>
-              </GlassCard>
-
-              <GlassCard variant="dark" padding="lg">
-                <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
-                  <MessageSquare className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {t('features.context.title')}
-                </h3>
-                <p className="text-sm text-white/70">
-                  {t('features.context.description')}
-                </p>
-              </GlassCard>
-
-              <GlassCard variant="dark" padding="lg">
-                <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center mb-4">
-                  <BookOpen className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  {t('features.timestamps.title')}
-                </h3>
-                <p className="text-sm text-white/70">
-                  {t('features.timestamps.description')}
-                </p>
-              </GlassCard>
-            </div>
-          </div>
+        {/* CTA Buttons */}
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <Link
+            href={`/${locale}#courses`}
+            className="transition-all duration-150"
+            style={{
+              padding: '14px 32px',
+              background: G,
+              color: '#0a2812',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: 15,
+              fontWeight: 700,
+              cursor: 'pointer',
+              letterSpacing: '0.02em',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLAnchorElement
+              el.style.boxShadow = G_GLOW_MD
+              el.style.transform = 'translateY(-1px)'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLAnchorElement
+              el.style.boxShadow = 'none'
+              el.style.transform = 'translateY(0)'
+            }}
+          >
+            {t('hero.browseCourses')}
+          </Link>
+          <Link
+            href={`/${locale}/course/intro-to-embeddings`}
+            className="transition-all duration-150"
+            style={{
+              padding: '14px 32px',
+              background: 'rgba(34,197,94,0.07)',
+              color: G_SOFT,
+              border: `1.5px solid rgba(34,197,94,0.35)`,
+              borderRadius: 8,
+              fontSize: 15,
+              fontWeight: 600,
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLAnchorElement
+              el.style.boxShadow = '0 0 12px rgba(34,197,94,0.45)'
+              el.style.borderColor = 'rgba(34,197,94,0.65)'
+              el.style.background = 'rgba(34,197,94,0.12)'
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLAnchorElement
+              el.style.boxShadow = 'none'
+              el.style.borderColor = 'rgba(34,197,94,0.35)'
+              el.style.background = 'rgba(34,197,94,0.07)'
+            }}
+          >
+            {t('hero.startLearning')}
+          </Link>
         </div>
       </section>
 
       {/* Courses Section */}
-      <section id="courses" className="py-16 md:py-24 bg-[#1b1b1b]">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto text-center mb-12">
-            <h2 className="font-bold text-white mb-4" style={{ fontSize: 'var(--text-section-title)' }}>
-              {t('courses.title')}
-            </h2>
-            <p className="text-gray-500">
-              {t('courses.subtitle')}
-            </p>
-          </div>
+      <section id="courses" style={{ padding: '8px 40px 96px' }}>
+        {/* Left-aligned heading matching Storybook */}
+        <div
+          className="flex items-baseline gap-4 mb-9"
+          style={{ maxWidth: 1200, margin: '0 auto 36px' }}
+        >
+          <h2
+            style={{
+              fontWeight: 700,
+              color: '#e5e5e5',
+              margin: 0,
+              fontSize: 'var(--text-section-title)',
+            }}
+          >
+            {t('courses.title')}
+          </h2>
+          <span
+            style={{
+              fontSize: 12,
+              color: G_SOFT,
+              fontWeight: 600,
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+              opacity: 0.7,
+            }}
+          >
+            — {courses.length} {t('courses.available')}
+          </span>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {courses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
-          </div>
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+          style={{ maxWidth: 1200, margin: '0 auto' }}
+        >
+          {courses.map((course) => (
+            <CourseCard key={course.id} course={course} />
+          ))}
         </div>
       </section>
-
     </div>
   );
 }
