@@ -17,19 +17,22 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const router = useRouter()
   const pathname = usePathname()
 
+  const isLoginPage = pathname?.endsWith('/admin/login')
+
   React.useEffect(() => {
     // Don't redirect if we're already on the login page
-    if (pathname === '/admin/login') {
+    if (isLoginPage) {
       return
     }
 
     if (status === 'unauthenticated') {
-      router.push('/admin/login')
+      const locale = pathname?.split('/')[1] || 'en'
+      router.push(`/${locale}/admin/login`)
     }
-  }, [status, router, pathname])
+  }, [status, router, pathname, isLoginPage])
 
   // Don't protect the login page - allow it to render
-  if (pathname === '/admin/login') {
+  if (isLoginPage) {
     return <>{children}</>
   }
 
