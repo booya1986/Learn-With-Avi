@@ -21,7 +21,7 @@ export const ConditionalNav = () => {
 
   // Don't show on admin pages (they have their own layout)
   // Don't show on course pages (they have their own top header)
-  if (pathname?.includes('/admin') || pathname?.includes('/course/')) {
+  if (pathname?.includes('/admin') || pathname?.includes('/course/') || pathname?.includes('/auth/')) {
     return null
   }
 

@@ -2,11 +2,12 @@
 
 import { usePathname } from 'next/navigation'
 
+/** Site-wide footer. Hidden on admin and auth pages which have their own layouts. */
 export const ConditionalFooter = () => {
   const pathname = usePathname()
 
   // Don't show footer on admin pages (they have their own layout)
-  if (pathname?.includes('/admin')) {
+  if (pathname?.includes('/admin') || pathname?.includes('/auth/')) {
     return null
   }
 
