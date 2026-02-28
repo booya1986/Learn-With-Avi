@@ -41,7 +41,7 @@ const CoursePageContent = ({ course }: Omit<CoursePageClientProps, 'courseId'>) 
 
   const {
     messages, inputMessage, isLoading, isListening, setInputMessage, toggleVoiceInput,
-    sendMessage, handleKeyPress: chatHandleKeyPress, generateSummary,
+    sendMessage, handleKeyPress: chatHandleKeyPress,
     showSummary, setShowSummary, isGeneratingSummary, generatedSummaryData,
   } = useChatContext()
 
@@ -50,9 +50,10 @@ const CoursePageContent = ({ course }: Omit<CoursePageClientProps, 'courseId'>) 
 
   const [activeContentTab, setActiveContentTab] = useState<'transcript' | 'quiz'>('transcript')
 
-  const handleStartQuiz = useCallback(() => {
-    setActiveContentTab('quiz')
-    if (quizStatus === 'idle') void startQuiz()
+  // Start quiz when switching to quiz tab
+  const handleTabChange = useCallback((tab: 'transcript' | 'quiz') => {
+    setActiveContentTab(tab)
+    if (tab === 'quiz' && quizStatus === 'idle') void startQuiz()
   }, [quizStatus, startQuiz])
 
   const chapterItems = useChapterItems(currentVideo, currentTime, videoDuration, chapterWatchedTime)
@@ -75,11 +76,6 @@ const CoursePageContent = ({ course }: Omit<CoursePageClientProps, 'courseId'>) 
     void chatHandleKeyPress(e)
     if (e.key === 'Enter' && !e.shiftKey) handleSendMessage()
   }, [chatHandleKeyPress, handleSendMessage])
-
-  const handleSummarize = useCallback(() => {
-    if (!currentVideo) return
-    generateSummary(currentVideo.youtubeId, currentVideo.title, currentVideo.description)
-  }, [generateSummary, currentVideo])
 
   if (!course) {
     return (
@@ -138,15 +134,11 @@ const CoursePageContent = ({ course }: Omit<CoursePageClientProps, 'courseId'>) 
           liveTranscript={liveTranscript}
           onTimeUpdate={handleTimeUpdate}
           onDurationChange={handleDurationChange}
-          onSummarize={handleSummarize}
           onTimestampClick={handleSeek}
           seekToTime={seekToTime}
-          courseVideosCount={course.videos.length}
-          currentVideoOrder={currentVideo ? course.videos.findIndex((v) => v.id === currentVideo.id) + 1 : 1}
           quizState={quizContext}
           activeContentTab={activeContentTab}
-          onTabChange={setActiveContentTab}
-          onStartQuiz={handleStartQuiz}
+          onTabChange={handleTabChange}
         />
         <div className="hidden md:flex md:flex-col md:h-full">
           <ChatSidebar

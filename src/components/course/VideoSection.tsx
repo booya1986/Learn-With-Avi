@@ -2,12 +2,9 @@
 
 import React from 'react'
 
-import { FileText, Brain } from 'lucide-react'
-
 import { type UseQuizStateReturn } from '@/hooks'
 import { type Video, type Chapter } from '@/types'
 
-import { ActionButtons } from './ActionButtons'
 import { LiveTranscript } from './LiveTranscript'
 import { QuizPanel } from './QuizPanel'
 import { VideoPlayerSection } from './VideoPlayerSection'
@@ -33,15 +30,11 @@ interface VideoSectionProps {
   }>
   onTimeUpdate: (time: number) => void
   onDurationChange: (duration: number) => void
-  onSummarize: () => void
   onTimestampClick: (time: number) => void
   seekToTime?: number
-  courseVideosCount: number
-  currentVideoOrder: number
   quizState: UseQuizStateReturn
   activeContentTab: 'transcript' | 'quiz'
   onTabChange: (tab: 'transcript' | 'quiz') => void
-  onStartQuiz: () => void
 }
 
 /**
@@ -58,15 +51,11 @@ export const VideoSection = ({
   liveTranscript,
   onTimeUpdate,
   onDurationChange,
-  onSummarize,
   onTimestampClick,
   seekToTime,
-  courseVideosCount,
-  currentVideoOrder,
   quizState,
   activeContentTab,
   onTabChange,
-  onStartQuiz,
 }: VideoSectionProps) => {
   return (
     <main
@@ -101,30 +90,13 @@ export const VideoSection = ({
         ) : null}
       </div>
 
-      {/* Action buttons row below video */}
-      <div
-        style={{
-          padding: '10px 16px',
-          flexShrink: 0,
-          borderBottom: '1px solid #1e1e1e',
-        }}
-      >
-        <ActionButtons
-          onSummarize={onSummarize}
-          onStartQuiz={onStartQuiz}
-          courseVideosCount={courseVideosCount}
-          currentVideoOrder={currentVideoOrder}
-        />
-      </div>
-
-      {/* Tabs row */}
+      {/* Tabs row — matches Storybook: simple text, no icons */}
       <div
         style={{
           display: 'flex',
           borderBottom: '1px solid #1e1e1e',
           flexShrink: 0,
         }}
-        dir="rtl"
       >
         <button
           onClick={() => onTabChange('transcript')}
@@ -141,13 +113,9 @@ export const VideoSection = ({
             transition: 'all 300ms cubic-bezier(0.4,0,0.2,1)',
             letterSpacing: '0.03em',
             boxShadow: activeContentTab === 'transcript' ? '0 2px 0 rgba(34,197,94,0.35)' : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
+            fontFamily: 'inherit',
           }}
         >
-          <FileText style={{ width: 14, height: 14 }} />
           תמלול
         </button>
 
@@ -166,13 +134,9 @@ export const VideoSection = ({
             transition: 'all 300ms cubic-bezier(0.4,0,0.2,1)',
             letterSpacing: '0.03em',
             boxShadow: activeContentTab === 'quiz' ? '0 2px 0 rgba(34,197,94,0.35)' : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 6,
+            fontFamily: 'inherit',
           }}
         >
-          <Brain style={{ width: 14, height: 14 }} />
           בוחן
         </button>
       </div>
