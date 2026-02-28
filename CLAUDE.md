@@ -13,7 +13,7 @@ AI-powered interactive learning platform with voice AI tutoring, RAG-based Q&A, 
 - **Frontend**: Next.js 15.5.7, TypeScript (strict), React 19, Tailwind CSS
 - **AI**: Claude Sonnet 4 (chat), OpenAI Embeddings, ElevenLabs TTS
 - **Database**: PostgreSQL + Prisma ORM + pgvector (vector search with keyword fallback)
-- **Auth**: NextAuth.js
+- **Auth**: NextAuth.js with dual providers — `admin-credentials` (Admin table) + `user-credentials` (User table) + Google OAuth
 - **Testing**: Vitest (unit), Playwright (E2E), axe-core (a11y)
 
 ## Quick Start
@@ -107,6 +107,42 @@ npm run test:coverage      # Coverage report (target: 80%+)
 npx prisma migrate dev     # Run DB migrations
 npx prisma generate        # Regenerate Prisma client
 ```
+
+## Authentication Architecture
+
+### Two separate user types — never mix them:
+- **Admin** (`/[locale]/admin/login`) — signs in via `admin-credentials`, role `'admin'`. Manages courses, videos, transcripts.
+- **Students** (`/[locale]/auth/login`) — sign in via `user-credentials` or Google OAuth, role `'user'`. Access course content.
+
+### Auth Flow
+- All locale routes use `[locale]` prefix (e.g. `/en/auth/login`, `/he/admin/login`)
+- `ConditionalNav` and `ConditionalFooter` hide on admin pages via `pathname?.includes('/admin')`
+- Course pages gate: unauthenticated → redirect to `/[locale]/auth/login?callbackUrl=...`
+- `pages.signIn` in `authOptions` is `/en/admin/login` (only used by NextAuth fallback, students are redirected manually)
+
+### Google OAuth Setup (required env vars)
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+```
+Authorized redirect URI: `https://your-domain.com/api/auth/callback/google`
+
+### Student signup endpoint
+`POST /api/auth/signup` — `{ name, email, password }` → creates User record, returns 409 if email taken.
+
+## Deployment Notes
+
+### Vercel
+- Build command: `prisma generate && next build` (Prisma auto-generation doesn't run in cached node_modules)
+- Database: Supabase PostgreSQL, Session Pooler URL (port 5432, IPv4 compatible)
+
+### Database Migrations (Supabase)
+```bash
+# Session pooler URL — IPv4, works on Free tier
+DATABASE_URL="postgresql://postgres.[project]:[pass]@aws-1-eu-central-1.pooler.supabase.com:5432/postgres" npx prisma migrate deploy
+```
+- New DB: run `migrate deploy` directly
+- Existing DB: `migrate resolve --applied <migration_name>` first to baseline, then `migrate deploy`
 
 ## Troubleshooting
 
