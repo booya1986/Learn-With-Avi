@@ -95,7 +95,7 @@ const CoursePageContent = ({ course }: Omit<CoursePageClientProps, 'courseId'>) 
   }
 
   return (
-    <div style={{ background: '#1b1b1b', minHeight: '100vh', fontFamily: 'Rubik, system-ui, sans-serif', color: '#e5e5e5', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ background: '#1b1b1b', minHeight: '100vh', fontFamily: 'Rubik, system-ui, sans-serif', color: '#e5e5e5', display: 'flex', flexDirection: 'column', overflow: 'hidden', direction: 'ltr' }}>
 
       {/* Fixed 3px progress bar */}
       <VideoProgressBar progress={overallProgress} />
@@ -117,16 +117,18 @@ const CoursePageContent = ({ course }: Omit<CoursePageClientProps, 'courseId'>) 
       </nav>
 
       {/* 3-column grid: chapters | video | chat */}
-      <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr 320px', flex: 1, height: 'calc(100vh - 53px)', overflow: 'hidden' }}>
-        <MaterialsSidebar
-          course={course}
-          currentVideo={currentVideo}
-          currentTime={currentTime}
-          videoDuration={videoDuration}
-          chapterItems={chapterItems}
-          overallProgress={overallProgress}
-          onChapterClick={handleChapterClick}
-        />
+      <div className="flex-1 flex flex-col md:grid overflow-hidden" style={{ gridTemplateColumns: '220px 1fr 320px', height: 'calc(100vh - 53px)' }}>
+        <div className="hidden md:flex md:flex-col md:h-full">
+          <MaterialsSidebar
+            course={course}
+            currentVideo={currentVideo}
+            currentTime={currentTime}
+            videoDuration={videoDuration}
+            chapterItems={chapterItems}
+            overallProgress={overallProgress}
+            onChapterClick={handleChapterClick}
+          />
+        </div>
         <VideoSection
           currentVideo={currentVideo}
           currentTime={currentTime}
@@ -146,17 +148,19 @@ const CoursePageContent = ({ course }: Omit<CoursePageClientProps, 'courseId'>) 
           onTabChange={setActiveContentTab}
           onStartQuiz={handleStartQuiz}
         />
-        <ChatSidebar
-          messages={messages}
-          inputMessage={inputMessage}
-          isLoading={isLoading}
-          isListening={isListening}
-          onInputChange={setInputMessage}
-          onSendMessage={handleSendMessage}
-          onToggleVoice={toggleVoiceInput}
-          onTimestampClick={handleSeek}
-          onKeyPress={handleChatKeyPress}
-        />
+        <div className="hidden md:flex md:flex-col md:h-full">
+          <ChatSidebar
+            messages={messages}
+            inputMessage={inputMessage}
+            isLoading={isLoading}
+            isListening={isListening}
+            onInputChange={setInputMessage}
+            onSendMessage={handleSendMessage}
+            onToggleVoice={toggleVoiceInput}
+            onTimestampClick={handleSeek}
+            onKeyPress={handleChatKeyPress}
+          />
+        </div>
       </div>
 
       <SummaryModal

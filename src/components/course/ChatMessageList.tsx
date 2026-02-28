@@ -1,14 +1,8 @@
 /**
- * ChatMessageList component - Scrollable message list
- *
- * Displays all chat messages in a scrollable container with auto-scroll behavior.
- * Shows a loading spinner when the AI is processing a response.
+ * ChatMessageList component - Scrollable message list with dark green theme
  */
 
-import { Loader2 } from "lucide-react";
-
 import { ChatMessage } from "@/components/chat/ChatMessage";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import type { ChatMessage as ChatMessageType } from "@/types";
 
 interface ChatMessageListProps {
@@ -17,22 +11,45 @@ interface ChatMessageListProps {
   onTimestampClick: (time: number) => void;
 }
 
+/** ChatMessageList - scrollable dark message list matching Storybook */
 export const ChatMessageList = ({ messages, isLoading, onTimestampClick }: ChatMessageListProps) => {
   return (
-    <ScrollArea className="flex-1 min-h-0">
-      <div className="p-4 space-y-3">
-        {messages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            message={message}
-            onTimestampClick={onTimestampClick}
-          />
-        ))}
-
-        {isLoading ? <div className="bg-gray-100 dark:bg-gray-800 rounded-2xl px-4 py-3 w-fit">
-            <Loader2 className="w-4 h-4 animate-spin text-gray-500" />
-          </div> : null}
-      </div>
-    </ScrollArea>
+    <div style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0 }}>
+      {messages.map((message) => (
+        <ChatMessage
+          key={message.id}
+          message={message}
+          onTimestampClick={onTimestampClick}
+        />
+      ))}
+      {isLoading ? (
+        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+          <div
+            style={{
+              padding: '12px 16px',
+              borderRadius: '12px 12px 12px 4px',
+              background: 'rgba(34,197,94,0.04)',
+              border: '1px solid rgba(34,197,94,0.15)',
+              display: 'flex',
+              gap: 4,
+              alignItems: 'center',
+            }}
+          >
+            {[0, 1, 2].map((dot) => (
+              <div
+                key={dot}
+                style={{
+                  width: 5,
+                  height: 5,
+                  borderRadius: '50%',
+                  background: '#4ade80',
+                  opacity: 0.8 - dot * 0.25,
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      ) : null}
+    </div>
   );
 }
