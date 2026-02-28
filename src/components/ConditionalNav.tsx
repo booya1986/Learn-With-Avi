@@ -51,10 +51,6 @@ export const ConditionalNav = () => {
             onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = G_GLOW_SM }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}
           >
-            <span
-              className="w-2 h-2 rounded-full inline-block animate-pulse"
-              style={{ background: '#22c55e', boxShadow: G_GLOW_SM, flexShrink: 0 }}
-            />
             LearnWithAvi
           </div>
         </Link>

@@ -44,19 +44,19 @@ export default async function LocaleLayout({
   console.log('📖 Sample hero title:', (messages as Record<string, Record<string, Record<string, string>>>)?.['homepage']?.['hero']?.['title']);
 
   return (
-    <html lang={locale} dir={locale === 'he' ? 'rtl' : 'ltr'} suppressHydrationWarning>
-      <body
-        className={`${rubik.variable} font-sans antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-white min-h-screen`}
-        suppressHydrationWarning
-      >
-        <NextIntlClientProvider messages={messages}>
-          <AuthProvider>
-            <ConditionalNav />
-            {children}
-            <ConditionalFooter />
-          </AuthProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <div
+      lang={locale}
+      dir={locale === 'he' ? 'rtl' : 'ltr'}
+      className={`${rubik.variable} font-sans antialiased min-h-screen`}
+      style={{ background: '#1b1b1b', color: '#e5e5e5' }}
+    >
+      <NextIntlClientProvider messages={messages}>
+        <AuthProvider>
+          <ConditionalNav />
+          {children}
+          <ConditionalFooter />
+        </AuthProvider>
+      </NextIntlClientProvider>
+    </div>
   );
 }
