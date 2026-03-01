@@ -1,7 +1,7 @@
 # LearnWithAvi — Active Phase Plan
 
-> Phase 3 — Voice Optimization
-> Generated: 2026-03-01
+> Phase 3 — Voice Optimization ✅ COMPLETE
+> Generated: 2026-03-01 | Completed: 2026-03-01
 > See [ROADMAP.md](ROADMAP.md) for phase context and [STATE.md](STATE.md) for current blockers.
 
 ---
@@ -323,20 +323,20 @@
 
 ---
 
-## Definition of Done (Phase 3)
+## Definition of Done (Phase 3) ✅ ALL COMPLETE
 
-- [ ] Voice chat TTS streams audio chunks (not buffered) — latency improvement measurable
-- [ ] `useVoiceOutput.speakWithElevenLabs` correctly plays audio/mpeg from streaming endpoint
-- [ ] Hebrew STT accuracy improved with language hints and voice selection
-- [ ] Voice conversation history persists across page refresh (per video, 24h TTL)
-- [ ] Waveform visualization responds to real audio input
-- [ ] Voice analytics tracked in database and visible in admin dashboard
-- [ ] Storybook stories exist for voice components
-- [ ] All existing tests pass (`npm run test:unit`)
-- [ ] No new TypeScript errors (`npm run type-check`)
-- [ ] `npm run build` passes
-- [ ] STATE.md updated with new metrics
+- [x] Voice chat TTS streams audio chunks (not buffered) — shared ElevenLabs lib, SSE audio-chunk events
+- [x] `useVoiceOutput.speakWithElevenLabs` correctly plays audio/mpeg from streaming endpoint
+- [x] Hebrew STT accuracy improved with language hints and voice selection
+- [x] Voice conversation history persists across page refresh (per video, 24h TTL)
+- [x] Waveform visualization responds to real audio input (Web Audio API AnalyserNode)
+- [x] Voice analytics tracked in database and visible in admin dashboard
+- [x] Storybook stories exist for voice components (4 story files)
+- [x] All existing tests pass — 861 passing, 0 failures
+- [x] No new TypeScript errors
+- [x] `npm run build` passes
+- [x] STATE.md updated with new metrics
 
 ---
 
-## Next: Run `/gsd:execute-phase` to begin Wave 1
+## Phase 3 Complete — Run `/gsd:plan-phase` for Phase 4

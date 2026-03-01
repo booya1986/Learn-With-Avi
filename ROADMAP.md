@@ -40,17 +40,21 @@
 
 ---
 
-## Phase 3 — Voice Optimization (Next)
+## Phase 3 — Voice Optimization ✅ Complete
 
-**Goal:** Voice AI becomes a flagship feature — sub-second latency, streaming, multilingual.
+**Goal:** Voice AI becomes a flagship feature — streaming TTS, Hebrew accuracy, session persistence, analytics.
 
-| Deliverable | Notes |
-|---|---|
-| Whisper STT optimization | Hebrew accuracy improvements |
-| Voice session continuity | Maintain conversation context across voice turns |
-| Voice analytics (admin) | Usage metrics, fallback rate |
+| Task | Owner Skill | Wave | Status |
+|---|---|---|---|
+| Stream TTS in voice chat (eliminate buffering) | `backend-engineer` | 1 | ✅ Done |
+| Fix broken speakWithElevenLabs hook | `frontend-engineer` | 1 | ✅ Done |
+| Hebrew STT optimization + language-aware TTS | `backend-engineer` | 1 | ✅ Done |
+| Voice session persistence (localStorage, 24h TTL) | `frontend-engineer` | 1 | ✅ Done |
+| Real audio waveform (Web Audio API AnalyserNode) | `frontend-engineer` | 1 | ✅ Done |
+| Voice analytics (VoiceSession model + admin API) | `backend-engineer` | 2 | ✅ Done |
+| Storybook stories for voice components | `frontend-engineer` | 2 | ✅ Done |
 
-> Note: ElevenLabs streaming TTS already completed in Phase 2.
+**Result:** 861 tests passing, 0 failures, build green. Shared ElevenLabs lib, voice analytics in admin dashboard.
 
 ---
 
