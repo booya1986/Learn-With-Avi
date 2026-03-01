@@ -35,6 +35,7 @@ export interface TranscriptionResult {
  *
  * @param audioFile - Audio file to transcribe (WebM, MP3, WAV, etc.)
  * @param language - Language hint ("he", "en", or "auto")
+ * @param expectedLanguage - Optional language hint used when language is "auto" (e.g. "he" for Hebrew)
  * @returns Transcription result with text and detected language
  *
  * @performance ~300-800ms for 3-10 second audio
@@ -42,19 +43,29 @@ export interface TranscriptionResult {
  */
 export async function transcribeAudio(
   audioFile: File,
-  language: string
+  language: string,
+  expectedLanguage?: string
 ): Promise<TranscriptionResult> {
   try {
     const arrayBuffer = await audioFile.arrayBuffer()
     const buffer = Buffer.from(arrayBuffer)
     const file = new File([buffer], audioFile.name, { type: audioFile.type })
 
+    // Determine the effective language hint:
+    // - If an explicit language is set (not 'auto'), use it directly
+    // - If language is 'auto' but the caller knows the expected language, use that as a hint
+    // - Otherwise, omit the language parameter and let Whisper auto-detect
+    const effectiveLanguage =
+      language && language !== 'auto'
+        ? language
+        : expectedLanguage || undefined
+
     const transcription = await openai.audio.transcriptions.create({
       file,
       model: 'whisper-1',
       response_format: 'verbose_json',
       timestamp_granularities: ['segment'],
-      ...(language && language !== 'auto' ? { language } : {}),
+      ...(effectiveLanguage ? { language: effectiveLanguage } : {}),
     }) as unknown as { text: string; language?: string; duration?: number }
     return {
       text: transcription.text,
@@ -69,16 +80,29 @@ export async function transcribeAudio(
 
 /**
  * Build a context string from RAG transcript chunks for prompt injection.
- * Formats each chunk with its timestamp prefix: "[M:SS] text"
+ * Formats each chunk with its timestamp prefix:
+ *  - "[M:SS]"   for videos shorter than 1 hour (e.g. "[1:05]")
+ *  - "[H:MM:SS]" for videos 1 hour or longer   (e.g. "[1:01:05]")
  */
 export function buildContextString(chunks: TranscriptChunk[]): string {
   if (chunks.length === 0) return ''
 
   return chunks
     .map((chunk) => {
-      const minutes = Math.floor(chunk.startTime / 60)
-      const seconds = Math.floor(chunk.startTime % 60)
-      return `[${minutes}:${seconds.toString().padStart(2, '0')}] ${chunk.text}`
+      const totalSeconds = Math.floor(chunk.startTime)
+      const seconds = totalSeconds % 60
+      const totalMinutes = Math.floor(totalSeconds / 60)
+
+      let timestamp: string
+      if (totalSeconds >= 3600) {
+        const hours = Math.floor(totalMinutes / 60)
+        const minutes = totalMinutes % 60
+        timestamp = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      } else {
+        timestamp = `${totalMinutes}:${seconds.toString().padStart(2, '0')}`
+      }
+
+      return `[${timestamp}] ${chunk.text}`
     })
     .join('\n\n')
 }
@@ -148,10 +172,12 @@ export async function generateTTSAudio(
  * fails — the caller should fall back to browser TTS in that case.
  *
  * @param text - Text to synthesize
+ * @param language - Language code for voice selection (e.g. "he", "en")
  * @returns A `ReadableStream` of audio bytes, or `null` on failure / no API key
  */
 export async function streamTTSAudio(
-  text: string
+  text: string,
+  language?: string
 ): Promise<ReadableStream<Uint8Array> | null> {
   if (!config.elevenLabsApiKey) {
     return null
@@ -163,6 +189,7 @@ export async function streamTTSAudio(
     apiKey: config.elevenLabsApiKey,
     text,
     voiceId,
+    language,
   })
 
   return result ? result.stream : null

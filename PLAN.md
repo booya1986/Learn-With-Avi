@@ -10,11 +10,11 @@
 
 | Task | Wave | Skill | Priority | Effort | Status |
 |---|---|---|---|---|---|
-| stream-tts-in-voice-chat | 1 | backend-engineer | P0 | large | Pending |
-| fix-elevenlabs-voice-output-hook | 1 | frontend-engineer | P0 | medium | Pending |
-| hebrew-stt-optimization | 1 | backend-engineer | P1 | medium | Pending |
-| voice-session-persistence | 1 | frontend-engineer | P1 | medium | Pending |
-| voice-waveform-real-audio | 1 | frontend-engineer | P2 | small | Pending |
+| stream-tts-in-voice-chat | 1 | backend-engineer | P0 | large | ✅ Done |
+| fix-elevenlabs-voice-output-hook | 1 | frontend-engineer | P0 | medium | ✅ Done |
+| hebrew-stt-optimization | 1 | backend-engineer | P1 | medium | ✅ Done |
+| voice-session-persistence | 1 | frontend-engineer | P1 | medium | ✅ Done |
+| voice-waveform-real-audio | 1 | frontend-engineer | P2 | small | ✅ Done |
 | voice-analytics-admin | 2 | backend-engineer | P1 | large | Pending |
 | voice-component-stories | 2 | frontend-engineer | P2 | small | Pending |
 

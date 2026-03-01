@@ -253,9 +253,12 @@ export const VoiceChatInterface = ({
         )}
       </div>
 
-      {/* Waveform Visualizer */}
+      {/* Waveform Visualizer — driven by real microphone input when recording */}
       {recorder.isRecording ? <div className="w-full max-w-md">
-          <WaveformVisualizer isActive={recorder.isRecording} />
+          <WaveformVisualizer
+            isActive={recorder.isRecording}
+            audioSource={microphone.stream}
+          />
         </div> : null}
 
       {/* Transcription Display */}

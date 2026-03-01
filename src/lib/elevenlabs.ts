@@ -30,6 +30,13 @@ export interface ElevenLabsStreamOptions {
   text: string
   /** Voice ID (defaults to Adam). */
   voiceId?: string
+  /**
+   * Language code for the TTS request (e.g. "he", "en").
+   * Adam voice with the multilingual v2 model handles Hebrew natively,
+   * so this parameter is currently used for logging/observability.
+   * Pass it through so future voice-selection logic can act on it.
+   */
+  language?: string
 }
 
 /**
@@ -62,7 +69,13 @@ export interface ElevenLabsStreamResult {
 export async function streamElevenLabsAudio(
   options: ElevenLabsStreamOptions
 ): Promise<ElevenLabsStreamResult | null> {
-  const { apiKey, text, voiceId = ELEVENLABS_DEFAULT_VOICE_ID } = options
+  const { apiKey, text, voiceId = ELEVENLABS_DEFAULT_VOICE_ID, language } = options
+
+  // Adam voice with eleven_multilingual_v2 supports Hebrew natively.
+  // Log the language for observability so operators can verify correct routing.
+  if (language) {
+    console.info(`[ElevenLabs] TTS request — language: ${language}, voiceId: ${voiceId}`)
+  }
 
   const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`
 

@@ -79,11 +79,30 @@ describe('buildContextString()', () => {
     expect(parts[2]).toBe('[2:00] Third chunk')
   })
 
-  it('handles large timestamps (hours)', () => {
+  it('formats timestamps >= 3600s as [H:MM:SS]', () => {
     const chunks = [makeChunk('c1', 'Late content', 3665, 3675)]
     const result = buildContextString(chunks)
-    // 3665 seconds = 61 minutes 5 seconds → [61:05]
-    expect(result).toBe('[61:05] Late content')
+    // 3665 seconds = 1 hour, 1 minute, 5 seconds → [1:01:05]
+    expect(result).toBe('[1:01:05] Late content')
+  })
+
+  it('formats exactly 1 hour as [1:00:00]', () => {
+    const chunks = [makeChunk('c1', 'One hour mark', 3600, 3610)]
+    const result = buildContextString(chunks)
+    expect(result).toBe('[1:00:00] One hour mark')
+  })
+
+  it('formats 2 hours 30 minutes 15 seconds as [2:30:15]', () => {
+    const chunks = [makeChunk('c1', 'Long video', 9015, 9025)]
+    // 9015 = 2 * 3600 + 30 * 60 + 15
+    const result = buildContextString(chunks)
+    expect(result).toBe('[2:30:15] Long video')
+  })
+
+  it('formats 59m59s as [59:59] (sub-hour, no H component)', () => {
+    const chunks = [makeChunk('c1', 'Just before an hour', 3599, 3609)]
+    const result = buildContextString(chunks)
+    expect(result).toBe('[59:59] Just before an hour')
   })
 
   it('handles zero timestamp', () => {
@@ -141,6 +160,20 @@ describe('transcribeAudio()', () => {
   it('works with Hebrew language hint', async () => {
     const audioFile = new File(['fake audio data'], 'audio.webm', { type: 'audio/webm' })
     const result = await transcribeAudio(audioFile, 'he')
+    expect(result).toHaveProperty('text')
+  })
+
+  it('uses expectedLanguage as Whisper hint when language is auto', async () => {
+    const audioFile = new File(['fake audio data'], 'audio.webm', { type: 'audio/webm' })
+    // 'auto' + expectedLanguage 'he' — should not throw, result has text
+    const result = await transcribeAudio(audioFile, 'auto', 'he')
+    expect(result).toHaveProperty('text')
+  })
+
+  it('ignores expectedLanguage when explicit language is provided', async () => {
+    const audioFile = new File(['fake audio data'], 'audio.webm', { type: 'audio/webm' })
+    // explicit 'en' takes precedence over expectedLanguage 'he'
+    const result = await transcribeAudio(audioFile, 'en', 'he')
     expect(result).toHaveProperty('text')
   })
 

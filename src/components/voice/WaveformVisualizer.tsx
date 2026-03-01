@@ -23,8 +23,15 @@ export interface WaveformVisualizerProps {
   /** Number of bars to display */
   barCount?: number;
 
-  /** Animation speed in milliseconds */
+  /** Animation speed in milliseconds (used only in fallback random mode) */
   animationSpeed?: number;
+
+  /**
+   * Optional live audio source for real waveform analysis via Web Audio API.
+   * Pass `microphone.stream` during recording for accurate visualization.
+   * When omitted, falls back to smooth random animation.
+   */
+  audioSource?: MediaStream | HTMLAudioElement | null;
 
   /** Custom className for styling */
   className?: string;
@@ -35,6 +42,15 @@ export interface WaveformVisualizerProps {
  *
  * @example
  * ```tsx
+ * // With real microphone input
+ * <WaveformVisualizer
+ *   isActive={isRecording}
+ *   audioSource={microphone.stream}
+ *   barCount={30}
+ *   className="w-full max-w-md"
+ * />
+ *
+ * // Fallback random animation
  * <WaveformVisualizer
  *   isActive={isRecording}
  *   barCount={30}
@@ -46,12 +62,14 @@ export const WaveformVisualizer = ({
   isActive,
   barCount = 30,
   animationSpeed = 100,
+  audioSource,
   className,
 }: WaveformVisualizerProps) => {
   const { barHeights } = useWaveform({
     barCount,
     animationSpeed,
     isActive,
+    audioSource,
   });
 
   return (

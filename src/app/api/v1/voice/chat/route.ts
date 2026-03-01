@@ -120,6 +120,10 @@ export async function POST(request: NextRequest) {
     }
 
     // STAGE 1: Transcribe audio with Whisper
+    // When language is 'auto' and the caller knows the video's language (e.g. 'he'),
+    // pass it as expectedLanguage so Whisper uses it as a hint for better accuracy.
+    // Currently the route uses the form-data language directly; video-level language
+    // metadata can be wired through expectedLanguage in a future enhancement.
     const sttStart = Date.now()
     const transcription = await transcribeAudio(audioFile, language)
     sttTime = Date.now() - sttStart
@@ -212,7 +216,7 @@ export async function POST(request: NextRequest) {
           // playing audio before the full TTS response is buffered.
           if (enableTTS && fullContent.trim().length > 0) {
             try {
-              const audioStream = await streamTTSAudio(fullContent)
+              const audioStream = await streamTTSAudio(fullContent, language)
               if (audioStream) {
                 const reader = audioStream.getReader()
                 let chunkIndex = 0

@@ -149,7 +149,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 async function handleElevenLabsTTS(
   text: string,
   voiceId: string,
-  _language?: string
+  language?: string
 ): Promise<NextResponse> {
   if (!ELEVENLABS_API_KEY) {
     console.warn('ElevenLabs API key not configured, falling back to browser TTS')
@@ -160,6 +160,7 @@ async function handleElevenLabsTTS(
     apiKey: ELEVENLABS_API_KEY,
     text,
     voiceId,
+    language,
   })
 
   if (!result) {
