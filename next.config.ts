@@ -7,7 +7,10 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 
 const securityHeaders = [
-  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  // DENY prevents this app from being embedded in iframes on any other origin.
+  // YouTube videos are embedded via <iframe src="https://www.youtube-nocookie.com/...">
+  // which is an external origin embedding YouTube — not embedding THIS app — so DENY is safe.
+  { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'X-XSS-Protection', value: '1; mode=block' },
   { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
@@ -17,16 +20,32 @@ const securityHeaders = [
     key: 'Content-Security-Policy',
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://s.ytimg.com",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.youtube.com https://www.youtube-nocookie.com https://s.ytimg.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://img.youtube.com https://i.ytimg.com",
       "font-src 'self' data:",
-      "frame-src 'self' https://www.youtube.com https://youtube.com",
-      "connect-src 'self' https://*.sentry.io https://*.ingest.sentry.io https://www.youtube.com",
+      // frame-src: allow YouTube embeds (both regular and privacy-enhanced nocookie domain)
+      "frame-src 'self' https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com",
+      // connect-src: allow all outbound API calls made from the browser
+      [
+        "connect-src 'self'",
+        'https://*.sentry.io',
+        'https://*.ingest.sentry.io',
+        'https://www.youtube.com',
+        // ElevenLabs TTS (voice features)
+        'https://api.elevenlabs.io',
+        // OpenAI (embeddings, Whisper STT)
+        'https://api.openai.com',
+        // Anthropic Claude (chat, quiz generation)
+        'https://api.anthropic.com',
+        // Google OAuth (sign in with Google)
+        'https://accounts.google.com',
+        'https://oauth2.googleapis.com',
+      ].join(' '),
       "media-src 'self' blob:",
       "object-src 'none'",
       "base-uri 'self'",
-      "form-action 'self'",
+      "form-action 'self' https://accounts.google.com",
     ].join('; '),
   },
 ];

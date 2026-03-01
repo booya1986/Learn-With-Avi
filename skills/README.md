@@ -4,6 +4,23 @@ Custom Claude Code skills for the LearnWithAvi AI-powered learning platform, fol
 
 ## Available Skills
 
+### 0. GSD — Workflow Orchestrator ✅
+
+**Status**: ✅ Active
+
+Orchestrates the GSD (Get Shit Done) workflow — planning phases, executing tasks with fresh agent context windows, and updating project state.
+
+**Commands**:
+- `/gsd:plan-phase` — Read ROADMAP.md, create atomic tasks in PLAN.md
+- `/gsd:execute-phase` — Execute tasks in dependency waves using fresh agents
+- `/gsd:update-state` — Sync STATE.md with current metrics after a phase
+
+**Context files**: [PROJECT.md](../PROJECT.md), [ROADMAP.md](../ROADMAP.md), [STATE.md](../STATE.md), [PLAN.md](../PLAN.md), [REQUIREMENTS.md](../REQUIREMENTS.md)
+
+**Files**: `skills/gsd/SKILL.md`
+
+---
+
 ### 1. RAG Pipeline Optimizer (In Progress)
 
 **Status**: 🟡 Partially Implemented

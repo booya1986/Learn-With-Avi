@@ -36,9 +36,9 @@ export const ConditionalNav = () => {
         borderBottom: '1px solid rgba(34,197,94,0.12)',
       }}
     >
-      <nav className="container mx-auto px-6 h-14 flex items-center justify-between">
+      <nav className="container mx-auto px-6 h-14 flex items-center justify-between" aria-label="Main navigation">
         {/* Logo */}
-        <Link href={`/${locale}`}>
+        <Link href={`/${locale}`} aria-label="LearnWithAvi — go to homepage">
           <div
             className="flex items-center px-3 py-2 rounded-lg transition-all duration-150"
             style={{
@@ -49,12 +49,12 @@ export const ConditionalNav = () => {
             onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = G_GLOW_SM }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.boxShadow = 'none' }}
           >
-            <Image src="/logo.svg" alt="LearnWithAvi" width={33} height={24} />
+            <Image src="/logo.svg" alt="LearnWithAvi logo" width={33} height={24} />
           </div>
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center gap-8" role="list">
           {[
             { label: 'Home', href: `/${locale}` },
             { label: 'Courses', href: `/${locale}#courses` },
@@ -67,8 +67,10 @@ export const ConditionalNav = () => {
               <Link
                 key={label}
                 href={href}
+                role="listitem"
                 className="text-sm font-medium transition-colors duration-150"
                 style={{ color: isActive ? '#ffffff' : '#555' }}
+                aria-current={isActive ? 'page' : undefined}
                 onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = '#a0a0a0' }}
                 onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLAnchorElement).style.color = '#555' }}
               >
@@ -83,6 +85,7 @@ export const ConditionalNav = () => {
           {/* Language toggle */}
           <Link
             href={switchPath}
+            aria-label={`Switch to ${otherLocale === 'he' ? 'Hebrew' : 'English'}`}
             className="px-3 py-1 rounded text-xs font-bold transition-colors duration-150"
             style={{
               background: 'rgba(34,197,94,0.06)',
@@ -144,11 +147,14 @@ export const ConditionalNav = () => {
 
           {/* Mobile menu button */}
           <button
+            type="button"
             className="md:hidden w-9 h-9 flex items-center justify-center rounded-lg transition-colors"
             style={{ color: '#555' }}
-            aria-label="Open menu"
+            aria-label="Open navigation menu"
+            aria-expanded={false}
+            aria-haspopup="true"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
       </nav>

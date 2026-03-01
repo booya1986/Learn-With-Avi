@@ -10,6 +10,7 @@ import {
   ValidationError,
   RateLimitError,
 } from '@/lib/errors'
+import { logger } from '@/lib/logger'
 import { formatTimestamp } from '@/lib/rag-common'
 import { applyRateLimit, chatRateLimiter } from '@/lib/rate-limit'
 import { type VideoSource, type TranscriptChunk } from '@/types'
@@ -50,7 +51,7 @@ const conversationMessageSchema = z.object({
 })
 
 const chatBodySchema = z.object({
-  message: z.string().min(1).max(10000),
+  message: z.string().min(1).max(2000, 'Message must be 2000 characters or fewer'),
   conversationHistory: z.array(conversationMessageSchema).max(20).default([]),
   context: z
     .object({
@@ -68,7 +69,7 @@ type ChatRequestBody = z.infer<typeof chatBodySchema>
 function sanitizeInput(input: string): string {
   return input
     .trim()
-    .slice(0, 10000) // Max 10k characters
+    .slice(0, 2000) // Max 2000 characters (enforced by schema too)
     .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '') // Remove control characters
 }
 
@@ -115,12 +116,15 @@ function estimateRequiredTokens(query: string): number {
 }
 
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+
   try {
     // Apply rate limiting
     try {
       await applyRateLimit(request, chatRateLimiter)
     } catch (error) {
       if (error instanceof RateLimitError) {
+        logger.warn('ChatAPI', 'Rate limit exceeded')
         return new Response(
           JSON.stringify({
             error: 'Rate limit exceeded',
@@ -147,6 +151,11 @@ export async function POST(request: NextRequest) {
     if (message.trim().length === 0) {
       throw new ValidationError('Message cannot be empty')
     }
+
+    logger.info('ChatAPI', 'Request received', {
+      contextChunks: context.chunks.length,
+      historyLength: conversationHistory.length,
+    })
 
     // Sanitize user input
     const sanitizedMessage = sanitizeInput(message)
@@ -226,9 +235,17 @@ export async function POST(request: NextRequest) {
           })
           controller.enqueue(encoder.encode(`data: ${finalData}\n\n`))
           controller.close()
+
+          const durationMs = Date.now() - startTime
+          logger.info('ChatAPI', 'Response sent', {
+            durationMs,
+            responseLength: fullContent.length,
+            sourcesCount: sources.length,
+          })
         } catch (error) {
           // Sanitize error before sending to client
           logError('Anthropic streaming error', error, { sanitizedMessage })
+          logger.error('ChatAPI', 'Streaming error', error)
           const errorData = JSON.stringify({
             type: 'error',
             error: getUserFriendlyMessage(error),
@@ -247,8 +264,11 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
+    const durationMs = Date.now() - startTime
+
     // Handle validation errors with proper status codes
     if (error instanceof ValidationError) {
+      logger.warn('ChatAPI', 'Validation error', { durationMs, error: error.message })
       return new Response(
         JSON.stringify({
           error: 'Validation error',
@@ -263,6 +283,7 @@ export async function POST(request: NextRequest) {
 
     // Sanitize and log all other errors
     logError('Chat API error', error)
+    logger.error('ChatAPI', 'Request failed', error, { durationMs })
     return new Response(
       JSON.stringify({
         error: 'Internal server error',

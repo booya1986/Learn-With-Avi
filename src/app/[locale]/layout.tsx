@@ -50,6 +50,14 @@ export default async function LocaleLayout({
       className={`${rubik.variable} font-sans antialiased min-h-screen`}
       style={{ background: '#1b1b1b', color: '#e5e5e5' }}
     >
+      {/* Skip to main content — WCAG 2.4.1 */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:start-4 focus:top-4 focus:z-[9999] focus:rounded-md focus:px-4 focus:py-2 focus:text-sm focus:font-semibold"
+        style={{ background: '#22c55e', color: '#0a0a0a' }}
+      >
+        {locale === 'he' ? 'דלג לתוכן הראשי' : 'Skip to main content'}
+      </a>
       <NextIntlClientProvider messages={messages}>
         <AuthProvider>
           <ConditionalNav />

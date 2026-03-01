@@ -1,21 +1,58 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import bcrypt from 'bcrypt'
+import { z } from 'zod'
 
+import { applyAuthRateLimit, signupRateLimiter } from '@/lib/auth-rate-limit'
+import { logError, RateLimitError } from '@/lib/errors'
 import { prisma } from '@/lib/prisma'
+
+const signupBodySchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name must be 100 characters or fewer').trim(),
+  email: z.string().email('Invalid email format').max(254, 'Email must be 254 characters or fewer').toLowerCase(),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(128, 'Password must be 128 characters or fewer'),
+})
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password } = await request.json()
-
-    if (!name || !email || !password) {
-      return NextResponse.json({ error: 'Name, email and password are required' }, { status: 400 })
+    // Rate limit signup attempts — prevent brute-force registration
+    try {
+      await applyAuthRateLimit(request, signupRateLimiter)
+    } catch (error) {
+      if (error instanceof RateLimitError) {
+        return NextResponse.json(
+          { error: 'Too many signup attempts. Please try again later.' },
+          { status: 429, headers: { 'Retry-After': '3600' } }
+        )
+      }
+      throw error
     }
 
-    if (password.length < 8) {
-      return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+    // Validate request body
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
     }
 
+    const parseResult = signupBodySchema.safeParse(body)
+    if (!parseResult.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed',
+          details: parseResult.error.issues.map((issue) => ({
+            field: issue.path.join('.'),
+            message: issue.message,
+          })),
+        },
+        { status: 400 }
+      )
+    }
+
+    const { name, email, password } = parseResult.data
+
+    // Check for existing account (use sanitized email from Zod)
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) {
       return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 })
@@ -30,7 +67,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ user }, { status: 201 })
   } catch (error) {
-    console.error('Signup error:', error)
+    logError('Signup API', error)
     return NextResponse.json({ error: 'Failed to create account' }, { status: 500 })
   }
 }

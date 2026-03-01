@@ -14,7 +14,12 @@ interface ChatMessageListProps {
 /** ChatMessageList - scrollable dark message list matching Storybook */
 export const ChatMessageList = ({ messages, isLoading, onTimestampClick }: ChatMessageListProps) => {
   return (
-    <div style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0 }}>
+    <div
+      aria-live="polite"
+      aria-label="Chat messages"
+      aria-relevant="additions"
+      style={{ flex: 1, overflowY: 'auto', padding: 14, display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0 }}
+    >
       {messages.map((message) => (
         <ChatMessage
           key={message.id}
@@ -23,7 +28,7 @@ export const ChatMessageList = ({ messages, isLoading, onTimestampClick }: ChatM
         />
       ))}
       {isLoading ? (
-        <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-start' }} role="status" aria-label="AI is typing">
           <div
             style={{
               padding: '12px 16px',
@@ -38,6 +43,7 @@ export const ChatMessageList = ({ messages, isLoading, onTimestampClick }: ChatM
             {[0, 1, 2].map((dot) => (
               <div
                 key={dot}
+                aria-hidden="true"
                 style={{
                   width: 5,
                   height: 5,

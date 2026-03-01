@@ -66,6 +66,7 @@ export const ChatSidebar = ({
 }: ChatSidebarProps) => {
   return (
     <aside
+      aria-label="AI Tutor chat"
       style={{
         background: '#121812',
         border: '1px solid rgba(34,197,94,0.12)',

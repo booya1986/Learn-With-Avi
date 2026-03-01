@@ -27,6 +27,7 @@ import { streamText } from 'ai'
 import { z } from 'zod'
 
 import { logError, ValidationError, RateLimitError, getUserFriendlyMessage } from '@/lib/errors'
+import { logger } from '@/lib/logger'
 import { prisma } from '@/lib/prisma'
 import { queryVectorChunks } from '@/lib/rag-pgvector'
 import { applyRateLimit, voiceRateLimiter } from '@/lib/rate-limit'
@@ -91,6 +92,7 @@ export async function POST(request: NextRequest) {
       await applyRateLimit(request, voiceRateLimiter)
     } catch (error) {
       if (error instanceof RateLimitError) {
+        logger.warn('VoiceChat', 'Rate limit exceeded')
         return NextResponse.json(
           { error: 'Rate limit exceeded', message: getUserFriendlyMessage(error) },
           { status: 429, headers: { 'Retry-After': '60' } }
@@ -119,6 +121,13 @@ export async function POST(request: NextRequest) {
     if (!ALLOWED_AUDIO_TYPES.has(audioFile.type)) {
       throw new ValidationError(`Unsupported audio format: ${audioFile.type}`)
     }
+
+    logger.info('VoiceChat', 'Request received', {
+      audioSize: audioFile.size,
+      language,
+      videoId: videoId ? '***' : undefined,
+      enableTTS,
+    })
 
     // STAGE 1: Transcribe audio with Whisper
     // When language is 'auto' and the caller knows the video's language (e.g. 'he'),
@@ -257,6 +266,14 @@ export async function POST(request: NextRequest) {
 
           const totalMs = Date.now() - startTime
 
+          logger.info('VoiceChat', 'Response sent', {
+            durationMs: totalMs,
+            sttTimeMs: sttTime,
+            ragTimeMs: ragTime,
+            llmTimeMs: llmTime,
+            responseLength: fullContent.length,
+          })
+
           // Send final done message with latency stats
           controller.enqueue(
             encoder.encode(
@@ -283,9 +300,10 @@ export async function POST(request: NextRequest) {
               transcriptionLength: transcription.text?.length,
               responseLength: fullContent?.length,
             },
-          }).catch((err: unknown) => console.error('Voice analytics insert failed:', err))
+          }).catch((err: unknown) => logError('Voice analytics insert failed', err))
         } catch (error) {
           logError('Claude streaming error in voice chat', error)
+          logger.error('VoiceChat', 'Streaming error', error)
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({ type: 'error', error: getUserFriendlyMessage(error) })}\n\n`
@@ -305,7 +323,10 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
+    const totalMs = Date.now() - startTime
+
     if (error instanceof ValidationError) {
+      logger.warn('VoiceChat', 'Validation error', { durationMs: totalMs, error: error.message })
       return NextResponse.json(
         { error: 'Validation error', message: error.message },
         { status: error.statusCode }
@@ -313,6 +334,7 @@ export async function POST(request: NextRequest) {
     }
 
     logError('Voice chat API error', error)
+    logger.error('VoiceChat', 'Request failed', error, { durationMs: totalMs })
     return NextResponse.json(
       { error: 'Internal server error', message: getUserFriendlyMessage(error) },
       { status: 500 }

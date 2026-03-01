@@ -1,8 +1,8 @@
 # CoursePageClient Refactoring Architecture
 
-**Last Updated**: January 19, 2026
-**Status**: Phase 1 Complete (Hooks Extraction)
-**Impact**: 1,475-line component → Modular hook-based architecture
+**Last Updated**: March 1, 2026
+**Status**: Phase 1 Complete (Hooks Extraction) + Visual Redesign Complete
+**Impact**: 1,475-line monolith → Modular architecture → Pixel-perfect Storybook design
 
 ---
 
@@ -632,7 +632,75 @@ Test hooks integrated in components:
 
 ---
 
-**Document Version**: 1.0
-**Last Updated**: January 19, 2026
-**Status**: Phase 1 Complete, Phases 2-6 Planned
-**Next Review**: When Phase 2 (Component Extraction) begins
+**Document Version**: 2.0
+**Last Updated**: March 1, 2026
+**Status**: Phase 1 Complete + Visual Redesign Complete
+**Next Review**: When Component Extraction or TypeScript fixes begin
+
+---
+
+## Visual Redesign — Storybook Pixel-Perfect (March 1, 2026)
+
+**Goal**: Make the live course page match `src/stories/pages/CoursePageDesign.stories.tsx` exactly.
+
+**Commits**: `0012be1`, `eaf91e1`
+**Deployed**: https://learn-with-avi.vercel.app/he/course/ai-no-code ✅
+
+### Root Causes Fixed
+
+| Problem | Root Cause | Fix |
+|---------|-----------|-----|
+| Chapters RIGHT, Chat LEFT | Hebrew `dir="rtl"` reverses CSS Grid columns | `direction: 'ltr'` on outermost div in CoursePageClient |
+| Nav breadcrumb reversed | Same RTL cascade | Resolved by same `direction: 'ltr'` fix |
+| White transcript card | `bg-white dark:bg-gray-900 rounded-2xl border` wrapper | Removed wrapper entirely |
+| White/blue chat bubbles | Tailwind `bg-blue-50 dark:bg-blue-950/30` | Replaced with dark green inline styles |
+| Gray video card + stage header | `bg-gray-900 rounded-2xl` card with Download button | Removed card and header |
+| Action buttons below video | `ActionButtons` component (not in Storybook) | Removed row and all related props |
+| Tab icons (FileText / Brain) | `lucide-react` icons in tab buttons | Removed — plain Hebrew text only |
+| shadcn ScrollArea in chat | Light-theme leaking through | Replaced with `div` + `overflowY: 'auto'` |
+
+### Dark Color System (enforced across all components)
+
+```
+Main bg:        #1b1b1b
+Chapters bg:    #141414
+Chat bg:        #121812
+Green:          #22c55e  (G)
+Green soft:     #4ade80  (G_SOFT)
+Sidebar border: rgba(34,197,94,0.12)
+User bubble:    rgba(34,197,94,0.09) + border rgba(34,197,94,0.3)
+AI bubble:      rgba(34,197,94,0.04) + border rgba(34,197,94,0.15)
+Active chunk:   rgba(34,197,94,0.06) + border rgba(34,197,94,0.2)
+```
+
+### Mobile Responsiveness
+
+Grid container:
+```tsx
+<div className="flex-1 flex flex-col md:grid overflow-hidden"
+     style={{ gridTemplateColumns: '220px 1fr 320px', height: 'calc(100vh - 53px)' }}>
+  <div className="hidden md:flex md:flex-col md:h-full"> {/* Chapters sidebar */} </div>
+  <VideoSection ... />
+  <div className="hidden md:flex md:flex-col md:h-full"> {/* Chat sidebar */} </div>
+</div>
+```
+
+Mobile (<768px): VideoSection full-width only. Desktop (≥768px): full 3-column grid.
+
+### VideoSection Props After Redesign
+
+Props removed (not in Storybook): `onSummarize`, `onStartQuiz`, `courseVideosCount`, `currentVideoOrder`
+
+Quiz is now started by clicking the "בוחן" tab (via `handleTabChange` in CoursePageClient).
+
+### QA Verification (Playwright)
+
+```
+✅ Columns: Chapters LEFT | Video CENTER | Chat RIGHT
+✅ Nav: LTR breadcrumb (LearnWithAvi / Courses / title / 0% complete)
+✅ Transcript: dark background, green active indicator, no white card
+✅ Tabs: plain text תמלול / בוחן, green active underline, no icons
+✅ Chat bubbles: dark green (no white/blue)
+✅ No ActionButtons row
+✅ Mobile: sidebars hidden, video+transcript full width
+```

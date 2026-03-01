@@ -55,3 +55,7 @@ docs/api-reference/
 # Playwright
 /test-results/
 /playwright-report/
+.playwright-mcp/
+
+# Corrupted modules backup
+node_modules_corrupted/

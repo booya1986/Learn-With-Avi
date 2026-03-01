@@ -2,6 +2,7 @@ version: 2
 
 updates:
   # npm ecosystem - check for dependency updates weekly
+  # CRITICAL: Next.js 15.5.7 is locked to prevent fatal bundler issues in 16.x
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -17,10 +18,32 @@ updates:
       prefix: "chore"
       prefix-development: "chore"
       include: "scope"
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
     rebase-strategy: "auto"
-    allow:
-      - dependency-type: "all"
+    groups:
+      # Group minor and patch updates together to reduce PR noise
+      - dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+        # Update once per week for grouped updates
+      - dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    ignore:
+      # CRITICAL: Lock Next.js to 15.5.7
+      # 16.x has fatal Turbopack cache corruption and Webpack manifest failures
+      # Do NOT upgrade until Next.js 16.1+ is stable (Q2 2025)
+      - dependency-name: "next"
+        update-types:
+          - "major"
+          - "minor"
+      # Lock eslint-config-next version with next
+      - dependency-name: "eslint-config-next"
+        update-types:
+          - "major"
+          - "minor"
 
   # GitHub Actions - check for action updates monthly
   - package-ecosystem: "github-actions"

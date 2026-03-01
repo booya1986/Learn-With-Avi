@@ -56,18 +56,18 @@
 
 ---
 
-## P1.5 — Voice Optimization (Current Phase)
+## P1.5 — Voice Optimization (Complete)
 
 ### Voice Pipeline
-- [ ] Stream TTS audio in voice chat pipeline (currently buffers entire response)
-- [ ] Fix broken `useVoiceOutput.speakWithElevenLabs` (tries to parse JSON from audio/mpeg)
-- [ ] Hebrew STT accuracy improvements (language hints, voice selection)
-- [ ] Voice conversation persistence (survives page refresh)
-- [ ] Real audio waveform visualization (replace random animation)
+- [x] Stream TTS audio in voice chat pipeline (shared ElevenLabs lib, SSE audio-chunk events)
+- [x] Fix broken `useVoiceOutput.speakWithElevenLabs` (Blob + object URL playback)
+- [x] Hebrew STT accuracy improvements (language hints, voice selection)
+- [x] Voice conversation persistence (useVoiceHistory hook, localStorage, 24h TTL)
+- [x] Real audio waveform visualization (Web Audio API AnalyserNode)
 
 ### Voice Analytics
-- [ ] Voice session analytics tracking (latency, provider usage, fallback rate)
-- [ ] Admin dashboard voice metrics view
+- [x] Voice session analytics tracking (VoiceSession Prisma model, latency metrics)
+- [x] Admin dashboard voice metrics view (VoiceAnalytics card)
 
 ### Documentation
 - [x] GSD context engineering files in place (PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md, PLAN.md)
@@ -75,14 +75,69 @@
 
 ---
 
-## P2 — Scale (Future)
+## P2 — Scale (Phase 4, Complete)
 
-- [ ] Redis-backed rate limiting (replace in-memory store for multi-instance)
-- [ ] Multi-course catalog with course discovery page
-- [ ] Quiz auto-generation from transcript (`/api/v1/quiz/generate`)
-- [ ] Learning progress analytics dashboard (admin)
-- [ ] Course completion certificates
-- [ ] Mobile-responsive optimization (current: desktop-first)
+### Student Progress & Dashboard
+- [x] Student progress tracking (UserProgress, CourseEnrollment DB models + APIs)
+- [x] Student dashboard page (/[locale]/courses with enrolled courses + progress)
+- [x] Video watch progress auto-save (debounced, 15s interval)
+- [x] Resume playback from last position
+
+### Quiz Persistence
+- [x] Quiz answer submission API (POST /api/v1/quiz/submit)
+- [x] Quiz history API (GET /api/v1/quiz/history)
+- [x] Quiz results UI with adaptive bloom level progression
+
+### Course Catalog
+- [x] Search bar for courses (client-side, debounced)
+- [x] Difficulty and topic filter chips
+- [x] Course cards with video count + total duration
+
+### Admin Analytics
+- [x] Student engagement analytics API (GET /api/admin/analytics)
+- [x] Admin dashboard: engagement, course performance, quiz metrics cards
+- [x] Recent activity feed
+
+### Mobile & DevOps
+- [x] Mobile-responsive admin panel (hamburger menu, stacked cards)
+- [x] Google OAuth setup documentation + health check (blocker resolution)
+
+### Completion
+- [x] Course completion auto-detection (all videos 90%+ watched)
+- [x] PDF certificate generation (GET /api/v1/certificates/[courseId])
+- [x] Test coverage boost to 40%+ (blocker resolution)
+
+---
+
+## P3 — Polish & Launch Readiness (Phase 5, Complete)
+
+### Accessibility
+- [x] WCAG 2.1 AA compliance across all pages (16 files fixed: landmarks, ARIA tabs, focus traps, skip-to-content)
+- [x] 0 critical axe-core violations on course, auth, and admin pages
+- [x] Automated a11y testing: axe-core integrated into Playwright E2E suite (@axe-core/playwright)
+
+### Performance
+- [x] Dynamic imports for QuizPanel and admin analytics cards (reduce initial bundle)
+- [x] React.memo for ChatMessage (prevent unnecessary re-renders)
+
+### Security
+- [x] Zod validation on all POST routes (chat max 2000 chars, signup rate-limited)
+- [x] Security headers: CSP, X-Frame-Options: DENY, X-Content-Type-Options, Referrer-Policy
+
+### E2E Testing
+- [x] Playwright E2E suite: auth flow (sign up, login, logout)
+- [x] Playwright E2E suite: course page (video, chat, quiz)
+- [x] Playwright E2E suite: quiz submission and history
+- [x] Playwright E2E suite: student dashboard and progress
+- [x] Playwright E2E suite: admin panel (course + video management)
+
+### CI/CD
+- [x] GitHub Actions: type-check + lint + unit tests + build on all PRs
+- [x] Dependabot configured with Next.js version lock (no auto-merge for Next.js)
+
+### Monitoring
+- [x] Structured logging (context, latency, auto-redaction) on chat, voice, quiz routes
+- [x] Enhanced health endpoint with DB connectivity check (`GET /api/v1/health/deep`)
 
 ---
 

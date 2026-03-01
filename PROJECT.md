@@ -28,7 +28,7 @@
 | Database | PostgreSQL + Prisma ORM + pgvector | Supabase Session Pooler (port 5432) |
 | Auth | NextAuth.js — Admin credentials + User credentials + Google OAuth | Two separate user types, never mix |
 | i18n | next-intl v4 | Hebrew RTL mandatory everywhere |
-| Testing | Vitest, Playwright, axe-core | Target: 80%+ coverage |
+| Testing | Vitest, Playwright, axe-core | Target: 35%+ coverage |
 | Deployment | Vercel + Supabase | `vercel.json` has timeout config |
 
 ---

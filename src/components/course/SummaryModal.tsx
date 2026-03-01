@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 
 import {
   X,
@@ -72,22 +72,59 @@ export interface SummaryModalProps {
 
 export const SummaryModal = React.memo<SummaryModalProps>(
   ({ isOpen, onClose, videoTitle, isGenerating, summaryData }) => {
-    // Handle ESC key to close modal
+    const dialogRef = useRef<HTMLDivElement>(null)
+
+    // Handle ESC key to close modal and manage focus trap
     useEffect(() => {
-      const handleEscape = (e: KeyboardEvent) => {
-        if (e.key === "Escape" && isOpen) {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (!isOpen) return
+
+        if (e.key === "Escape") {
           onClose();
+          return
+        }
+
+        // Focus trap: keep focus within modal when Tab is pressed
+        if (e.key === "Tab" && dialogRef.current) {
+          const focusableSelectors = [
+            'button:not([disabled])',
+            'a[href]',
+            'input:not([disabled])',
+            'textarea:not([disabled])',
+            '[tabindex]:not([tabindex="-1"])',
+          ].join(', ')
+          const focusable = Array.from(
+            dialogRef.current.querySelectorAll<HTMLElement>(focusableSelectors)
+          )
+          if (focusable.length === 0) return
+          const first = focusable[0]
+          const last = focusable[focusable.length - 1]
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault()
+              last.focus()
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault()
+              first.focus()
+            }
+          }
         }
       };
 
       if (isOpen) {
-        document.addEventListener("keydown", handleEscape);
+        document.addEventListener("keydown", handleKeyDown);
         // Prevent body scroll when modal is open
         document.body.style.overflow = "hidden";
+        // Move focus into the modal
+        requestAnimationFrame(() => {
+          dialogRef.current?.focus()
+        })
       }
 
       return () => {
-        document.removeEventListener("keydown", handleEscape);
+        document.removeEventListener("keydown", handleKeyDown);
         document.body.style.overflow = "unset";
       };
     }, [isOpen, onClose]);
@@ -135,7 +172,9 @@ ${summaryData.benefits.map((b) => `✓ ${b}`).join("\n")}
         onClick={onClose}
       >
         <div
-          className="bg-[#141414] border border-green-500/15 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+          ref={dialogRef}
+          tabIndex={-1}
+          className="bg-[#141414] border border-green-500/15 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200 focus:outline-none"
           style={{ boxShadow: '0 0 40px rgba(34,197,94,0.08), 0 24px 64px rgba(0,0,0,0.6)' }}
           onClick={(e) => e.stopPropagation()}
         >

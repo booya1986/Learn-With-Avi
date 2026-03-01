@@ -13,6 +13,7 @@ import { z } from 'zod'
 import { getSampleChunksForVideo } from '@/data/sample-transcripts'
 import { getConfig } from '@/lib/config'
 import { logError, ValidationError, RateLimitError } from '@/lib/errors'
+import { logger } from '@/lib/logger'
 import { buildQuizPrompt } from '@/lib/quiz-prompts'
 import { applyRateLimit, quizGenerateRateLimiter } from '@/lib/rate-limit'
 import { type QuizQuestion, type TranscriptChunk } from '@/types'
@@ -183,12 +184,15 @@ const quizQuestionSchema = z.object({
  * - IP-based throttling
  */
 export async function POST(request: NextRequest) {
+  const startTime = Date.now()
+
   try {
     // Apply rate limiting
     try {
       await applyRateLimit(request, quizGenerateRateLimiter)
     } catch (error) {
       if (error instanceof RateLimitError) {
+        logger.warn('QuizAPI', 'Rate limit exceeded')
         return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 })
       }
       throw error
@@ -199,6 +203,7 @@ export async function POST(request: NextRequest) {
     const parseResult = quizGenerateRequestSchema.safeParse(body)
 
     if (!parseResult.success) {
+      logger.warn('QuizAPI', 'Validation failed', { issues: parseResult.error.issues.length })
       return NextResponse.json(
         {
           error: 'Validation failed',
@@ -209,6 +214,13 @@ export async function POST(request: NextRequest) {
     }
 
     const { videoId, chapterId, bloomLevel, count, language, excludeIds } = parseResult.data
+
+    logger.info('QuizAPI', 'Request received', {
+      videoId: '***',
+      bloomLevel,
+      count,
+      language,
+    })
 
     // Fetch transcript chunks for the video
     const chunks: TranscriptChunk[] = getSampleChunksForVideo(videoId)
@@ -331,18 +343,29 @@ export async function POST(request: NextRequest) {
       // or store a hash of the question for deduplication
     }
 
+    const durationMs = Date.now() - startTime
+    logger.info('QuizAPI', 'Questions generated', {
+      count: questions.length,
+      durationMs,
+      bloomLevel,
+    })
+
     return NextResponse.json({ questions })
   } catch (error) {
+    const durationMs = Date.now() - startTime
+
     logError('Quiz generation API error', error)
 
     // Handle specific error types
     if (error instanceof ValidationError) {
+      logger.warn('QuizAPI', 'Validation error', { durationMs, error: error.message })
       return NextResponse.json(
         { error: 'Validation error', message: error.message },
         { status: 400 }
       )
     }
 
+    logger.error('QuizAPI', 'Generation failed', error, { durationMs })
     return NextResponse.json(
       {
         error: 'Failed to generate questions',

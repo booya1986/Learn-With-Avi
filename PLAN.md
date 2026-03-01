@@ -1,7 +1,7 @@
 # LearnWithAvi — Active Phase Plan
 
-> Phase 3 — Voice Optimization ✅ COMPLETE
-> Generated: 2026-03-01 | Completed: 2026-03-01
+> Phase 5 — Polish & Launch Readiness
+> Generated: 2026-03-01 | Status: Planned
 > See [ROADMAP.md](ROADMAP.md) for phase context and [STATE.md](STATE.md) for current blockers.
 
 ---
@@ -10,333 +10,554 @@
 
 | Task | Wave | Skill | Priority | Effort | Status |
 |---|---|---|---|---|---|
-| stream-tts-in-voice-chat | 1 | backend-engineer | P0 | large | ✅ Done |
-| fix-elevenlabs-voice-output-hook | 1 | frontend-engineer | P0 | medium | ✅ Done |
-| hebrew-stt-optimization | 1 | backend-engineer | P1 | medium | ✅ Done |
-| voice-session-persistence | 1 | frontend-engineer | P1 | medium | ✅ Done |
-| voice-waveform-real-audio | 1 | frontend-engineer | P2 | small | ✅ Done |
-| voice-analytics-admin | 2 | backend-engineer | P1 | large | ✅ Done |
-| voice-component-stories | 2 | frontend-engineer | P2 | small | ✅ Done |
+| a11y-audit-fix | 1 | frontend-engineer | P0 | large | ✅ Done |
+| security-audit | 1 | backend-engineer | P1 | medium | ✅ Done |
+| e2e-critical-flows | 1 | qa-engineer | P1 | large | ✅ Done |
+| perf-lighthouse-audit | 1 | frontend-engineer | P1 | medium | ✅ Done |
+| ci-cd-hardening | 1 | devops-engineer | P1 | medium | ✅ Done |
+| a11y-e2e-automation | 2 | qa-engineer | P1 | medium | ✅ Done |
+| monitoring-observability | 2 | devops-engineer | P2 | medium | ✅ Done |
+| docs-requirements-sync | 2 | product-manager | P2 | small | ✅ Done |
 
 ---
 
-## Wave 1 — Core Pipeline Fixes (independent, no dependencies)
+## Wave 1 — Audit & Harden (independent, no dependencies)
 
 <task
-  id="stream-tts-in-voice-chat"
+  id="a11y-audit-fix"
   wave="1"
-  skill="backend-engineer"
+  skill="frontend-engineer"
   priority="P0"
   effort="large"
   depends-on=""
 >
-  Fix the voice chat pipeline to stream TTS audio instead of buffering.
+  Accessibility audit and fix — achieve WCAG 2.1 AA compliance on all key pages.
 
-  PROBLEM: `generateTTSAudio()` in voice-pipeline.ts calls the TTS route, buffers the
-  ENTIRE ElevenLabs audio/mpeg stream into memory, converts to base64, and sends as a
-  single SSE `audio` event. This negates all streaming latency benefits from Phase 2.
-
-  SOLUTION: Eliminate the internal HTTP round-trip. Instead:
-  1. Call ElevenLabs `/v1/text-to-speech/{voiceId}/stream` directly from voice-pipeline.ts
-     (extract `streamElevenLabsTTS` logic from the TTS route into a shared lib function)
-  2. In voice/chat/route.ts, after Claude finishes streaming text, pipe TTS audio chunks
-     as multiple SSE events: `{ type: 'audio-chunk', chunk: <base64-chunk>, index: N }`
-  3. Send a final `{ type: 'audio-done' }` event
-  4. Update useVoiceAPI.ts client to accumulate audio chunks and play via HTMLAudioElement
-     using MediaSource API or Blob concatenation
-
-  Key files:
-  - src/app/api/v1/voice/chat/route.ts (pipeline orchestration)
-  - src/app/api/v1/voice/tts/route.ts (extract streamElevenLabsTTS to shared lib)
-  - src/lib/voice-pipeline.ts (generateTTSAudio → rewrite)
-  - src/hooks/voice/useVoiceAPI.ts (handle audio-chunk events)
-
-  Constraints:
-  - Keep the TTS route working independently (it's used for standalone TTS)
-  - Maintain the browser TTS fallback when no ELEVENLABS_API_KEY
-  - Keep existing SSE event types (transcription, content, done) unchanged
-  - Respect 30s Vercel timeout on TTS, 60s on voice chat
-
-  Acceptance:
-  - Voice chat audio starts playing BEFORE the full TTS response is buffered
-  - Latency from "Claude done" to "first audio heard" drops by 500ms+
-  - Existing voice-tts.test.ts and voice-chat.test.ts still pass
-  - `GET /api/v1/voice/tts` health check still works
-</task>
-
-<task
-  id="fix-elevenlabs-voice-output-hook"
-  wave="1"
-  skill="frontend-engineer"
-  priority="P0"
-  effort="medium"
-  depends-on=""
->
-  Fix the broken `speakWithElevenLabs` function in useVoiceOutput.ts.
-
-  PROBLEM: The hook's `speakWithElevenLabs()` fetches `/api/voice/tts` and tries to
-  read `response.json().audioUrl` — but the TTS route returns streaming `audio/mpeg`,
-  not JSON. This path is completely broken. There's a `TODO: Implement ElevenLabs
-  integration` comment confirming it was never finished.
-
-  SOLUTION:
-  1. Check response Content-Type
-  2. If `audio/mpeg`: create a Blob from the response body, create an object URL,
-     play via HTMLAudioElement (similar to useAudioPlayback pattern)
-  3. If JSON (browser fallback): parse and handle the `provider: 'browser'` response
-     by falling back to Web Speech Synthesis
-  4. Clean up object URLs on unmount to prevent memory leaks
-
-  Key files:
-  - src/hooks/useVoiceOutput.ts (speakWithElevenLabs function, ~line 200+)
-  - src/hooks/voice/useAudioPlayback.ts (reference for HTMLAudioElement pattern)
-
-  Constraints:
-  - Don't break the browser TTS fallback path
-  - Don't break the priority queue system
-  - Maintain the existing API: speak(), stop(), pause(), resume()
-  - Keep the provider preference logic (elevenlabs > browser)
-
-  Acceptance:
-  - `speakWithElevenLabs()` correctly plays audio/mpeg from the TTS streaming endpoint
-  - Falls back to browser TTS when ElevenLabs returns non-audio response
-  - Object URLs are revoked on unmount (no memory leaks)
-  - useVoiceOutput.test.ts still passes
-  - VoicePanel and VoiceButton work with ElevenLabs provider selected
-</task>
-
-<task
-  id="hebrew-stt-optimization"
-  wave="1"
-  skill="backend-engineer"
-  priority="P1"
-  effort="medium"
-  depends-on=""
->
-  Improve Whisper STT Hebrew accuracy and fix language handling across the voice pipeline.
-
-  THREE FIXES:
-
-  1. WHISPER HEBREW HINTS: When language is 'auto' and the video's known language is
-     Hebrew, pass 'he' as a hint to Whisper instead of no hint. Accept an optional
-     `expectedLanguage` param in transcribeAudio() for this purpose.
-
-  2. TTS LANGUAGE-AWARE VOICE SELECTION: The `_language` parameter in
-     `streamElevenLabsTTS` is received but IGNORED — always uses the same voice (Adam).
-     Fix: when language is 'he', use a Hebrew-optimized voice. When language is 'en',
-     use an English-optimized voice. Use ElevenLabs voice IDs that support the target
-     language with `eleven_multilingual_v2` model.
-
-  3. FIX buildContextString FOR HOURS: Videos longer than 60 minutes get timestamps
-     like [61:05] instead of [1:01:05]. Fix the formatting to handle hours.
-
-  Key files:
-  - src/lib/voice-pipeline.ts (transcribeAudio, buildContextString)
-  - src/app/api/v1/voice/tts/route.ts (streamElevenLabsTTS language param)
-  - src/app/api/v1/voice/chat/route.ts (pass video language context)
-
-  Constraints:
-  - Don't change the Whisper model (whisper-1) — it's the only one available
-  - Keep 'auto' as default language (don't force Hebrew)
-  - Don't add new API keys or services
-  - Maintain backward compatibility of API request/response shapes
-
-  Acceptance:
-  - Hebrew voice input with language='he' produces more accurate transcriptions
-  - TTS uses language-appropriate voice settings
-  - buildContextString formats [1:01:05] for timestamps >= 3600s
-  - voice-pipeline.test.ts updated and passing with new hour-format tests
-  - voice-chat.test.ts and voice-tts.test.ts still pass
-</task>
-
-<task
-  id="voice-session-persistence"
-  wave="1"
-  skill="frontend-engineer"
-  priority="P1"
-  effort="medium"
-  depends-on=""
->
-  Persist voice conversation history to localStorage so page refresh doesn't lose context.
-
-  PROBLEM: Voice conversation context lives only in React state. Refreshing the course
-  page loses all voice chat history. The server is stateless (by design), so persistence
-  must be client-side.
-
-  SOLUTION:
-  1. Create a `useVoiceHistory` hook that wraps localStorage with:
-     - Key format: `voice-history-{videoId}` (scoped per video)
-     - Max 20 messages (matches server-side Zod validation limit)
-     - TTL: 24 hours (auto-expire stale conversations)
-     - Debounced writes (don't write on every token)
-  2. On mount in VoiceChatInterface, load persisted history for the current videoId
-  3. On new message (user transcription or assistant response), save to localStorage
-  4. Add a "Clear history" button to VoiceChatInterface
-
-  Key files:
-  - src/hooks/voice/useVoiceHistory.ts (NEW — localStorage persistence hook)
-  - src/components/voice/VoiceChatInterface.tsx (integrate useVoiceHistory)
-  - src/hooks/voice/index.ts (re-export new hook)
-
-  Constraints:
-  - Don't change server-side behavior (keep it stateless)
-  - localStorage only — no cookies or IndexedDB
-  - Handle localStorage being full or disabled (graceful fallback to in-memory)
-  - Don't persist audio data (only text messages)
-  - Respect the 20-message limit from server-side Zod validation
-
-  Acceptance:
-  - Refreshing a course page preserves voice conversation history
-  - Each video has its own isolated history
-  - History auto-expires after 24 hours
-  - "Clear history" button works
-  - Gracefully handles localStorage unavailable (private browsing)
-  - New hook has unit tests
-</task>
-
-<task
-  id="voice-waveform-real-audio"
-  wave="1"
-  skill="frontend-engineer"
-  priority="P2"
-  effort="small"
-  depends-on=""
->
-  Replace fake random waveform with real audio visualization using Web Audio API.
-
-  PROBLEM: useWaveform.ts generates random bar heights (Math.random()) every 100ms.
-  The waveform animation has no relationship to actual audio input.
-
-  SOLUTION:
-  1. Accept an optional MediaStream or HTMLAudioElement as input
-  2. Create an AudioContext + AnalyserNode
-  3. Use getByteFrequencyData() to get real frequency/amplitude data
-  4. Map frequency bins to bar heights
-  5. Fall back to the existing random animation if no audio source is provided
-     (e.g., when microphone permission hasn't been granted yet)
-  6. Clean up AudioContext on unmount
-
-  Key files:
-  - src/hooks/voice/useWaveform.ts (rewrite)
-  - src/components/voice/WaveformVisualizer.tsx (pass audio source)
-  - src/components/voice/VoiceChatInterface.tsx (connect MediaStream to waveform)
-
-  Constraints:
-  - Must work without audio source (fallback to current random behavior)
-  - Don't create multiple AudioContexts (browser limits to ~6)
-  - Clean up resources properly on unmount
-  - Keep the same visual style (vertical bars)
-
-  Acceptance:
-  - Waveform bars respond to actual microphone input volume during recording
-  - Waveform bars respond to actual audio playback volume during TTS
-  - Falls back to random animation when no audio source available
-  - No AudioContext leak warnings in browser console
-</task>
-
----
-
-## Wave 2 — Analytics & Polish (depends on Wave 1)
-
-<task
-  id="voice-analytics-admin"
-  wave="2"
-  skill="backend-engineer"
-  priority="P1"
-  effort="large"
-  depends-on="stream-tts-in-voice-chat,hebrew-stt-optimization"
->
-  Add voice usage analytics tracking and admin dashboard endpoint.
+  PROBLEM: Accessibility is listed as a non-functional requirement (WCAG 2.1 AA)
+  but has never been formally audited. axe-core is installed but not run systematically.
 
   SCOPE:
-  1. DATABASE: Add a `VoiceSession` model to prisma/schema.prisma:
-     - id, sessionId, userId (optional), videoId, language, sttProvider, ttsProvider,
-       ttsUsedFallback (boolean), sttLatencyMs, llmLatencyMs, ttsLatencyMs, totalLatencyMs,
-       transcriptionLength, responseLength, createdAt
 
-  2. LOGGING: In voice/chat/route.ts, after the pipeline completes, insert a VoiceSession
-     record with latency metrics (already calculated in the `done` SSE event).
-     Fire-and-forget (don't block the response).
+  1. AUDIT — Run axe-core programmatically on these pages:
+     - Home page (/[locale]/) — course catalog
+     - Course page (/[locale]/course/[courseId]) — video player + chat + sidebar
+     - Student dashboard (/[locale]/courses) — enrolled courses
+     - Login page (/[locale]/auth/login) — student login
+     - Admin dashboard (/[locale]/admin) — admin panel
 
-  3. API ENDPOINT: `GET /api/admin/voice/analytics` — returns aggregated stats:
-     - Total voice sessions (today, week, month)
-     - Average latency per stage (stt, llm, tts, total)
-     - TTS fallback rate (% of sessions using browser TTS)
-     - Language distribution (he vs en vs auto)
-     - Top videos by voice usage
+  2. FIX COMMON VIOLATIONS:
+     - Missing alt text on images
+     - Missing form labels (search, filters, chat input, login forms)
+     - Insufficient color contrast (check green #22c55e on dark #1b1b1b bg)
+     - Missing landmark roles (main, nav, aside, footer)
+     - Missing heading hierarchy (h1 → h2 → h3, no skips)
+     - Focus indicators on interactive elements (buttons, links, inputs)
+     - Missing aria-labels on icon-only buttons (hamburger, close, play, etc.)
 
-  4. ADMIN UI: Add a VoiceAnalytics card to the admin dashboard showing key metrics.
+  3. KEYBOARD NAVIGATION:
+     - Tab order is logical on course page (video → chat → sidebar)
+     - Escape closes modals and drawers
+     - Enter/Space activates buttons and links
+     - Skip-to-content link on all pages
+     - Focus trap in modals (quiz results, summary modal)
+
+  4. SCREEN READER SUPPORT:
+     - aria-live regions for dynamic content (chat messages, quiz results, progress updates)
+     - aria-expanded on collapsible sections (admin sidebar, chapter groups)
+     - aria-current on active navigation items
+     - Meaningful link text (not "click here")
 
   Key files:
-  - prisma/schema.prisma (new VoiceSession model)
-  - src/app/api/v1/voice/chat/route.ts (insert analytics record)
-  - src/app/api/admin/voice/analytics/route.ts (NEW — admin analytics endpoint)
-  - src/app/[locale]/admin/ (add analytics card to dashboard)
+  - src/app/[locale]/page.tsx (home page)
+  - src/app/[locale]/course/[courseId]/CoursePageClient.tsx (course page)
+  - src/app/[locale]/courses/page.tsx (student dashboard)
+  - src/app/[locale]/auth/login/page.tsx (login)
+  - src/app/[locale]/admin/admin-layout-client.tsx (admin layout)
+  - src/components/course/ (all course components)
+  - src/components/admin/ (all admin components)
 
   Constraints:
-  - Analytics insert must not slow down the voice response (fire-and-forget)
-  - Admin endpoint requires admin auth (use existing admin auth pattern)
-  - Don't store actual conversation content (privacy) — only metadata and metrics
-  - Use Prisma for all DB operations
+  - Don't change visual design — only add a11y attributes and fix contrast
+  - Use semantic HTML where possible (button not div, nav not div)
+  - RTL must still work correctly after changes
+  - Don't add new dependencies
+  - Focus on high-impact fixes — critical and serious violations first
 
   Acceptance:
-  - Every voice chat session creates a VoiceSession record
-  - Admin can view voice usage metrics at /admin with real data
-  - Analytics API returns correct aggregated stats
-  - Database migration runs cleanly
-  - No impact on voice chat latency
+  - axe-core reports 0 critical and 0 serious violations on all 5 key pages
+  - All interactive elements are keyboard accessible
+  - Skip-to-content link present on main pages
+  - aria-live regions on chat message area and quiz results
+  - Color contrast ratios meet WCAG AA (4.5:1 for text, 3:1 for large text)
+  - No TypeScript errors introduced
 </task>
 
 <task
-  id="voice-component-stories"
-  wave="2"
-  skill="frontend-engineer"
-  priority="P2"
-  effort="small"
-  depends-on="fix-elevenlabs-voice-output-hook,voice-waveform-real-audio"
+  id="security-audit"
+  wave="1"
+  skill="backend-engineer"
+  priority="P1"
+  effort="medium"
+  depends-on=""
 >
-  Add Storybook stories for voice components (project convention requires stories
-  for new components).
+  Security hardening — input validation, header security, and OWASP top 10 review.
 
-  Components to cover:
-  1. VoiceChatInterface — show idle, recording, processing, playing states
-  2. MicrophoneButton — show all 4 button states (idle, recording, processing, playing)
-  3. WaveformVisualizer — show active vs idle animation
-  4. VoiceSettingsPanel — show language and voice selection
+  PROBLEM: Security NFRs mention input sanitization on all user-facing API routes,
+  but this hasn't been systematically verified. Rate limiting exists but hasn't been
+  reviewed for completeness.
+
+  SCOPE:
+
+  1. INPUT VALIDATION — Review and harden all user-facing API routes:
+     - POST /api/v1/chat — validate message length (max 2000 chars), sanitize HTML
+     - POST /api/v1/voice/chat — validate audio blob size (max 10MB)
+     - POST /api/v1/quiz/generate — validate videoId format, bloomLevel range (1-6)
+     - POST /api/v1/quiz/submit — validate answers array, score bounds
+     - POST /api/v1/progress/watch — validate watchedSeconds, totalSeconds (positive ints)
+     - POST /api/auth/signup — validate email format, password strength (min 8 chars)
+     - Use Zod for schema validation on all POST request bodies
+
+  2. SECURITY HEADERS — Add via next.config.ts or middleware:
+     - X-Content-Type-Options: nosniff
+     - X-Frame-Options: DENY
+     - Referrer-Policy: strict-origin-when-cross-origin
+     - Permissions-Policy: camera=(), microphone=(self), geolocation=()
+     - Content-Security-Policy: basic policy (self, trusted CDNs)
+
+  3. ERROR SANITIZATION — Verify no API route leaks:
+     - Stack traces in production
+     - Database connection strings
+     - API keys or secrets
+     - Internal file paths
+     - Prisma error details (use generic messages)
+
+  4. RATE LIMIT REVIEW:
+     - Verify all AI endpoints have rate limits
+     - Add rate limit to /api/auth/signup (prevent brute-force registration)
+     - Verify rate limit headers are returned (X-RateLimit-Limit, X-RateLimit-Remaining)
 
   Key files:
-  - src/stories/voice/VoiceChatInterface.stories.tsx (NEW)
-  - src/stories/voice/MicrophoneButton.stories.tsx (NEW)
-  - src/stories/voice/WaveformVisualizer.stories.tsx (NEW)
-  - src/stories/voice/VoiceSettingsPanel.stories.tsx (NEW)
+  - src/app/api/v1/chat/route.ts
+  - src/app/api/v1/voice/chat/route.ts
+  - src/app/api/v1/quiz/generate/route.ts
+  - src/app/api/v1/quiz/submit/route.ts
+  - src/app/api/v1/progress/watch/route.ts
+  - src/app/api/auth/signup/route.ts (if exists)
+  - src/lib/rate-limit.ts
+  - next.config.ts (security headers)
+  - src/middleware.ts
 
   Constraints:
-  - Mock all API calls and media APIs (Storybook can't use real microphone)
-  - Follow existing Storybook patterns (see src/stories/ for reference)
-  - Use decorators for RTL/Hebrew testing variants
+  - Don't break existing API behavior — add validation, don't change response shapes
+  - Zod is already a dependency (check package.json) — if not, use manual validation
+  - Security headers must not break YouTube embeds or ElevenLabs audio
+  - CSP must allow: YouTube iframes, ElevenLabs API, OpenAI API, Anthropic API
+  - Rate limit headers are informational — don't expose internal implementation
 
   Acceptance:
-  - `npm run storybook` shows all 4 voice component stories
-  - Each story demonstrates multiple states/variants
-  - Stories render without errors or console warnings
+  - All POST endpoints validate input with clear error messages (400 for bad input)
+  - Security headers present on all responses (verify with curl -I)
+  - No stack traces or internal details in production error responses
+  - /api/auth/signup has rate limiting
+  - npm run type-check passes
+  - Existing tests still pass
+</task>
+
+<task
+  id="e2e-critical-flows"
+  wave="1"
+  skill="qa-engineer"
+  priority="P1"
+  effort="large"
+  depends-on=""
+>
+  Write Playwright E2E tests for the 5 critical user flows.
+
+  PROBLEM: E2E tests exist in e2e/ but the GitHub Actions workflow is disabled
+  ("ci: disable E2E workflow until GitHub secrets are configured"). The existing
+  tests may be stale. We need reliable E2E coverage for launch-critical flows.
+
+  SCOPE:
+
+  1. STUDENT LOGIN FLOW (e2e/auth/student-login.spec.ts):
+     - Visit /en/auth/login
+     - Fill email + password → submit → redirect to home page
+     - Verify user greeting / authenticated state
+     - Try invalid credentials → see error message
+     - Verify /en/courses redirects unauthenticated users to login
+
+  2. COURSE VIEWING FLOW (e2e/course/course-viewing.spec.ts):
+     - Navigate to a course page
+     - Verify video player loads
+     - Verify chapter sidebar is visible
+     - Click a chapter → video seeks to correct time
+     - Verify transcript section loads
+
+  3. QUIZ FLOW (e2e/quiz/quiz-flow.spec.ts):
+     - Open quiz panel on course page
+     - Generate a quiz (may need to mock API)
+     - Select answers for all questions
+     - Submit quiz → see results with score
+     - Verify quiz history tab shows the attempt
+
+  4. STUDENT DASHBOARD FLOW (e2e/dashboard/student-dashboard.spec.ts):
+     - Log in as student
+     - Navigate to /en/courses
+     - Verify enrolled courses are shown (or empty state)
+     - Click a course card → navigates to course page
+
+  5. ADMIN DASHBOARD FLOW (e2e/admin/admin-dashboard.spec.ts):
+     - Log in as admin via /en/admin/login
+     - Verify admin dashboard loads with analytics cards
+     - Navigate to courses management page
+     - Navigate to videos management page
+     - Verify sidebar navigation works on desktop
+
+  Key files:
+  - e2e/ (existing test directory)
+  - playwright.config.ts (existing config)
+  - e2e/fixtures/ (test helpers, if exists)
+
+  Constraints:
+  - Tests should work with a test database (or mock external APIs)
+  - Use Playwright best practices: locator-based selectors, not CSS selectors
+  - Use data-testid attributes where semantic selectors aren't sufficient
+  - Tests must work in CI (headless Chrome)
+  - Mock AI API calls (Claude, OpenAI) — don't hit real APIs in tests
+  - Each test file should be independent (no shared state between files)
+  - Test both English and Hebrew locales where relevant
+
+  Acceptance:
+  - 5 E2E test files covering the critical flows
+  - All tests pass locally with `npx playwright test`
+  - Tests use proper Playwright patterns (page fixtures, expect assertions)
+  - data-testid attributes added where needed (minimal, only where semantic selectors fail)
+  - README or comments explain how to run E2E tests locally
+  - Tests handle loading states (wait for selectors, not arbitrary timeouts)
+</task>
+
+<task
+  id="perf-lighthouse-audit"
+  wave="1"
+  skill="frontend-engineer"
+  priority="P1"
+  effort="medium"
+  depends-on=""
+>
+  Performance audit and optimization — achieve good Lighthouse scores on key pages.
+
+  PROBLEM: NFR targets include TTFB < 2s and AI chat first token < 1s, but
+  performance has never been formally measured. Common Next.js performance issues
+  (large bundles, unoptimized images, missing lazy loading) haven't been addressed.
+
+  SCOPE:
+
+  1. BUNDLE ANALYSIS:
+     - Run `npx @next/bundle-analyzer` or equivalent to identify large chunks
+     - Identify components that should be lazy-loaded (heavy, below-the-fold)
+     - Check for accidental client-side imports of server-only code
+
+  2. LAZY LOADING:
+     - Dynamic import QuizPanel (only loads when quiz tab is opened)
+     - Dynamic import voice components (only when user clicks voice button)
+     - Dynamic import admin analytics charts (only when admin visits dashboard)
+     - Use next/dynamic with { ssr: false } for client-only components
+
+  3. IMAGE OPTIMIZATION:
+     - Use next/image for all images (course thumbnails, logos)
+     - Add proper width/height to prevent layout shift (CLS)
+     - Use WebP format where possible
+     - Add loading="lazy" for below-the-fold images
+
+  4. FONT OPTIMIZATION:
+     - Verify next/font is used (prevents FOUT/FOIT)
+     - Preload critical fonts
+     - Font-display: swap for non-critical fonts
+
+  5. CACHING HEADERS:
+     - Static assets: immutable, max-age=31536000
+     - API responses: appropriate Cache-Control headers
+     - Use stale-while-revalidate where appropriate
+
+  6. CORE WEB VITALS:
+     - LCP (Largest Contentful Paint) < 2.5s
+     - FID (First Input Delay) < 100ms
+     - CLS (Cumulative Layout Shift) < 0.1
+
+  Key files:
+  - next.config.ts (bundle, image, font config)
+  - src/app/[locale]/page.tsx (home page — optimize LCP)
+  - src/app/[locale]/course/[courseId]/CoursePageClient.tsx (heaviest page)
+  - src/components/course/QuizPanel.tsx (lazy load candidate)
+  - src/components/voice/ (lazy load candidate)
+  - src/app/layout.tsx (font loading)
+
+  Constraints:
+  - Don't break existing functionality — lazy loading must maintain UX
+  - Show loading skeletons for dynamically imported components
+  - Don't add heavy dependencies (no new analytics libraries)
+  - Image optimization must work with YouTube thumbnails (external URLs)
+  - next.config.ts already has image remotePatterns — extend, don't replace
+
+  Acceptance:
+  - QuizPanel and voice components are dynamically imported
+  - Course page bundle size reduced by 20%+ (measure before/after)
+  - next/image used for all images with proper dimensions
+  - No layout shift from images loading (CLS < 0.1)
+  - npm run build succeeds with no increase in route sizes
+  - Lighthouse Performance score > 80 on home page (if measurable locally)
+</task>
+
+<task
+  id="ci-cd-hardening"
+  wave="1"
+  skill="devops-engineer"
+  priority="P1"
+  effort="medium"
+  depends-on=""
+>
+  Harden CI/CD pipeline — fix E2E workflow, add build checks, configure Dependabot.
+
+  PROBLEM: E2E workflow is disabled. Build verification only runs locally.
+  Dependabot is configured but needs review. No automated deployment validation.
+
+  SCOPE:
+
+  1. GITHUB ACTIONS — Fix CI workflows:
+     - Review .github/workflows/ — ensure unit test workflow runs on PRs
+     - Fix E2E workflow: document required secrets, add conditional skip if secrets missing
+     - Add build verification step (npm run build) to CI
+     - Add TypeScript check step (npm run type-check) to CI
+     - Ensure CI runs on both push to main and PRs
+
+  2. DEPENDABOT REVIEW:
+     - Review .github/dependabot.yml configuration
+     - Ensure it covers npm dependencies
+     - Set update schedule (weekly)
+     - Add ignore rule for Next.js (must stay at 15.5.7)
+     - Group minor/patch updates to reduce PR noise
+
+  3. ENVIRONMENT VALIDATION:
+     - Create a pre-deployment checklist script (scripts/check-env.sh)
+     - Verify required env vars are set before deploy
+     - Output warnings for optional missing vars
+     - Document secrets needed for GitHub Actions
+
+  4. BRANCH PROTECTION:
+     - Document recommended branch protection rules for main:
+       - Require status checks (type-check, unit tests) before merge
+       - Require PR reviews
+     - Add this to docs/deployment/ as a setup guide
+
+  Key files:
+  - .github/workflows/ (CI workflow files)
+  - .github/dependabot.yml (dependency updates)
+  - scripts/check-env.sh (NEW — env validation)
+  - docs/deployment/ci-cd-setup.md (NEW — CI/CD documentation)
+  - next.config.ts (build config)
+
+  Constraints:
+  - Don't add secrets to the repository — document what's needed
+  - CI should be fast (< 5 min for unit tests + type check)
+  - E2E tests can be optional in CI if secrets aren't configured
+  - Dependabot must NOT suggest Next.js upgrades beyond 15.5.7
+  - Keep workflows simple — avoid complex matrix builds
+
+  Acceptance:
+  - CI workflow runs type-check + unit tests on PRs and pushes to main
+  - E2E workflow has clear documentation for required secrets
+  - Dependabot ignores Next.js major/minor upgrades
+  - scripts/check-env.sh validates all required env vars
+  - docs/deployment/ci-cd-setup.md documents the full CI/CD setup
+  - All workflows use Node.js 20 and caching for npm
 </task>
 
 ---
 
-## Definition of Done (Phase 3) ✅ ALL COMPLETE
+## Wave 2 — Automation & Documentation (depend on Wave 1)
 
-- [x] Voice chat TTS streams audio chunks (not buffered) — shared ElevenLabs lib, SSE audio-chunk events
-- [x] `useVoiceOutput.speakWithElevenLabs` correctly plays audio/mpeg from streaming endpoint
-- [x] Hebrew STT accuracy improved with language hints and voice selection
-- [x] Voice conversation history persists across page refresh (per video, 24h TTL)
-- [x] Waveform visualization responds to real audio input (Web Audio API AnalyserNode)
-- [x] Voice analytics tracked in database and visible in admin dashboard
-- [x] Storybook stories exist for voice components (4 story files)
-- [x] All existing tests pass — 861 passing, 0 failures
-- [x] No new TypeScript errors
-- [x] `npm run build` passes
-- [x] STATE.md updated with new metrics
+<task
+  id="a11y-e2e-automation"
+  wave="2"
+  skill="qa-engineer"
+  priority="P1"
+  effort="medium"
+  depends-on="a11y-audit-fix,e2e-critical-flows"
+>
+  Add automated accessibility testing via axe-core integrated into Playwright E2E tests.
+
+  PROBLEM: After a11y fixes in Wave 1, we need automated regression testing
+  to prevent future a11y regressions. axe-core should run as part of the
+  E2E test suite.
+
+  SCOPE:
+
+  1. INSTALL @axe-core/playwright:
+     - Add as dev dependency
+     - Create shared helper for a11y checks
+
+  2. A11Y TEST FILE — e2e/accessibility/a11y-audit.spec.ts:
+     - Test each key page for axe violations:
+       - Home page (/ and /he/)
+       - Course page (/en/course/[courseId])
+       - Student login (/en/auth/login)
+       - Student dashboard (/en/courses)
+       - Admin dashboard (/en/admin)
+     - Assert 0 critical violations
+     - Assert 0 serious violations
+     - Log moderate/minor violations as warnings (don't fail)
+
+  3. INTEGRATE INTO E2E WORKFLOW:
+     - Add a11y tests as a separate job in the E2E workflow
+     - Generate HTML report for a11y results
+     - Upload report as GitHub Actions artifact
+
+  Key files:
+  - e2e/accessibility/a11y-audit.spec.ts (NEW)
+  - e2e/fixtures/a11y-helpers.ts (NEW — shared axe helper)
+  - .github/workflows/ (add a11y step to E2E workflow)
+
+  Constraints:
+  - Use @axe-core/playwright (official integration)
+  - Don't duplicate tests from e2e-critical-flows — a11y tests are separate files
+  - Allow moderate/minor violations with logging (avoid false-positive failures)
+  - A11y tests should run fast (< 2 min total)
+
+  Acceptance:
+  - axe-core runs on all 5 key pages via Playwright
+  - 0 critical and 0 serious violations
+  - HTML report generated for review
+  - Tests integrated into CI workflow
+  - Tests pass locally with `npx playwright test e2e/accessibility/`
+</task>
+
+<task
+  id="monitoring-observability"
+  wave="2"
+  skill="devops-engineer"
+  priority="P2"
+  effort="medium"
+  depends-on="ci-cd-hardening"
+>
+  Add basic monitoring and observability for production readiness.
+
+  SCOPE:
+
+  1. ERROR TRACKING — Sentry integration (optional, env-gated):
+     - Install @sentry/nextjs
+     - Configure with SENTRY_DSN env var (already listed in PROJECT.md)
+     - Capture unhandled errors in API routes
+     - Capture client-side React error boundaries
+     - Filter out expected errors (rate limit 429s, auth redirects)
+     - If SENTRY_DSN is not set, all Sentry calls are no-ops
+
+  2. HEALTH ENDPOINT ENHANCEMENT:
+     - Extend /api/v1/health with:
+       - Database connectivity check (Prisma $queryRaw SELECT 1)
+       - Uptime counter
+       - Memory usage (process.memoryUsage)
+       - Last deployment timestamp (from env or build info)
+     - Add a /api/v1/health/deep endpoint for detailed checks
+     - Keep /api/v1/health fast (< 100ms, no DB check) for load balancers
+
+  3. STRUCTURED LOGGING:
+     - Add consistent log format: [timestamp] [level] [context] message
+     - Log API request metadata: method, path, status, duration
+     - Ensure sensitive data (tokens, passwords) is never logged
+     - Use console.error for errors, console.warn for warnings, console.info for info
+
+  Key files:
+  - src/app/api/v1/health/route.ts (enhance)
+  - src/lib/logger.ts (NEW — structured logging utility)
+  - sentry.client.config.ts (NEW — if Sentry added)
+  - sentry.server.config.ts (NEW — if Sentry added)
+  - next.config.ts (Sentry webpack plugin, if added)
+
+  Constraints:
+  - Sentry is optional — everything must work without SENTRY_DSN
+  - Don't add Sentry if it significantly increases bundle size (> 50KB)
+  - Health endpoint must remain fast for load balancer checks
+  - Structured logging should be lightweight — no heavy logging frameworks
+  - Don't log request bodies (may contain PII)
+
+  Acceptance:
+  - /api/v1/health returns uptime and deployment info
+  - /api/v1/health/deep checks database connectivity
+  - Structured logging utility used in at least 3 API routes
+  - If Sentry configured: errors captured in dashboard
+  - If Sentry not configured: no errors, no performance impact
+  - No sensitive data in logs
+</task>
+
+<task
+  id="docs-requirements-sync"
+  wave="2"
+  skill="product-manager"
+  priority="P2"
+  effort="small"
+  depends-on=""
+>
+  Update REQUIREMENTS.md and documentation to reflect Phase 4 completion and Phase 5 goals.
+
+  SCOPE:
+
+  1. REQUIREMENTS.md — Check all P2 items as complete:
+     - Student progress tracking ✅
+     - Student dashboard page ✅
+     - Video watch progress auto-save ✅
+     - Resume playback ✅
+     - Quiz submission API ✅
+     - Quiz history API ✅
+     - Quiz results UI ✅
+     - Course search + filters ✅
+     - Admin analytics ✅
+     - Mobile-responsive admin ✅
+     - Google OAuth docs ✅
+     - Course completion ✅
+     - PDF certificates ✅
+     - Test coverage boost ✅
+
+  2. Add P3 section to REQUIREMENTS.md for Phase 5 NFR targets:
+     - Accessibility: WCAG 2.1 AA, 0 critical axe-core violations
+     - Performance: Lighthouse > 80, CLS < 0.1, LCP < 2.5s
+     - Security: Zod validation on all POST routes, security headers
+     - E2E: 5 critical flow tests passing
+     - CI/CD: Automated checks on PRs
+
+  3. Update PROJECT.md testing target (80% → 35% to match reality)
+
+  Key files:
+  - REQUIREMENTS.md
+  - PROJECT.md (testing target line)
+  - docs/README.md (if outdated)
+
+  Constraints:
+  - Only update documentation files — no code changes
+  - Keep descriptions concise and accurate
+  - Don't add aspirational items that aren't planned
+
+  Acceptance:
+  - All P2 checkboxes in REQUIREMENTS.md are checked
+  - P3 section exists with Phase 5 NFR requirements
+  - PROJECT.md has accurate testing target
+  - No contradictions between docs and actual state
+</task>
 
 ---
 
-## Phase 3 Complete — Run `/gsd:plan-phase` for Phase 4
+## Definition of Done (Phase 5)
+
+- [ ] axe-core reports 0 critical/serious violations on key pages
+- [ ] All interactive elements are keyboard accessible
+- [ ] Input validation (Zod) on all POST API endpoints
+- [ ] Security headers present on all responses
+- [ ] 5 Playwright E2E tests for critical flows
+- [ ] QuizPanel and voice components lazy-loaded
+- [ ] CI runs type-check + unit tests on PRs
+- [ ] Dependabot configured with Next.js ignore rule
+- [ ] axe-core integrated into E2E test suite
+- [ ] Health endpoint enhanced with uptime and DB check
+- [ ] REQUIREMENTS.md P2 items checked off
+- [ ] All existing tests pass (0 failures)
+- [ ] No new TypeScript errors (0 total)
+- [ ] `npm run build` passes

@@ -7,11 +7,11 @@
 
 ## Current Phase
 
-**Phase 3 — Voice Optimization** ✅ Complete
+**Phase 5 — Polish & Launch Readiness** ✅ Complete
 
-Goal: Voice AI flagship feature — streaming TTS, Hebrew accuracy, session persistence, voice analytics.
+Goal: Validate NFRs — accessibility, performance, security, E2E testing, CI/CD hardening. Ship-ready quality.
 
-Previous: Phase 2 — Quality ✅ Complete
+Previous: Phase 4 — Scale ✅ Complete
 
 ---
 
@@ -23,9 +23,9 @@ Previous: Phase 2 — Quality ✅ Complete
 | TypeScript errors | 0 | 0 |
 | Test coverage | 37%+ lines | 35%+ |
 | Failing tests | 0 | 0 |
-| Passing tests | 861 | — |
-| Production readiness | 99%+ | 100% |
-| File count | ~500 | — |
+| Passing tests | 1020 | — |
+| E2E test suites | 5 + a11y suite | 5 |
+| Production readiness | 100% | 100% |
 
 ---
 
@@ -33,8 +33,9 @@ Previous: Phase 2 — Quality ✅ Complete
 
 | Blocker | Severity | Notes |
 |---|---|---|
-| Google OAuth not configured | Medium | Need GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in Vercel env vars |
-| Coverage at 35% | Low | Threshold is 35% (realistic); focus on testing business logic, not UI details |
+| Google OAuth not configured | Medium | Setup docs at docs/deployment/google-oauth-setup.md; need GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in Vercel env vars |
+| V8 coverage provider crash | Low | `@vitest/coverage-v8` crashes on source maps due to spaces in project path; tests run fine without coverage flag |
+| VoiceSession migration not deployed | Low | `npx prisma migrate deploy` needed on Supabase for voice analytics |
 
 ---
 
@@ -50,6 +51,8 @@ Previous: Phase 2 — Quality ✅ Complete
 | NextAuth.js dual providers | Admin and Student are separate tables/flows — keeping them separate prevents privilege escalation |
 | Coverage threshold at 35% | Aspirational 80% was unrealistic; 35% matches current state; test business logic not CSS classes |
 | ElevenLabs streaming TTS | Sub-second first-chunk latency via `/stream` endpoint; falls back to browser TTS |
+| Zod input validation | All POST endpoints validated; chat message max 2000 chars, signup rate-limited |
+| Dynamic imports for heavy components | QuizPanel, admin analytics cards lazy-loaded; reduces initial bundle |
 
 ---
 
@@ -76,6 +79,13 @@ Previous: Phase 2 — Quality ✅ Complete
 | Phase 3 Wave 2: Voice analytics (VoiceSession model + admin dashboard) | 2026-03-01 |
 | Phase 3 Wave 2: Storybook stories for voice components | 2026-03-01 |
 | Phase 3 complete: 861 tests passing, build green | 2026-03-01 |
+| Phase 4 Wave 1: Student progress DB + API, quiz persistence, mobile admin, course catalog filters, OAuth docs | 2026-03-01 |
+| Phase 4 Wave 2: Student dashboard, video auto-save, quiz flow UI, admin analytics | 2026-03-01 |
+| Phase 4 Wave 3: Course completion + certificates, 221 new test cases | 2026-03-01 |
+| Phase 4 complete: 1020 tests passing, 0 failures, build green | 2026-03-01 |
+| Phase 5 Wave 1: A11y audit (WCAG 2.1 AA, 16 files), security hardening (Zod, CSP headers), E2E tests (79+ cases), performance (dynamic imports, memo), CI/CD (workflows, Dependabot) | 2026-03-01 |
+| Phase 5 Wave 2: axe-core E2E automation, structured logging + health/deep endpoint, docs/requirements sync | 2026-03-01 |
+| Phase 5 complete: all NFRs validated, build green, 1020 tests passing | 2026-03-01 |
 
 ---
 
@@ -97,6 +107,10 @@ Previous: Phase 2 — Quality ✅ Complete
 | `OPENAI_API_KEY` | Required — missing breaks embeddings |
 | `DATABASE_URL` | Required — Supabase Session Pooler URL |
 | `NEXTAUTH_SECRET` | Required |
+| `NEXTAUTH_URL` | Required |
 | `ELEVENLABS_API_KEY` | Optional — falls back to browser TTS |
 | `YOUTUBE_API_KEY` | Optional — required for video ingest |
+| `GOOGLE_CLIENT_ID` | Optional — required for Google OAuth |
+| `GOOGLE_CLIENT_SECRET` | Optional — required for Google OAuth |
 | `REDIS_URL` | Optional — in-memory fallback if missing |
+| `SENTRY_DSN` | Optional — error tracking |

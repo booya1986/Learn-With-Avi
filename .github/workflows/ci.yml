@@ -10,10 +10,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  NODE_VERSION: '20'
+  CACHE_NAME_PREFIX: ${{ github.workflow }}-${{ github.ref }}
+
 jobs:
   lint:
     name: Lint
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -21,18 +26,20 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
 
       - name: Run ESLint
         run: npm run lint
+        continue-on-error: false
 
   type-check:
     name: Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -40,18 +47,24 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Clean build artifacts
+        run: npm run clean
+        continue-on-error: true
 
       - name: Run TypeScript type check
-        run: npm run type-check
+        run: npx tsc --noEmit
+        continue-on-error: false
 
   unit-tests:
     name: Unit Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -59,18 +72,19 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
 
       - name: Run unit tests with coverage
         run: npm run test:unit
         env:
           NODE_ENV: test
+        continue-on-error: false
 
-      - name: Upload coverage reports
+      - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         if: always()
         with:
@@ -83,7 +97,9 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     needs: [lint, type-check, unit-tests]
+    if: success()
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -91,16 +107,32 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Clean build artifacts
+        run: npm run clean
+        continue-on-error: true
 
       - name: Build Next.js
         run: npm run build
         env:
           NODE_ENV: production
+        continue-on-error: false
+
+      - name: Verify build output
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "Error: .next directory not found after build"
+            exit 1
+          fi
+          if [ ! -f ".next/BUILD_ID" ]; then
+            echo "Warning: BUILD_ID file not found"
+          fi
+          echo "Build verification passed"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -118,11 +150,19 @@ jobs:
     steps:
       - name: Check if all checks passed
         run: |
-          if [[ "${{ needs.lint.result }}" == "failure" ]] || \
-             [[ "${{ needs.type-check.result }}" == "failure" ]] || \
-             [[ "${{ needs.unit-tests.result }}" == "failure" ]] || \
-             [[ "${{ needs.build.result }}" == "failure" ]]; then
-            echo "One or more checks failed"
+          declare -a checks=("lint" "type-check" "unit-tests" "build")
+          failed_checks=()
+
+          for check in "${checks[@]}"; do
+            if [[ "${{ needs[check].result }}" == "failure" ]]; then
+              failed_checks+=("$check")
+            fi
+          done
+
+          if [ ${#failed_checks[@]} -gt 0 ]; then
+            echo "Failed checks: ${failed_checks[*]}"
             exit 1
           fi
+
+          echo "All checks passed successfully"
         shell: bash

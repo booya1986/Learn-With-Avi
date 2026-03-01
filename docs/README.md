@@ -4,9 +4,12 @@ Complete documentation for the AI-powered interactive learning platform.
 
 ## Quick Links
 
+- [PROJECT.md](../PROJECT.md) - Project hub (GSD context files, stack, key paths)
 - [Main README](../README.md) - Project overview and setup
 - [CLAUDE.md](../CLAUDE.md) - Claude Code configuration
 - [CONTRIBUTING.md](../CONTRIBUTING.md) - Contribution guidelines
+- [ROADMAP.md](../ROADMAP.md) - Phase-based roadmap
+- [STATE.md](../STATE.md) - Current blockers and metrics
 
 ## Documentation Structure
 
@@ -38,8 +41,8 @@ Task-oriented guides for common workflows:
 API route documentation:
 
 - [API Quick Reference](./api/quick-reference.md)
+- [API Versioning Guide](./api/VERSIONING.md) - v1 routing rules
 - [Admin API](./api/admin/documentation.md) - CRUD operations
-- [Complete API Reference](./api-reference/README.md) - Auto-generated docs
 
 ### Architecture
 
@@ -56,6 +59,7 @@ Setup and configuration guides:
 
 - [Figma MCP](./configuration/FIGMA_MCP_SETUP.md) - Figma integration
 - [Context7 MCP](./configuration/CONTEXT7_MCP_SETUP.md) - AI context management
+- [Google OAuth Setup](./deployment/google-oauth-setup.md) - Google OAuth credentials
 
 ### Product
 
@@ -68,6 +72,7 @@ Product specifications and planning:
 
 Custom Claude Code skills (located in `../skills/`):
 
+- [GSD Workflow](../skills/gsd/) - Plan/execute phases with fresh agent context (orchestrator)
 - [Voice AI Tutor](../skills/voice-ai-tutor/) - Real-time voice tutoring
 - [RAG Pipeline Optimizer](../skills/rag-pipeline-optimizer/) - Search optimization
 - [Figma to Code](../skills/figma-to-code/) - Design to React components
@@ -125,13 +130,23 @@ npm run ci
 
 **Monitor errors**:
 1. Check Sentry dashboard: https://sentry.io/
-2. Review health endpoint: `curl https://your-domain.com/api/health`
+2. Review health endpoint: `curl https://your-domain.com/api/v1/health`
 3. See [Monitoring Guide](./guides/monitoring.md)
 
 **Check CI/CD status**:
 1. Go to GitHub Actions tab
 2. View workflow runs
 3. See [CI/CD Guide](./guides/cicd.md)
+
+## Development Phases
+
+| Phase | Status | Description |
+|---|---|---|
+| Phase 1 — Core Platform | Complete | MVP: video player, AI chat, voice AI, auth, Hebrew RTL |
+| Phase 2 — Quality | Complete | 0 TS errors, 35%+ test coverage, CI green |
+| Phase 3 — Voice Optimization | Complete | Streaming TTS, Hebrew STT, waveform, voice analytics |
+| Phase 4 — Scale | Complete | Student progress, quiz persistence, admin analytics, certificates |
+| Phase 5 — Polish & Launch Readiness | In Progress | WCAG 2.1 AA, security headers, E2E tests, CI/CD hardening |
 
 ## Documentation Standards
 
@@ -159,31 +174,22 @@ docs/
 ├── README.md                   # This file (documentation hub)
 ├── SKILLS_RECOMMENDATIONS.md   # Skills strategy
 ├── VIDEO_SYSTEM_RULES.md       # Video player rules
+├── ICD_DEPLOYMENT_CHECKLIST.md # Pre/post-deployment checklist
 ├── api/                        # API documentation
-├── api-reference/              # Auto-generated API docs
 ├── architecture/               # Architecture docs
-├── archive/                    # Historical documentation
 ├── configuration/              # Setup & config
+├── deployment/                 # Deployment & infrastructure guides
 ├── getting-started/            # Quick start guides
 ├── guides/                     # Developer guides
-│   ├── cicd.md                 # CI/CD Pipeline (NEW)
-│   ├── monitoring.md           # Monitoring & Error Tracking (NEW)
-│   ├── auth-middleware.md      # Auth & Rate Limiting (NEW)
+│   ├── cicd.md                 # CI/CD Pipeline
+│   ├── monitoring.md           # Monitoring & Error Tracking
+│   ├── auth-middleware.md      # Auth & Rate Limiting
 │   ├── testing.md              # Testing guide
 │   ├── admin-panel.md          # Admin panel guide
 │   └── ...                     # Other guides
+├── monitoring/                 # Monitoring & observability
 └── product/                    # Product requirements
 ```
-
-## Archive
-
-Outdated or historical documentation:
-
-- [Archive](./archive/) - Deprecated docs
-- [Session Changes](./archive/sessions/) - Historical changes
-- [Refactoring Phases](./archive/refactoring/) - Component refactoring history
-
-**Note**: Archived docs are kept for reference but may be outdated.
 
 ## Getting Help
 
@@ -206,6 +212,6 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for documentation contribution guideli
 
 ---
 
-**Last Updated**: 2026-02-13
-**Version**: 1.0.0
+**Last Updated**: 2026-03-01
+**Version**: 1.1.0
 **Maintainers**: LearnWithAvi Team
