@@ -1,5 +1,7 @@
 # LearnWithAvi - Project Rules
 
+> **Project hub:** [PROJECT.md](PROJECT.md) — links all context files (REQUIREMENTS.md, ROADMAP.md, STATE.md, PLAN.md). Use `/gsd` skill to plan and execute phases.
+
 AI-powered interactive learning platform with voice AI tutoring, RAG-based Q&A, and personalized learning paths.
 
 ## Critical Constraints
@@ -40,8 +42,8 @@ Required: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`. Optional: `ELEVENLABS_API_KEY`,
 - **Custom hooks** for complex state (`src/hooks/`)
 - **Error boundaries** wrap major sections (Chat, Video, Materials)
 - **Loading skeletons** for all async data
-- **80%+ test coverage** required on all components
-- **New components** must include tests and a Storybook story
+- **Test business logic, not UI details** — test utilities, API handlers, and hooks; skip CSS class assertions
+- **New components** should include a Storybook story; tests only for complex logic
 
 ## API Versioning
 
