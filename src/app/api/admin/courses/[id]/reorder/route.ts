@@ -55,7 +55,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json(
         {
           error: 'Validation failed',
-          details: parseResult.error.errors,
+          details: parseResult.error.issues,
         },
         { status: 400 }
       )

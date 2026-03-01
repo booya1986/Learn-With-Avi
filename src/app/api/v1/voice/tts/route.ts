@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
-import { getConfig, hasApiKey } from '@/lib/config'
+import { getConfig } from '@/lib/config'
 import {
   logError,
   sanitizeError,

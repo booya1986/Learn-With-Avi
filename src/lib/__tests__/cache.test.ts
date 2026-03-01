@@ -83,7 +83,7 @@ describe('Cache System', () => {
 
       const mockRedisCache = new RedisCache('course');
       vi.mocked(mockRedisCache.get).mockResolvedValueOnce(null);
-      vi.mocked(prisma.course.findUnique).mockResolvedValueOnce(mockDbCourse);
+      vi.mocked(prisma.course.findUnique).mockResolvedValueOnce(mockDbCourse as any);
 
       const result = await getCachedCourse('course-1');
 
@@ -123,7 +123,7 @@ describe('Cache System', () => {
 
       const mockRedisCache = new RedisCache('course');
       vi.mocked(mockRedisCache.get).mockResolvedValueOnce(null);
-      vi.mocked(prisma.course.findMany).mockResolvedValueOnce(mockCourses);
+      vi.mocked(prisma.course.findMany).mockResolvedValueOnce(mockCourses as any);
 
       const result = await getCachedCourses();
 
@@ -168,7 +168,7 @@ describe('Cache System', () => {
         courseId: 'course-1',
       };
 
-      vi.mocked(prisma.video.findMany).mockResolvedValueOnce([mockVideo]);
+      vi.mocked(prisma.video.findMany).mockResolvedValueOnce([mockVideo] as any);
 
       const mockRedisCache = new RedisCache('course');
 
@@ -187,7 +187,7 @@ describe('Cache System', () => {
         courseId: 'course-1',
       };
 
-      vi.mocked(prisma.video.findUnique).mockResolvedValueOnce(mockVideo);
+      vi.mocked(prisma.video.findUnique).mockResolvedValueOnce(mockVideo as any);
 
       const mockRedisCache = new RedisCache('video');
 
@@ -222,8 +222,7 @@ describe('Cache System', () => {
       vi.mocked(prisma.course.findUnique).mockResolvedValueOnce({
         id: 'course-2',
         title: 'Test 2',
-        videos: [],
-      });
+      } as any);
 
       await getCachedCourse('course-2');
 
@@ -233,7 +232,7 @@ describe('Cache System', () => {
     });
 
     it('should reset cache statistics', () => {
-      const stats = getCacheStats();
+      const stats = getCacheStats() as Record<string, number>;
       stats.hits = 10;
       stats.misses = 5;
 

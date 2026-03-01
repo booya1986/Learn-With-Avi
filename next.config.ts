@@ -31,10 +31,6 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  // Type checking is handled separately via `npm run type-check`
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   // Linting is handled separately via `npm run lint`
   eslint: {
     ignoreDuringBuilds: true,

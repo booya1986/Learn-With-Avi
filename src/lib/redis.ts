@@ -131,7 +131,7 @@ export function getRedisClient(): Redis | null {
     });
 
     // Try to connect (lazy connect mode)
-    redisClient.connect().catch((error) => {
+    redisClient.connect().catch((_error) => {
       console.warn('⚠️  Redis: Initial connection failed. Using in-memory fallback.');
       isRedisAvailable = false;
     });
@@ -363,8 +363,10 @@ export class RedisCache {
  * Call this on application shutdown
  */
 export async function closeRedis(): Promise<void> {
-  if (redisClient) {
-    await redisClient.quit();
+  const client = redisClient;
+  if (client) {
+    await client.quit();
+    // eslint-disable-next-line require-atomic-updates -- intentional shutdown: single-caller cleanup
     redisClient = null;
     isRedisAvailable = false;
     console.log('✅ Redis: Connection closed gracefully');

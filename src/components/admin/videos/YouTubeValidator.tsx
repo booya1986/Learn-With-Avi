@@ -34,7 +34,7 @@ export const YouTubeValidator = ({
   const [isValidating, setIsValidating] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [metadata, setMetadata] = React.useState<YouTubeMetadata | null>(null)
-  const timeoutRef = React.useRef<NodeJS.Timeout>()
+  const timeoutRef = React.useRef<NodeJS.Timeout>(undefined)
 
   React.useEffect(() => {
     if (timeoutRef.current) {
@@ -57,6 +57,7 @@ export const YouTubeValidator = ({
         clearTimeout(timeoutRef.current)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value])
 
   const validateUrl = async (url: string) => {

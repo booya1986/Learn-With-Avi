@@ -223,7 +223,7 @@ export const getChapterByTimestamp = cache(
     }
 
     return (
-      video.chapters.find(
+      video.chapters?.find(
         (chapter) => timestamp >= chapter.startTime && timestamp < chapter.endTime
       ) || null
     );

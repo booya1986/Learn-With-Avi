@@ -111,7 +111,7 @@ export function useAudioPlayback(
 ): UseAudioPlaybackReturn {
   const {
     volume: initialVolume = 1,
-    autoPlay = false,
+    autoPlay: _autoPlay = false,
     onStart,
     onEnd,
     onError,

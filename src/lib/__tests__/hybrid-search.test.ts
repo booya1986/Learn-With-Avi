@@ -18,7 +18,7 @@ import {
 
 // Mock dependencies
 vi.mock('../rag-pgvector', () => ({
-  queryChunks: vi.fn(),
+  queryVectorChunks: vi.fn(),
 }))
 
 vi.mock('../redis', () => ({
@@ -333,7 +333,7 @@ describe('hybridSearch()', () => {
     vi.mocked(isRedisConnected).mockReturnValue(false)
 
     const rag = await import('../rag-pgvector')
-    vectorSearch = vi.mocked(rag.queryChunks)
+    vectorSearch = vi.mocked(rag.queryVectorChunks)
     vectorSearch.mockResolvedValue(vectorResults)
 
     // Initialize BM25 with test data

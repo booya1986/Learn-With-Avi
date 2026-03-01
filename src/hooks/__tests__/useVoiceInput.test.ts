@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+
 import { useVoiceInput } from '../useVoiceInput'
 
 /**
@@ -19,11 +20,12 @@ class MockSpeechRecognition {
   abort = vi.fn()
 }
 
-let mockInstance: MockSpeechRecognition | null = null
+ 
+let mockInstance: MockSpeechRecognition = null!
 
 // Setup mocks before importing hook
 beforeEach(() => {
-  mockInstance = null
+  mockInstance = null as unknown as MockSpeechRecognition
   // Mock window.SpeechRecognition
   window.SpeechRecognition = vi.fn(function (this: MockSpeechRecognition) {
     mockInstance = this as any
@@ -34,7 +36,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.resetAllMocks()
-  mockInstance = null
+  mockInstance = null as unknown as MockSpeechRecognition
 })
 
 describe('useVoiceInput', () => {

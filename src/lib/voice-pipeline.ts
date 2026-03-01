@@ -48,18 +48,13 @@ export async function transcribeAudio(
     const buffer = Buffer.from(arrayBuffer)
     const file = new File([buffer], audioFile.name, { type: audioFile.type })
 
-    const options: Parameters<typeof openai.audio.transcriptions.create>[0] = {
+    const transcription = await openai.audio.transcriptions.create({
       file,
       model: 'whisper-1',
       response_format: 'verbose_json',
       timestamp_granularities: ['segment'],
-    }
-
-    if (language && language !== 'auto') {
-      options.language = language
-    }
-
-    const transcription = await openai.audio.transcriptions.create(options)
+      ...(language && language !== 'auto' ? { language } : {}),
+    }) as unknown as { text: string; language?: string; duration?: number }
     return {
       text: transcription.text,
       language: transcription.language,

@@ -17,7 +17,7 @@ export * from './voice'
 export { useChat, useVideoTimestampHandler } from './useChat'
 
 export { useSummaryGeneration } from './chat/useSummaryGeneration'
-export type { UseSummaryGenerationReturn, SummaryData } from './chat/useSummaryGeneration'
+export type { UseSummaryGenerationReturn } from './chat/useSummaryGeneration'
 
 export { useTranscriptSearch } from './chat/useTranscriptSearch'
 export type {
@@ -35,7 +35,7 @@ export { useVideoState } from './video/useVideoState'
 export type { UseVideoStateReturn } from './video/useVideoState'
 
 export { useVideoProgress, useVideoProgressWithTracking } from './video/useVideoProgress'
-export type { UseVideoProgressReturn, ChapterItem } from './video/useVideoProgress'
+export type { UseVideoProgressReturn } from './video/useVideoProgress'
 
 export { useChapterNavigation } from './video/useChapterNavigation'
 export type { UseChapterNavigationReturn } from './video/useChapterNavigation'

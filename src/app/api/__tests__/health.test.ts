@@ -15,10 +15,6 @@ vi.mock('@/lib/redis', () => ({
   getRedisHealth: vi.fn().mockResolvedValue({ connected: false }),
 }));
 
-vi.mock('@/lib/rag', () => ({
-  getVectorDBStatus: vi.fn(),
-}));
-
 vi.mock('@/lib/queries', () => ({
   getCacheStats: vi.fn().mockReturnValue({ hits: 10, misses: 5, invalidations: 0, errors: 0 }),
 }));
@@ -49,7 +45,6 @@ describe('Health Check Endpoints', () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
       const { isRedisConnected } = await import('@/lib/redis');
-      const { getVectorDBStatus } = await import('@/lib/rag');
 
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
@@ -57,21 +52,16 @@ describe('Health Check Endpoints', () => {
         chromaPort: 8000,
       } as any);
       vi.mocked(isRedisConnected).mockReturnValue(false);
-      vi.mocked(getVectorDBStatus).mockResolvedValue({
-        backend: 'keyword',
-        healthy: true,
-        chunkCount: 100,
-      });
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
         misses: 50,
         size: 100,
-        maxSize: 1000,
+        maxSize: 1000, totalRequests: 200,
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET();
+      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
 
       expect(response).toBeDefined();
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -81,7 +71,6 @@ describe('Health Check Endpoints', () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
       const { isRedisConnected } = await import('@/lib/redis');
-      const { getVectorDBStatus } = await import('@/lib/rag');
 
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
@@ -89,21 +78,16 @@ describe('Health Check Endpoints', () => {
         chromaPort: 8000,
       } as any);
       vi.mocked(isRedisConnected).mockReturnValue(false);
-      vi.mocked(getVectorDBStatus).mockResolvedValue({
-        backend: 'keyword',
-        healthy: true,
-        chunkCount: 100,
-      });
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
         misses: 50,
         size: 100,
-        maxSize: 1000,
+        maxSize: 1000, totalRequests: 200,
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET();
+      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
       const body = await response.json();
 
       expect(body).toHaveProperty('services');
@@ -114,7 +98,6 @@ describe('Health Check Endpoints', () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
       const { isRedisConnected } = await import('@/lib/redis');
-      const { getVectorDBStatus } = await import('@/lib/rag');
 
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
@@ -122,21 +105,16 @@ describe('Health Check Endpoints', () => {
         chromaPort: 8000,
       } as any);
       vi.mocked(isRedisConnected).mockReturnValue(false);
-      vi.mocked(getVectorDBStatus).mockResolvedValue({
-        backend: 'keyword',
-        healthy: true,
-        chunkCount: 100,
-      });
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
         misses: 50,
         size: 100,
-        maxSize: 1000,
+        maxSize: 1000, totalRequests: 200,
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET();
+      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
       const body = await response.json();
 
       expect(body).toHaveProperty('timestamp');
@@ -147,7 +125,6 @@ describe('Health Check Endpoints', () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
       const { isRedisConnected } = await import('@/lib/redis');
-      const { getVectorDBStatus } = await import('@/lib/rag');
 
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
@@ -155,21 +132,16 @@ describe('Health Check Endpoints', () => {
         chromaPort: 8000,
       } as any);
       vi.mocked(isRedisConnected).mockReturnValue(false);
-      vi.mocked(getVectorDBStatus).mockResolvedValue({
-        backend: 'keyword',
-        healthy: true,
-        chunkCount: 100,
-      });
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
         misses: 50,
         size: 100,
-        maxSize: 1000,
+        maxSize: 1000, totalRequests: 200,
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET();
+      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
       const body = await response.json();
 
       expect(body).toHaveProperty('uptime');
@@ -181,7 +153,6 @@ describe('Health Check Endpoints', () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
       const { isRedisConnected } = await import('@/lib/redis');
-      const { getVectorDBStatus } = await import('@/lib/rag');
 
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
@@ -189,21 +160,16 @@ describe('Health Check Endpoints', () => {
         chromaPort: 8000,
       } as any);
       vi.mocked(isRedisConnected).mockReturnValue(false);
-      vi.mocked(getVectorDBStatus).mockResolvedValue({
-        backend: 'keyword',
-        healthy: true,
-        chunkCount: 100,
-      });
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
         misses: 50,
         size: 100,
-        maxSize: 1000,
+        maxSize: 1000, totalRequests: 200,
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET();
+      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
 
       expect(response.status).toBeGreaterThanOrEqual(200);
       expect(response.status).toBeLessThan(300);

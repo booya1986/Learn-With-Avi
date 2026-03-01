@@ -171,8 +171,6 @@ export function useCoursePageState(
   // Chat state using the new AI SDK hook
   const {
     messages,
-    input: inputMessage,
-    handleInputChange,
     sendMessage: originalSendMessage,
     isLoading,
     clearMessages,
@@ -181,33 +179,15 @@ export function useCoursePageState(
     videoContext: currentVideo
       ? `${currentVideo.title} - ${currentVideo.description || ''}`
       : undefined,
-    initialMessages: [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: `שלום! אני עוזר הלמידה שלך. שאל אותי כל שאלה על תוכן הסרטון ואני אעזור לך להבין את הנושאים בצורה טובה יותר.`,
-        timestamp: new Date(0),
-      },
-    ],
   })
 
   const [isListening, setIsListening] = useState(false)
-
-  // Adapter for setInputMessage to match existing interface
-  const setInputMessage = useCallback(
-    (value: string) => {
-      // Create a synthetic event for handleInputChange
-      const event = {
-        target: { value },
-      } as React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-      handleInputChange(event)
-    },
-    [handleInputChange]
-  )
+  const [inputMessage, setInputMessage] = useState('')
 
   const handleSendMessage = useCallback(async () => {
-    // We pass the current inputMessage to sendMessage
+    if (!inputMessage.trim()) return
     await originalSendMessage(inputMessage)
+    setInputMessage('')
   }, [originalSendMessage, inputMessage])
 
   const toggleVoiceInput = useCallback(() => {

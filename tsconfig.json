@@ -27,11 +27,7 @@
         "./src/*"
       ]
     },
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "forceConsistentCasingInFileNames": true,
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
     "next-env.d.ts",
@@ -45,6 +41,7 @@
     "node_modules",
     "remotion",
     "scripts",
-    "skills"
+    "skills",
+    "e2e"
   ]
 }

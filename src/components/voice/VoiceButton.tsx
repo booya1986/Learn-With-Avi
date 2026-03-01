@@ -40,7 +40,7 @@ export const VoiceButton = ({
 }: VoiceButtonProps) => {
   const {
     buttonState,
-    isListening,
+    isListening: _isListening,
     isSupported,
     interimTranscript,
     handleClick,

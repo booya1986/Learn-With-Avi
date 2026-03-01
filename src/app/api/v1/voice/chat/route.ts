@@ -24,7 +24,6 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { anthropic } from '@ai-sdk/anthropic'
 import { streamText } from 'ai'
-
 import { z } from 'zod'
 
 import { logError, ValidationError, RateLimitError, getUserFriendlyMessage } from '@/lib/errors'
@@ -177,7 +176,7 @@ export async function POST(request: NextRequest) {
 
         const messages = [
           ...conversationHistory,
-          { role: 'user', content: transcription.text },
+          { role: 'user' as const, content: transcription.text },
         ]
 
         const systemPromptWithContext = contextString
@@ -192,7 +191,7 @@ export async function POST(request: NextRequest) {
             model: anthropic('claude-sonnet-4-20250514'),
             system: systemPromptWithContext,
             messages,
-            maxTokens: 500,
+            maxOutputTokens: 500,
             temperature: 0.7,
           })
 

@@ -231,7 +231,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ status: 'ok' })
   }
 
-  const startTime = Date.now()
+  
 
   try {
     // Collect all service statuses

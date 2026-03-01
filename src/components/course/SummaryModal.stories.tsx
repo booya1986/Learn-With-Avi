@@ -3,8 +3,9 @@ import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 
 import { Button } from '@/components/ui/button'
+import type { SummaryData } from '@/types'
 
-import { SummaryModal, type SummaryData } from './SummaryModal'
+import { SummaryModal } from './SummaryModal'
 
 
 /**

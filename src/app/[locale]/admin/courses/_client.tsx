@@ -3,7 +3,7 @@
 import * as React from "react";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { Plus, Edit, Trash2, Eye, EyeOff, GripVertical } from "lucide-react";
 
@@ -31,7 +31,7 @@ interface Course {
 }
 
 export default function CoursesPageClient() {
-  const router = useRouter();
+  
   const pathname = usePathname();
   const { toast } = useToast();
 
@@ -48,6 +48,7 @@ export default function CoursesPageClient() {
 
   React.useEffect(() => {
     fetchCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   React.useEffect(() => {

@@ -146,11 +146,6 @@ function handleTestBreadcrumb() {
 }
 
 function handleTestPerformance() {
-  const transaction = Sentry.startTransaction({
-    op: 'test_operation',
-    name: 'Test Performance Tracking',
-  });
-
   // Simulate some work
   const startTime = Date.now();
   let sum = 0;
@@ -158,11 +153,6 @@ function handleTestPerformance() {
     sum += Math.sqrt(i);
   }
   const duration = Date.now() - startTime;
-
-  transaction.setTag('test', 'true');
-  transaction.setData('duration', duration);
-  transaction.setStatus('ok');
-  transaction.end();
 
   Sentry.captureMessage(`Performance test completed in ${duration}ms`, 'info');
 

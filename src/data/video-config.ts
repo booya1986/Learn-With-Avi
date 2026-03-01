@@ -1,4 +1,4 @@
-import { type Course, type Video, type Chapter, TranscriptChunk } from '@/types'
+import { type Course, type Video, type Chapter } from '@/types'
 
 /**
  * VIDEO CONFIGURATION SYSTEM

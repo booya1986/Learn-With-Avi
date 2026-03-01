@@ -89,7 +89,7 @@ class SimpleBM25 {
 }
 // Using pgvector implementation (rag-pgvector.ts)
 // ChromaDB version (rag.ts) is deprecated - see /lib/deprecated/rag-chroma.ts
-import { type QueryResult, queryChunks as vectorSearch } from './rag-pgvector';
+import { type PgVectorQueryResult as QueryResult, queryVectorChunks as vectorSearch } from './rag-pgvector';
 import { queryCache, isRedisConnected } from './redis';
 
 /**
@@ -389,7 +389,7 @@ export async function hybridSearch(
     // Filter keyword results by videoId if specified
     let filteredKeywordResults = keywordResults;
     if (videoId) {
-      filteredKeywordResults = keywordResults.filter(r => r.chunk.videoId === videoId);
+      filteredKeywordResults = keywordResults.filter((r: { chunk: { videoId: string } }) => r.chunk.videoId === videoId);
     }
 
     // If BM25 not ready, return vector results only

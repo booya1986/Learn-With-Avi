@@ -70,7 +70,7 @@ describe('API Versioning', () => {
 
     it('should warn about deprecated route in development', () => {
       const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
+      process.env = { ...process.env, NODE_ENV: 'development' }
 
       warnDeprecatedRoute('/api/chat', '/api/v1/chat')
 
@@ -82,12 +82,12 @@ describe('API Versioning', () => {
       )
       expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining('/api/v1/chat'))
 
-      process.env.NODE_ENV = originalEnv
+      process.env = { ...process.env, NODE_ENV: originalEnv }
     })
 
     it('should include deprecation date if provided', () => {
       const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
+      process.env = { ...process.env, NODE_ENV: 'development' }
 
       warnDeprecatedRoute('/api/chat', '/api/v1/chat', '2026-02-01')
 
@@ -95,12 +95,12 @@ describe('API Versioning', () => {
         expect.stringContaining('Deprecated: 2026-02-01')
       )
 
-      process.env.NODE_ENV = originalEnv
+      process.env = { ...process.env, NODE_ENV: originalEnv }
     })
 
     it('should include removal date if provided', () => {
       const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'development'
+      process.env = { ...process.env, NODE_ENV: 'development' }
 
       warnDeprecatedRoute('/api/chat', '/api/v1/chat', '2026-02-01', '2026-06-01')
 
@@ -108,18 +108,18 @@ describe('API Versioning', () => {
         expect.stringContaining('Removal: 2026-06-01')
       )
 
-      process.env.NODE_ENV = originalEnv
+      process.env = { ...process.env, NODE_ENV: originalEnv }
     })
 
     it('should still warn in production', () => {
       const originalEnv = process.env.NODE_ENV
-      process.env.NODE_ENV = 'production'
+      process.env = { ...process.env, NODE_ENV: 'production' }
 
       warnDeprecatedRoute('/api/chat', '/api/v1/chat')
 
       expect(consoleWarnSpy).toHaveBeenCalled()
 
-      process.env.NODE_ENV = originalEnv
+      process.env = { ...process.env, NODE_ENV: originalEnv }
     })
   })
 

@@ -6,7 +6,6 @@ import { z } from 'zod'
 import { getConfig } from '@/lib/config'
 import {
   logError,
-  sanitizeError,
   getUserFriendlyMessage,
   ValidationError,
   RateLimitError,

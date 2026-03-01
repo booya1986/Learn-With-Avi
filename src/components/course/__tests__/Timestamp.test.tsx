@@ -136,7 +136,7 @@ describe('Timestamp', () => {
 
   it('forwards ref correctly', () => {
     const ref = { current: null }
-    render(<Timestamp seconds={125} ref={ref as React.RefObject<HTMLButtonElement>} />)
+    render(<Timestamp seconds={125} ref={ref as unknown as React.RefObject<HTMLButtonElement>} />)
     expect(ref.current).toBeInstanceOf(HTMLButtonElement)
   })
 })

@@ -209,7 +209,7 @@ export function startTransaction(
   operationName: string,
   description: string
 ) {
-  const transaction = Sentry.captureMessage(description, 'info');
+  Sentry.captureMessage(description, 'info');
 
   // Use monitoring wrapper as alternative
   const startTime = Date.now();
@@ -227,10 +227,10 @@ export function startTransaction(
         },
       });
     },
-    setTag: (key: string, value: string) => {
+    setTag: (_key: string, _value: string) => {
       // Tags can be set via breadcrumb data
     },
-    setData: (key: string, value: unknown) => {
+    setData: (_key: string, _value: unknown) => {
       // Data is included in breadcrumb
     },
   };

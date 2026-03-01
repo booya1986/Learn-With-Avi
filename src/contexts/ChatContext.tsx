@@ -17,9 +17,8 @@
 
 import { createContext, useContext, type ReactNode, useState, useCallback, useMemo } from 'react'
 
-import { type SummaryData } from '@/components/course/SummaryModal'
 import { getSampleChunksForVideo } from '@/data/sample-transcripts'
-import { type ChatMessage } from '@/types'
+import { type SummaryData , type ChatMessage } from '@/types'
 
 export interface ChatContextValue {
   // Chat state
@@ -174,7 +173,7 @@ export const ChatProvider = ({ children }: ChatProviderProps) => {
   )
 
   // Generate AI summary from transcript
-  const generateSummary = useCallback((videoId: string, videoTitle: string, videoDescription: string) => {
+  const generateSummary = useCallback((videoId: string, _videoTitle: string, videoDescription: string) => {
     setShowSummary(true)
     setIsGeneratingSummary(true)
 

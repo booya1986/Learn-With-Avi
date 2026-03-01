@@ -56,6 +56,7 @@ const makeQuizState = (overrides: Partial<UseQuizStateReturn>): UseQuizStateRetu
   currentQuestion: null,
   feedback: null,
   sessionState: null,
+  isLoading: false,
   error: null,
   startQuiz: vi.fn(),
   submitAnswer: vi.fn(),
@@ -227,6 +228,7 @@ describe('QuizPanel', () => {
   describe('feedback state', () => {
     const feedback = {
       isCorrect: true,
+      correctAnswer: 'a',
       correctOptionText: 'JSON Web Token',
       explanation: 'JWT הוא פורמט טוקן מבוסס JSON לאימות',
       sourceTimeRange: { start: 60, end: 120 },

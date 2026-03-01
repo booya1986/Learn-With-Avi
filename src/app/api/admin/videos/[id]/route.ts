@@ -158,7 +158,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json(
         {
           error: 'Validation failed',
-          details: parseResult.error.errors,
+          details: parseResult.error.issues,
         },
         { status: 400 }
       )
@@ -194,7 +194,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     // Update video in a transaction
     const video = await prisma.$transaction(async (tx) => {
       // Update video data
-      const updatedVideo = await tx.video.update({
+      await tx.video.update({
         where: { id },
         data: {
           ...videoData,

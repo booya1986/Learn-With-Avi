@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react'
 
-import { fetchWithTimeout } from '@/lib/fetch-utils'
 import { generateId } from '@/lib/utils'
 import { type ChatMessage, type VideoSource, type TranscriptChunk, type RAGContext } from '@/types'
 
@@ -369,7 +368,8 @@ export function useChat(options: UseChatOptions = {}): UseChatReturn {
         setMessages((prev) => prev.filter((msg) => msg.role !== 'assistant' || msg.content !== ''))
       } finally {
         setIsLoading(false)
-        abortControllerRef.current = null
+        const ref = abortControllerRef
+        ref.current = null
       }
     },
     [

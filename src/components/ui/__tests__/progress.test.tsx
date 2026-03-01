@@ -84,7 +84,7 @@ describe('Progress', () => {
 
   it('forwards ref correctly', () => {
     const ref = { current: null }
-    render(<Progress value={50} ref={ref as React.RefObject<HTMLDivElement>} />)
+    render(<Progress value={50} ref={ref as unknown as React.RefObject<HTMLDivElement>} />)
     expect(ref.current).toBeInstanceOf(HTMLDivElement)
   })
 

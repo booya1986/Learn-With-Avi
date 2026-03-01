@@ -1,8 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
+import type { ChapterItem } from '@/types';
+
 import { ChapterListItem } from '../ChapterListItem';
-import type { ChapterItem } from '../ChapterListItem';
 
 describe('ChapterListItem', () => {
   const mockChapter: ChapterItem = {

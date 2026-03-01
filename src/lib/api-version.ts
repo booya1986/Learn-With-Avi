@@ -145,7 +145,7 @@ export function createVersionedResponse<T = any>(
     headers: options?.headers,
   })
 
-  return addVersionHeader(response, options?.version)
+  return addVersionHeader(response, options?.version) as NextResponse<T>
 }
 
 /**

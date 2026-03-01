@@ -2,9 +2,8 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
 
-import type { Course, Video } from '@/types';
+import type { Course, Video , ChapterItem } from '@/types';
 
-import type { ChapterItem } from '../ChapterListItem';
 import { MaterialsSidebar } from '../MaterialsSidebar';
 
 const mockCourse: Course = {

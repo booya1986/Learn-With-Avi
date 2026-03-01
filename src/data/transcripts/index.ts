@@ -45,7 +45,7 @@ export function getTranscriptForVideo(videoId: string): TranscriptChunk[] {
   }
 
   // Search through all transcripts for matching videoId in chunks
-  for (const [youtubeId, chunks] of Object.entries(transcriptRegistry)) {
+  for (const [_youtubeId, chunks] of Object.entries(transcriptRegistry)) {
     if (chunks.some((chunk) => chunk.videoId === videoId)) {
       return chunks
     }

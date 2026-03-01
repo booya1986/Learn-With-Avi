@@ -1,7 +1,9 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 
-import { SummaryModal, type SummaryData } from '../SummaryModal'
+import type { SummaryData } from '@/types'
+
+import { SummaryModal } from '../SummaryModal'
 
 const mockSummaryData: SummaryData = {
   about: 'בסרטון הזה נלמד על AI',

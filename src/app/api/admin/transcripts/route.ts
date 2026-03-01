@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Validation failed',
-          details: parseResult.error.errors,
+          details: parseResult.error.issues,
         },
         { status: 400 }
       )
@@ -204,7 +204,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json(
         {
           error: 'Validation failed',
-          details: parseResult.error.errors,
+          details: parseResult.error.issues,
         },
         { status: 400 }
       )
@@ -229,7 +229,7 @@ export async function PUT(request: NextRequest) {
     // Update transcript in a transaction
     const transcript = await prisma.$transaction(async (tx) => {
       // Update transcript metadata
-      const updatedTranscript = await tx.transcript.update({
+      await tx.transcript.update({
         where: { id: transcriptId },
         data: transcriptData,
       })

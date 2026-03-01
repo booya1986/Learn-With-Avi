@@ -22,7 +22,7 @@ export const SearchInput = ({
   className,
 }: SearchInputProps) => {
   const [internalValue, setInternalValue] = React.useState(value)
-  const timeoutRef = React.useRef<NodeJS.Timeout>()
+  const timeoutRef = React.useRef<NodeJS.Timeout>(undefined)
 
   React.useEffect(() => {
     setInternalValue(value)

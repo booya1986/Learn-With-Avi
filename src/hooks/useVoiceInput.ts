@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 
-import { VoiceState } from '@/types'
+// VoiceState type available from @/types if needed
 
 // Type definitions for Web Speech API
 interface SpeechRecognitionEvent extends Event {

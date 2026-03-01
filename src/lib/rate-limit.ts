@@ -12,6 +12,7 @@
 
 import { RateLimitError } from './errors'
 import { getRequestIdentifier } from './rate-limit-store'
+import { rateLimitCache, isRedisConnected } from './redis'
 
 interface RateLimitConfig {
   /**
@@ -34,8 +35,6 @@ interface RateLimitEntry {
   count: number
   resetTime: number
 }
-
-import { rateLimitCache, isRedisConnected } from './redis'
 
 /**
  * In-memory store for rate limit tracking (fallback)
@@ -324,7 +323,6 @@ export async function applyRateLimit(
 
   // Add rate limit headers to response (will be set by caller)
   if (!result.success) {
-    const resetTime = new Date(result.reset).toISOString()
     const retryAfter = Math.ceil((result.reset - Date.now()) / 1000)
 
     throw new RateLimitError(
