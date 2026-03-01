@@ -29,7 +29,7 @@ import { z } from 'zod'
 import { logError, ValidationError, RateLimitError, getUserFriendlyMessage } from '@/lib/errors'
 import { queryVectorChunks } from '@/lib/rag-pgvector'
 import { applyRateLimit, voiceRateLimiter } from '@/lib/rate-limit'
-import { transcribeAudio, buildContextString, generateTTSAudio } from '@/lib/voice-pipeline'
+import { transcribeAudio, buildContextString, streamTTSAudio } from '@/lib/voice-pipeline'
 
 const ALLOWED_AUDIO_TYPES = new Set([
   'audio/webm',
@@ -207,19 +207,44 @@ export async function POST(request: NextRequest) {
             )
           }
 
-          // STAGE 4: Generate TTS audio (if enabled)
+          // STAGE 4: Stream TTS audio chunks (if enabled)
+          // Chunks are sent as `audio-chunk` SSE events so the client can start
+          // playing audio before the full TTS response is buffered.
           if (enableTTS && fullContent.trim().length > 0) {
             try {
-              const ttsResponse = await generateTTSAudio(fullContent, transcription.language || language)
-              if (ttsResponse.audioUrl) {
+              const audioStream = await streamTTSAudio(fullContent)
+              if (audioStream) {
+                const reader = audioStream.getReader()
+                let chunkIndex = 0
+                try {
+                   
+                  while (true) {
+                    const { done, value } = await reader.read() // eslint-disable-line no-await-in-loop
+                    if (done) { break }
+                    // Base64-encode the raw audio bytes so they can travel inside JSON/SSE
+                    const base64Chunk = Buffer.from(value).toString('base64')
+                    controller.enqueue(
+                      encoder.encode(
+                        `data: ${JSON.stringify({
+                          type: 'audio-chunk',
+                          chunk: base64Chunk,
+                          index: chunkIndex,
+                        })}\n\n`
+                      )
+                    )
+                    chunkIndex++
+                  }
+                } finally {
+                  reader.releaseLock()
+                }
+                // Signal that all audio chunks have been sent
                 controller.enqueue(
-                  encoder.encode(
-                    `data: ${JSON.stringify({ type: 'audio', audioUrl: ttsResponse.audioUrl })}\n\n`
-                  )
+                  encoder.encode(`data: ${JSON.stringify({ type: 'audio-done' })}\n\n`)
                 )
               }
             } catch (error) {
-              logError('TTS generation failed in voice chat', error)
+              logError('TTS streaming failed in voice chat', error)
+              // Non-fatal — client falls back to browser TTS
             }
           }
 

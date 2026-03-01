@@ -34,3 +34,9 @@ export type {
 
 export { useWaveform } from './useWaveform';
 export type { UseWaveformReturn, UseWaveformOptions } from './useWaveform';
+
+export { useVoiceHistory } from './useVoiceHistory';
+export type {
+  UseVoiceHistoryReturn,
+  VoiceHistoryMessage,
+} from './useVoiceHistory';

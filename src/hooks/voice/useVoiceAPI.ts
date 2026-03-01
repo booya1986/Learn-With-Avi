@@ -36,6 +36,32 @@ export interface AIResponse {
 }
 
 /**
+ * Decode accumulated base64 audio chunks and create an object URL for playback.
+ * Returns null if the chunks array is empty.
+ */
+function buildAudioUrl(base64Chunks: string[]): string | null {
+  if (base64Chunks.length === 0) { return null; }
+  // Decode each base64 chunk to a Uint8Array and merge them
+  const byteArrays = base64Chunks.map((chunk) => {
+    const binaryStr = atob(chunk);
+    const bytes = new Uint8Array(binaryStr.length);
+    for (let i = 0; i < binaryStr.length; i++) {
+      bytes[i] = binaryStr.charCodeAt(i);
+    }
+    return bytes;
+  });
+  const totalLength = byteArrays.reduce((acc, arr) => acc + arr.length, 0);
+  const merged = new Uint8Array(totalLength);
+  let offset = 0;
+  for (const arr of byteArrays) {
+    merged.set(arr, offset);
+    offset += arr.length;
+  }
+  const blob = new Blob([merged], { type: 'audio/mpeg' });
+  return URL.createObjectURL(blob);
+}
+
+/**
  * Options for voice API call
  */
 export interface UseVoiceAPIOptions {
@@ -199,11 +225,16 @@ export function useVoiceAPI(options: UseVoiceAPIOptions = {}): UseVoiceAPIReturn
         const decoder = new TextDecoder();
         let buffer = '';
         let fullContent = '';
+        // Accumulate base64 audio chunks from `audio-chunk` SSE events
+        const audioChunks: string[] = [];
+        // Track the resolved audio URL so it's available when `done` fires
+        let resolvedAudioUrl: string | undefined;
 
         setIsStreaming(true);
 
+         
         while (true) {
-          const { done, value } = await reader.read();
+          const { done, value } = await reader.read(); // eslint-disable-line no-await-in-loop
 
           if (done) {break;}
 
@@ -238,7 +269,9 @@ export function useVoiceAPI(options: UseVoiceAPIOptions = {}): UseVoiceAPIReturn
                   break;
                 }
 
+                // Legacy event type — kept for backward compatibility
                 case 'audio': {
+                  resolvedAudioUrl = data.audioUrl;
                   setResponse((prev) => ({
                     ...prev,
                     audioUrl: data.audioUrl,
@@ -247,10 +280,29 @@ export function useVoiceAPI(options: UseVoiceAPIOptions = {}): UseVoiceAPIReturn
                   break;
                 }
 
+                // Streaming TTS: accumulate one base64-encoded audio chunk
+                case 'audio-chunk': {
+                  if (typeof data.chunk === 'string') {
+                    audioChunks.push(data.chunk);
+                  }
+                  break;
+                }
+
+                // Streaming TTS: all chunks received — build the audio URL and play
+                case 'audio-done': {
+                  const url = buildAudioUrl(audioChunks);
+                  if (url) {
+                    resolvedAudioUrl = url;
+                    setResponse((prev) => ({ ...prev, audioUrl: url }));
+                    onAudioURL?.(url);
+                  }
+                  break;
+                }
+
                 case 'done': {
                   const finalResponse: AIResponse = {
                     content: data.fullContent || fullContent,
-                    audioUrl: response.audioUrl,
+                    audioUrl: resolvedAudioUrl,
                     latency: data.latency,
                   };
                   setResponse(finalResponse);
@@ -270,17 +322,18 @@ export function useVoiceAPI(options: UseVoiceAPIOptions = {}): UseVoiceAPIReturn
 
         setIsStreaming(false);
         setIsProcessing(false);
-      } catch (err: any) {
-        const errorMsg = err.name === 'AbortError'
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        const errorMsg = error.name === 'AbortError'
           ? 'Request cancelled'
-          : `Voice chat error: ${err.message}`;
+          : `Voice chat error: ${error.message}`;
 
         setError(errorMsg);
         setIsProcessing(false);
         setIsStreaming(false);
 
-        if (err.name !== 'AbortError') {
-          console.error('Voice API error:', err);
+        if (error.name !== 'AbortError') {
+          console.error('Voice API error:', error);
           onError?.(errorMsg);
         }
       }
@@ -290,7 +343,6 @@ export function useVoiceAPI(options: UseVoiceAPIOptions = {}): UseVoiceAPIReturn
       language,
       enableTTS,
       conversationHistory,
-      response.audioUrl,
       onTranscription,
       onContentChunk,
       onAudioURL,

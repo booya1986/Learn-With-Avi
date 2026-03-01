@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from 'next/server'
 
 import { getConfig } from '@/lib/config'
+import { streamElevenLabsAudio, ELEVENLABS_DEFAULT_VOICE_ID } from '@/lib/elevenlabs'
 import {
   logError,
-  sanitizeError,
   getUserFriendlyMessage,
   ValidationError,
   RateLimitError,
@@ -28,21 +28,18 @@ interface TTSFallbackResponse {
 
 // Load configuration safely
 let ELEVENLABS_API_KEY: string | undefined
-let ELEVENLABS_DEFAULT_VOICE_ID: string
+let ELEVENLABS_VOICE_ID: string
 
 try {
   const config = getConfig()
   ELEVENLABS_API_KEY = config.elevenLabsApiKey
   // Adam voice (pNInz6obpgDQGcFmaJgB) has strong Hebrew support; configurable via env var
-  ELEVENLABS_DEFAULT_VOICE_ID = config.elevenLabsVoiceId || 'pNInz6obpgDQGcFmaJgB'
+  ELEVENLABS_VOICE_ID = config.elevenLabsVoiceId || ELEVENLABS_DEFAULT_VOICE_ID
 } catch (error) {
   logError('Voice TTS API initialization', error)
   // Allow to continue without ElevenLabs — will fall back to browser TTS
-  ELEVENLABS_DEFAULT_VOICE_ID = 'pNInz6obpgDQGcFmaJgB'
+  ELEVENLABS_VOICE_ID = ELEVENLABS_DEFAULT_VOICE_ID
 }
-
-/** Timeout for the ElevenLabs streaming request (milliseconds). */
-const ELEVENLABS_TIMEOUT_MS = 10_000
 
 /**
  * Sanitize text input for TTS to prevent abuse.
@@ -104,7 +101,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Handle based on provider
     if (provider === 'elevenlabs') {
-      return streamElevenLabsTTS(sanitizedText, voiceId || ELEVENLABS_DEFAULT_VOICE_ID, language)
+      return handleElevenLabsTTS(sanitizedText, voiceId || ELEVENLABS_VOICE_ID, language)
     }
 
     // Default: browser TTS — client handles synthesis
@@ -140,15 +137,16 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 /**
  * Stream audio chunks from ElevenLabs directly to the client.
  *
- * Uses the `/stream` endpoint so ElevenLabs begins sending audio/mpeg chunks
- * as soon as generation starts, achieving < 1 s time-to-first-audio-chunk.
+ * Uses the shared `streamElevenLabsAudio` library function which calls the
+ * `/stream` endpoint so ElevenLabs begins sending audio/mpeg chunks as soon as
+ * generation starts, achieving < 1 s time-to-first-audio-chunk.
  *
  * Falls back to a JSON browser-TTS response when:
  * - ELEVENLABS_API_KEY is not set
  * - ElevenLabs returns a non-2xx status
  * - The upstream connection times out or throws
  */
-async function streamElevenLabsTTS(
+async function handleElevenLabsTTS(
   text: string,
   voiceId: string,
   _language?: string
@@ -158,81 +156,31 @@ async function streamElevenLabsTTS(
     return browserFallbackResponse('ElevenLabs not configured, use client-side TTS')
   }
 
-  const url = `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}/stream`
+  const result = await streamElevenLabsAudio({
+    apiKey: ELEVENLABS_API_KEY,
+    text,
+    voiceId,
+  })
 
-  const abortController = new AbortController()
-  const timeoutId = setTimeout(() => abortController.abort(), ELEVENLABS_TIMEOUT_MS)
-
-  try {
-    const elevenLabsResponse = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'xi-api-key': ELEVENLABS_API_KEY,
-        // Optimize for low latency: request the smallest acceptable chunk size
-        'Accept': 'audio/mpeg',
-      },
-      body: JSON.stringify({
-        text,
-        model_id: 'eleven_multilingual_v2', // Full Hebrew + English support
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-          style: 0.0,
-          use_speaker_boost: true,
-        },
-        // Output format: mp3_44100_128 gives good quality at reasonable bitrate
-        output_format: 'mp3_44100_128',
-      }),
-      signal: abortController.signal,
-    })
-
-    clearTimeout(timeoutId)
-
-    if (!elevenLabsResponse.ok) {
-      const errorText = await elevenLabsResponse.text().catch(() => '')
-      logError('ElevenLabs API error', new Error(`Status: ${elevenLabsResponse.status}`), {
-        errorText: sanitizeError(errorText),
-      })
-      return browserFallbackResponse('Switching to browser voice synthesis')
-    }
-
-    // Pipe the ElevenLabs ReadableStream directly to the client.
-    // The browser will receive audio/mpeg chunks and can start decoding immediately
-    // without waiting for the full file — achieving < 1 s first-chunk latency.
-    const upstreamBody = elevenLabsResponse.body
-    if (!upstreamBody) {
-      logError('ElevenLabs streaming error', new Error('Response body is null'))
-      return browserFallbackResponse('Switching to browser voice synthesis')
-    }
-
-    return new NextResponse(upstreamBody, {
-      status: 200,
-      headers: {
-        'Content-Type': 'audio/mpeg',
-        // Allow the client to start playback before the stream completes
-        'Transfer-Encoding': 'chunked',
-        // Prevent downstream caches from buffering the stream
-        'Cache-Control': 'no-cache, no-store',
-        // Signal which provider was used (useful for client-side logging)
-        'X-TTS-Provider': 'elevenlabs',
-      },
-    })
-  } catch (error) {
-    clearTimeout(timeoutId)
-
-    const isTimeout =
-      error instanceof Error &&
-      (error.name === 'AbortError' || error.message.toLowerCase().includes('abort'))
-
-    if (isTimeout) {
-      logError('ElevenLabs TTS timeout', new Error(`Request aborted after ${ELEVENLABS_TIMEOUT_MS}ms`))
-    } else {
-      logError('ElevenLabs TTS error', error)
-    }
-
+  if (!result) {
     return browserFallbackResponse('Switching to browser voice synthesis')
   }
+
+  // Pipe the ElevenLabs ReadableStream directly to the client.
+  // The browser will receive audio/mpeg chunks and can start decoding immediately
+  // without waiting for the full file — achieving < 1 s first-chunk latency.
+  return new NextResponse(result.stream, {
+    status: 200,
+    headers: {
+      'Content-Type': 'audio/mpeg',
+      // Allow the client to start playback before the stream completes
+      'Transfer-Encoding': 'chunked',
+      // Prevent downstream caches from buffering the stream
+      'Cache-Control': 'no-cache, no-store',
+      // Signal which provider was used (useful for client-side logging)
+      'X-TTS-Provider': 'elevenlabs',
+    },
+  })
 }
 
 // GET endpoint for health check

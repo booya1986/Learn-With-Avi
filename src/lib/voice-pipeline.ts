@@ -15,6 +15,7 @@ import OpenAI from 'openai'
 import { type TranscriptChunk } from '@/types'
 
 import { getConfig } from './config'
+import { streamElevenLabsAudio, ELEVENLABS_DEFAULT_VOICE_ID } from './elevenlabs'
 import { logError } from './errors'
 
 const config = getConfig()
@@ -132,4 +133,37 @@ export async function generateTTSAudio(
     logError('TTS generation error in voice chat', error)
     return {}
   }
+}
+
+/**
+ * Stream TTS audio directly from ElevenLabs without an internal HTTP round-trip.
+ *
+ * Unlike `generateTTSAudio`, this function uses the shared `streamElevenLabsAudio`
+ * library to call ElevenLabs directly from the server. It returns a
+ * `ReadableStream` of raw audio/mpeg bytes so the caller can forward individual
+ * chunks to the client via SSE (`audio-chunk` / `audio-done` events) without
+ * buffering the entire audio file first.
+ *
+ * Returns `null` when ElevenLabs is not configured or when the upstream request
+ * fails — the caller should fall back to browser TTS in that case.
+ *
+ * @param text - Text to synthesize
+ * @returns A `ReadableStream` of audio bytes, or `null` on failure / no API key
+ */
+export async function streamTTSAudio(
+  text: string
+): Promise<ReadableStream<Uint8Array> | null> {
+  if (!config.elevenLabsApiKey) {
+    return null
+  }
+
+  const voiceId = config.elevenLabsVoiceId || ELEVENLABS_DEFAULT_VOICE_ID
+
+  const result = await streamElevenLabsAudio({
+    apiKey: config.elevenLabsApiKey,
+    text,
+    voiceId,
+  })
+
+  return result ? result.stream : null
 }

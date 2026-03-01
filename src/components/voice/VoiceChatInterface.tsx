@@ -28,7 +28,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
 
-import { Mic, Volume2, VolumeX, Zap } from 'lucide-react';
+import { Mic, Volume2, VolumeX, Zap, Trash2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -36,6 +36,7 @@ import {
   useAudioRecorder,
   useVoiceAPI,
   useAudioPlayback,
+  useVoiceHistory,
 } from '@/hooks/voice';
 import { cn } from '@/lib/utils';
 import { type ChatMessage } from '@/types';
@@ -88,21 +89,43 @@ export const VoiceChatInterface = ({
   // Mute state
   const [isMuted, setIsMuted] = useState(false);
 
+  // Persisted conversation history (scoped per videoId, survives page refresh)
+  const voiceHistory = useVoiceHistory(videoId);
+
+  // Merge persisted history with any externally supplied conversationHistory prop.
+  // Persisted messages come first; prop-supplied messages are appended so the
+  // caller can still inject context without overwriting stored history.
+  const effectiveHistory: ChatMessage[] = voiceHistory.isLoaded
+    ? [
+        ...voiceHistory.messages.map((m) => ({
+          id: `persisted-${m.timestamp}`,
+          role: m.role,
+          content: m.content,
+          timestamp: new Date(m.timestamp),
+          isVoice: true as const,
+        })),
+        ...conversationHistory,
+      ]
+    : conversationHistory;
+
   // Hooks
   const microphone = useMicrophone();
   const recorder = useAudioRecorder({
     onStop: (audioBlob) => {
       // Send to API when recording stops
-      voiceAPI.sendAudio(audioBlob);
+      void voiceAPI.sendAudio(audioBlob);
     },
   });
   const voiceAPI = useVoiceAPI({
     videoId,
     language,
     enableTTS,
-    conversationHistory,
+    conversationHistory: effectiveHistory,
     onTranscription: (result) => {
-      // Add user message
+      // Persist the user message immediately after transcription
+      voiceHistory.addMessage('user', result.text);
+
+      // Notify parent
       onMessageAdd?.({
         id: Date.now().toString(),
         role: 'user',
@@ -114,11 +137,16 @@ export const VoiceChatInterface = ({
     onAudioURL: (url) => {
       // Auto-play audio if not muted
       if (!isMuted) {
-        audioPlayback.play(url);
+        void audioPlayback.play(url);
       }
     },
     onComplete: (response) => {
-      // Add assistant message
+      // Persist the complete assistant response (not streaming tokens)
+      if (response.content) {
+        voiceHistory.addMessage('assistant', response.content);
+      }
+
+      // Notify parent
       onMessageAdd?.({
         id: (Date.now() + 1).toString(),
         role: 'assistant',
@@ -139,7 +167,7 @@ export const VoiceChatInterface = ({
     // Request microphone access
     const stream = await microphone.requestAccess();
     if (!stream) {
-      alert(microphone.error || 'Failed to access microphone');
+      console.error(microphone.error || 'Failed to access microphone');
       return;
     }
 
@@ -197,10 +225,10 @@ export const VoiceChatInterface = ({
       <MicrophoneButton
         state={buttonState}
         disabled={!canRecord}
-        onMouseDown={startRecording}
+        onMouseDown={() => void startRecording()}
         onMouseUp={stopRecording}
         onMouseLeave={stopRecording}
-        onTouchStart={startRecording}
+        onTouchStart={() => void startRecording()}
         onTouchEnd={stopRecording}
       />
 
@@ -282,9 +310,24 @@ export const VoiceChatInterface = ({
           onClick={toggleMute}
           className="h-10 w-10 rounded-full"
           title={isMuted ? 'Unmute' : 'Mute'}
+          aria-label={isMuted ? 'Unmute audio' : 'Mute audio'}
         >
           {isMuted ? <VolumeX size={18} /> : <Volume2 size={18} />}
         </Button>
+
+        {voiceHistory.messages.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={voiceHistory.clearHistory}
+            className="h-10 gap-1.5 rounded-full px-3 text-xs text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
+            title="Clear conversation history"
+            aria-label="Clear voice conversation history"
+          >
+            <Trash2 size={14} />
+            <span>Clear history</span>
+          </Button>
+        )}
       </div>
     </div>
   );

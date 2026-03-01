@@ -7,9 +7,11 @@
 
 ## Current Phase
 
-**Phase 2 — Quality** ✅ Complete
+**Phase 3 — Voice Optimization** (In Progress)
 
-Goal: Fix pre-existing TypeScript errors, fix failing tests, complete ElevenLabs TTS, set realistic coverage threshold.
+Goal: Voice AI becomes flagship feature — fix broken TTS pipeline, improve Hebrew accuracy, add session persistence, voice analytics.
+
+Previous: Phase 2 — Quality ✅ Complete
 
 ---
 

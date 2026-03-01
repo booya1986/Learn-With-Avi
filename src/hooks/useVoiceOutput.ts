@@ -246,7 +246,7 @@ interface UseVoiceOutputReturn {
  *
  * @sideEffects
  * - Creates SpeechSynthesisUtterance instances for browser TTS
- * - Makes POST requests to `/api/voice/tts` for ElevenLabs
+ * - Makes POST requests to `/api/v1/voice/tts` for ElevenLabs
  * - Creates HTMLAudioElement for playing ElevenLabs audio
  * - Manages speech queue in component state
  * - Cleans up ongoing speech on unmount
@@ -300,6 +300,8 @@ export function useVoiceOutput(options: UseVoiceOutputOptions = {}): UseVoiceOut
   const queueRef = useRef<QueueItem[]>([])
   const isProcessingRef = useRef(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  // Track all object URLs created for audio blobs so we can revoke them on cleanup
+  const objectUrlsRef = useRef<string[]>([])
 
   // Keep queue ref in sync
   useEffect(() => {
@@ -360,12 +362,13 @@ export function useVoiceOutput(options: UseVoiceOutputOptions = {}): UseVoiceOut
       await speakWithElevenLabs(item.text)
     }
 
-    isProcessingRef.current = false
+    isProcessingRef.current = false // eslint-disable-line require-atomic-updates
 
     // Process next item if any
     if (queueRef.current.length > 0) {
-      processQueue()
+      void processQueue()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentProvider])
 
   // Speak using browser Speech Synthesis
@@ -424,18 +427,14 @@ export function useVoiceOutput(options: UseVoiceOutputOptions = {}): UseVoiceOut
     [rate, pitch, volume, selectedVoice, onStart, onEnd, onError]
   )
 
-  // Placeholder for ElevenLabs integration
+  // Speak using ElevenLabs streaming TTS via the versioned API endpoint
   const speakWithElevenLabs = useCallback(
     async (text: string): Promise<void> => {
-      // TODO: Implement ElevenLabs integration
-      // This is a placeholder that falls back to browser TTS
-
       try {
         setIsSpeaking(true)
         onStart?.()
 
-        // Call the TTS API endpoint
-        const response = await fetch('/api/voice/tts', {
+        const response = await fetch('/api/v1/voice/tts', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -443,42 +442,61 @@ export function useVoiceOutput(options: UseVoiceOutputOptions = {}): UseVoiceOut
           body: JSON.stringify({
             text,
             provider: 'elevenlabs',
+            language,
           }),
         })
 
         if (!response.ok) {
-          throw new Error('TTS API error')
+          throw new Error(`TTS API returned status ${response.status}`)
         }
 
-        const data = await response.json()
+        const contentType = response.headers.get('Content-Type') ?? ''
 
-        // If we got an audio URL, play it
-        if (data.audioUrl) {
-          const audio = new Audio(data.audioUrl)
+        if (contentType.includes('audio/mpeg')) {
+          // ElevenLabs streaming audio — create a blob URL and play via HTMLAudioElement
+          const blob = await response.blob()
+          const objectUrl = URL.createObjectURL(blob)
+
+          // Track the URL so we can revoke it on unmount
+          objectUrlsRef.current.push(objectUrl)
+
+          const audio = new Audio(objectUrl)
           audioRef.current = audio
 
           await new Promise<void>((resolve, reject) => {
             audio.onended = () => {
+              // Revoke this specific object URL now that playback is done
+              URL.revokeObjectURL(objectUrl)
+              objectUrlsRef.current = objectUrlsRef.current.filter((u) => u !== objectUrl)
+
               setIsSpeaking(false)
               onEnd?.()
               resolve()
             }
+
             audio.onerror = () => {
+              URL.revokeObjectURL(objectUrl)
+              objectUrlsRef.current = objectUrlsRef.current.filter((u) => u !== objectUrl)
+
               reject(new Error('Audio playback error'))
             }
+
             audio.play().catch(reject)
           })
         } else {
-          // Fallback to browser TTS if no audio URL
+          // JSON response — server is telling us to use browser TTS (ElevenLabs unavailable/fallback)
+          setIsSpeaking(false)
           await speakWithBrowser(text)
         }
       } catch (error) {
-        // Fallback to browser TTS on error
+        // Fallback to browser TTS on any network or playback error
         console.warn('ElevenLabs TTS failed, falling back to browser:', error)
+        setIsSpeaking(false)
+        onError?.(`ElevenLabs TTS failed: ${error instanceof Error ? error.message : String(error)}`)
         await speakWithBrowser(text)
       }
     },
-    [speakWithBrowser, onStart, onEnd]
+    [speakWithBrowser, onStart, onEnd, onError, language]
   )
 
   // Add text to speech queue
@@ -490,7 +508,7 @@ export function useVoiceOutput(options: UseVoiceOutputOptions = {}): UseVoiceOut
       setQueue((prev) => [...prev, item])
 
       // Start processing if not already
-      setTimeout(() => processQueue(), 0)
+      setTimeout(() => void processQueue(), 0)
 
       return id
     },
@@ -504,12 +522,18 @@ export function useVoiceOutput(options: UseVoiceOutputOptions = {}): UseVoiceOut
       window.speechSynthesis.cancel()
     }
 
-    // Stop audio playback
+    // Stop audio playback and revoke all tracked object URLs
     if (audioRef.current) {
       audioRef.current.pause()
       audioRef.current.currentTime = 0
       audioRef.current = null
     }
+
+    // Revoke all pending object URLs to prevent memory leaks
+    for (const url of objectUrlsRef.current) {
+      URL.revokeObjectURL(url)
+    }
+    objectUrlsRef.current = []
 
     // Clear queue
     setQueue([])
@@ -541,7 +565,7 @@ export function useVoiceOutput(options: UseVoiceOutputOptions = {}): UseVoiceOut
     }
 
     if (audioRef.current && audioRef.current.paused) {
-      audioRef.current.play()
+      void audioRef.current.play()
       setIsPaused(false)
     }
   }, [isPaused])
