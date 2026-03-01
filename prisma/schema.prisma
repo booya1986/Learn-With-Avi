@@ -161,3 +161,28 @@ model Admin {
 
   @@index([email])
 }
+
+// ==========================================
+// VOICE ANALYTICS
+// ==========================================
+
+model VoiceSession {
+  id                  String   @id @default(cuid())
+  sessionId           String?
+  userId              String?
+  videoId             String?
+  language            String?  // 'he', 'en', 'auto'
+  sttProvider         String?  // 'whisper'
+  ttsProvider         String?  // 'elevenlabs', 'browser', null
+  ttsUsedFallback     Boolean  @default(false)
+  sttLatencyMs        Int?
+  llmLatencyMs        Int?
+  ttsLatencyMs        Int?
+  totalLatencyMs      Int?
+  transcriptionLength Int?
+  responseLength      Int?
+  createdAt           DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([videoId])
+}

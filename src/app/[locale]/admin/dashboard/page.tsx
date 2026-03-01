@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { BookOpen, Play, CheckCircle, Users, Plus } from "lucide-react";
 
+import { VoiceAnalyticsCard } from "@/components/admin/voice/VoiceAnalyticsCard";
 import { Button } from "@/components/ui/button";
 import { GlassCard } from "@/components/ui/glass-card";
 import { requireAuth } from "@/lib/auth";
@@ -117,6 +118,10 @@ export default async function DashboardPage({
             <React.Fragment key={stat.title}>{card}</React.Fragment>
           );
         })}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <VoiceAnalyticsCard />
       </div>
 
       <GlassCard variant="dark" padding="none">

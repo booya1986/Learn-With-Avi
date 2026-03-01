@@ -3,6 +3,13 @@ import { NextRequest } from 'next/server'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 // Mock dependencies BEFORE importing the route
+vi.mock('@/lib/prisma', () => ({
+  prisma: {
+    voiceSession: {
+      create: vi.fn().mockResolvedValue({ id: 'mock-session-id' }),
+    },
+  },
+}))
 vi.mock('@/lib/rate-limit')
 vi.mock('@/lib/config', () => ({
   getConfig: () => ({

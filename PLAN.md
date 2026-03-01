@@ -15,8 +15,8 @@
 | hebrew-stt-optimization | 1 | backend-engineer | P1 | medium | ✅ Done |
 | voice-session-persistence | 1 | frontend-engineer | P1 | medium | ✅ Done |
 | voice-waveform-real-audio | 1 | frontend-engineer | P2 | small | ✅ Done |
-| voice-analytics-admin | 2 | backend-engineer | P1 | large | Pending |
-| voice-component-stories | 2 | frontend-engineer | P2 | small | Pending |
+| voice-analytics-admin | 2 | backend-engineer | P1 | large | ✅ Done |
+| voice-component-stories | 2 | frontend-engineer | P2 | small | ✅ Done |
 
 ---
 

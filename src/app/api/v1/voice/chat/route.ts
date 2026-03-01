@@ -27,6 +27,7 @@ import { streamText } from 'ai'
 import { z } from 'zod'
 
 import { logError, ValidationError, RateLimitError, getUserFriendlyMessage } from '@/lib/errors'
+import { prisma } from '@/lib/prisma'
 import { queryVectorChunks } from '@/lib/rag-pgvector'
 import { applyRateLimit, voiceRateLimiter } from '@/lib/rate-limit'
 import { transcribeAudio, buildContextString, streamTTSAudio } from '@/lib/voice-pipeline'
@@ -214,14 +215,16 @@ export async function POST(request: NextRequest) {
           // STAGE 4: Stream TTS audio chunks (if enabled)
           // Chunks are sent as `audio-chunk` SSE events so the client can start
           // playing audio before the full TTS response is buffered.
+          let ttsUsedFallback = !enableTTS || !process.env.ELEVENLABS_API_KEY
           if (enableTTS && fullContent.trim().length > 0) {
             try {
               const audioStream = await streamTTSAudio(fullContent, language)
               if (audioStream) {
+                ttsUsedFallback = false
                 const reader = audioStream.getReader()
                 let chunkIndex = 0
                 try {
-                   
+
                   while (true) {
                     const { done, value } = await reader.read() // eslint-disable-line no-await-in-loop
                     if (done) { break }
@@ -252,16 +255,35 @@ export async function POST(request: NextRequest) {
             }
           }
 
+          const totalMs = Date.now() - startTime
+
           // Send final done message with latency stats
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
                 type: 'done',
                 fullContent,
-                latency: { stt: sttTime, rag: ragTime, llm: llmTime, total: Date.now() - startTime },
+                latency: { stt: sttTime, rag: ragTime, llm: llmTime, total: totalMs },
               })}\n\n`
             )
           )
+
+          // Fire-and-forget analytics — don't await, must not slow down the response
+          void prisma.voiceSession.create({
+            data: {
+              videoId: videoId ?? undefined,
+              language,
+              sttProvider: 'whisper',
+              ttsProvider: enableTTS ? 'elevenlabs' : null,
+              ttsUsedFallback,
+              sttLatencyMs: sttTime,
+              llmLatencyMs: llmTime,
+              ttsLatencyMs: null,
+              totalLatencyMs: totalMs,
+              transcriptionLength: transcription.text?.length,
+              responseLength: fullContent?.length,
+            },
+          }).catch((err: unknown) => console.error('Voice analytics insert failed:', err))
         } catch (error) {
           logError('Claude streaming error in voice chat', error)
           controller.enqueue(
