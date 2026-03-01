@@ -270,7 +270,7 @@ describe('API Client', () => {
     it('should return true for 2xx status codes', () => {
       const response200 = new Response('', { status: 200 })
       const response201 = new Response('', { status: 201 })
-      const response204 = new Response('', { status: 204 })
+      const response204 = new Response(null, { status: 204 })
 
       expect(isSuccessResponse(response200)).toBe(true)
       expect(isSuccessResponse(response201)).toBe(true)

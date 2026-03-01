@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 // Mock dependencies BEFORE importing the route
@@ -12,12 +13,14 @@ vi.mock('@/lib/config', () => ({
 vi.mock('@/lib/rag-pgvector', () => ({
   queryVectorChunks: async () => [
     {
-      id: 'chunk-1',
-      videoId: 'video-1',
-      text: 'Test transcript content',
-      startTime: 0,
-      endTime: 10,
-      score: 0.9,
+      chunk: {
+        id: 'chunk-1',
+        videoId: 'video-1',
+        text: 'Test transcript content',
+        startTime: 0,
+        endTime: 10,
+        score: 0.9,
+      },
     },
   ],
 }))
@@ -61,6 +64,7 @@ vi.mock('@ai-sdk/anthropic', () => ({
 // Import route AFTER mocks are set up
 import { RateLimitError } from '@/lib/errors'
 import { applyRateLimit, voiceRateLimiter } from '@/lib/rate-limit'
+
 import { POST, GET } from '../v1/voice/chat/route'
 
 /**
@@ -418,7 +422,7 @@ describe(
 
         while (true) {
           const { done, value } = await reader.read()
-          if (done) break
+          if (done) {break}
           fullText += decoder.decode(value, { stream: true })
         }
 
@@ -442,7 +446,7 @@ describe(
 
         while (true) {
           const { done, value } = await reader.read()
-          if (done) break
+          if (done) {break}
           fullText += decoder.decode(value, { stream: true })
         }
 
@@ -465,7 +469,7 @@ describe(
 
         while (true) {
           const { done, value } = await reader.read()
-          if (done) break
+          if (done) {break}
           fullText += decoder.decode(value, { stream: true })
         }
 

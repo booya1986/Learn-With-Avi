@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 // Mock dependencies first
+vi.mock('next-auth/jwt', () => ({
+  getToken: vi.fn().mockResolvedValue(null),
+}));
+
 vi.mock('@/lib/config', () => ({
   hasApiKey: vi.fn(),
   getConfig: vi.fn(),
@@ -15,8 +19,8 @@ vi.mock('@/lib/redis', () => ({
   getRedisHealth: vi.fn().mockResolvedValue({ connected: false }),
 }));
 
-vi.mock('@/lib/queries', () => ({
-  getCacheStats: vi.fn().mockReturnValue({ hits: 10, misses: 5, invalidations: 0, errors: 0 }),
+vi.mock('@/lib/cache', () => ({
+  getCacheStats: vi.fn(() => ({ hits: 10, misses: 5, invalidations: 0, errors: 0 })),
 }));
 
 vi.mock('@/lib/prisma');
@@ -44,14 +48,14 @@ describe('Health Check Endpoints', () => {
     it('should return a NextResponse', async () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
-      const { isRedisConnected } = await import('@/lib/redis');
+      const { getToken } = await import('next-auth/jwt');
 
+      vi.mocked(getToken).mockResolvedValue({ role: 'admin' } as any);
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
         chromaHost: 'localhost',
         chromaPort: 8000,
       } as any);
-      vi.mocked(isRedisConnected).mockReturnValue(false);
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
@@ -61,7 +65,9 @@ describe('Health Check Endpoints', () => {
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
+      const { NextRequest } = await import('next/server');
+      const request = new NextRequest("http://localhost:3000/api/v1/health");
+      const response = await GET(request);
 
       expect(response).toBeDefined();
       expect(response.status).toBeGreaterThanOrEqual(200);
@@ -70,14 +76,14 @@ describe('Health Check Endpoints', () => {
     it('should check API key configuration', async () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
-      const { isRedisConnected } = await import('@/lib/redis');
+      const { getToken } = await import('next-auth/jwt');
 
+      vi.mocked(getToken).mockResolvedValue({ role: 'admin' } as any);
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
         chromaHost: 'localhost',
         chromaPort: 8000,
       } as any);
-      vi.mocked(isRedisConnected).mockReturnValue(false);
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
@@ -87,7 +93,9 @@ describe('Health Check Endpoints', () => {
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
+      const { NextRequest } = await import('next/server');
+      const request = new NextRequest("http://localhost:3000/api/v1/health");
+      const response = await GET(request);
       const body = await response.json();
 
       expect(body).toHaveProperty('services');
@@ -97,14 +105,14 @@ describe('Health Check Endpoints', () => {
     it('should include timestamp in response', async () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
-      const { isRedisConnected } = await import('@/lib/redis');
+      const { getToken } = await import('next-auth/jwt');
 
+      vi.mocked(getToken).mockResolvedValue({ role: 'admin' } as any);
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
         chromaHost: 'localhost',
         chromaPort: 8000,
       } as any);
-      vi.mocked(isRedisConnected).mockReturnValue(false);
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
@@ -114,7 +122,9 @@ describe('Health Check Endpoints', () => {
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
+      const { NextRequest } = await import('next/server');
+      const request = new NextRequest("http://localhost:3000/api/v1/health");
+      const response = await GET(request);
       const body = await response.json();
 
       expect(body).toHaveProperty('timestamp');
@@ -124,14 +134,14 @@ describe('Health Check Endpoints', () => {
     it('should include uptime in response', async () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
-      const { isRedisConnected } = await import('@/lib/redis');
+      const { getToken } = await import('next-auth/jwt');
 
+      vi.mocked(getToken).mockResolvedValue({ role: 'admin' } as any);
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
         chromaHost: 'localhost',
         chromaPort: 8000,
       } as any);
-      vi.mocked(isRedisConnected).mockReturnValue(false);
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
@@ -141,7 +151,9 @@ describe('Health Check Endpoints', () => {
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
+      const { NextRequest } = await import('next/server');
+      const request = new NextRequest("http://localhost:3000/api/v1/health");
+      const response = await GET(request);
       const body = await response.json();
 
       expect(body).toHaveProperty('uptime');
@@ -152,14 +164,14 @@ describe('Health Check Endpoints', () => {
     it('should return 200 when healthy', async () => {
       const { hasApiKey, getConfig } = await import('@/lib/config');
       const { getEmbeddingCacheStats } = await import('@/lib/embeddings');
-      const { isRedisConnected } = await import('@/lib/redis');
+      const { getToken } = await import('next-auth/jwt');
 
+      vi.mocked(getToken).mockResolvedValue({ role: 'admin' } as any);
       vi.mocked(hasApiKey).mockReturnValue(true);
       vi.mocked(getConfig).mockReturnValue({
         chromaHost: 'localhost',
         chromaPort: 8000,
       } as any);
-      vi.mocked(isRedisConnected).mockReturnValue(false);
       vi.mocked(getEmbeddingCacheStats).mockReturnValue({
         hitRate: 0.75,
         hits: 150,
@@ -169,7 +181,9 @@ describe('Health Check Endpoints', () => {
       });
 
       const { GET } = await import('../v1/health/route');
-      const response = await GET(new Request("http://localhost:3000/api/v1/health") as any);
+      const { NextRequest } = await import('next/server');
+      const request = new NextRequest("http://localhost:3000/api/v1/health");
+      const response = await GET(request);
 
       expect(response.status).toBeGreaterThanOrEqual(200);
       expect(response.status).toBeLessThan(300);

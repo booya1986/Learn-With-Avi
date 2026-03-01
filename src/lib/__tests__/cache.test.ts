@@ -15,9 +15,15 @@ import {
   getCacheStats,
   resetCacheStats,
 } from '../cache';
-import { RedisCache } from '../redis';
 
-// Mock Prisma client
+// Use vi.hoisted so mock fns are available inside vi.mock factories
+const { mockGet, mockSet, mockDel, mockClear } = vi.hoisted(() => ({
+  mockGet: vi.fn(),
+  mockSet: vi.fn(),
+  mockDel: vi.fn(),
+  mockClear: vi.fn(),
+}));
+
 vi.mock('../prisma', () => ({
   prisma: {
     course: {
@@ -31,13 +37,13 @@ vi.mock('../prisma', () => ({
   },
 }));
 
-// Mock Redis cache
+// All RedisCache instances share the same mock methods
 vi.mock('../redis', () => ({
   RedisCache: vi.fn().mockImplementation(() => ({
-    get: vi.fn(),
-    set: vi.fn(),
-    del: vi.fn(),
-    clear: vi.fn(),
+    get: mockGet,
+    set: mockSet,
+    del: mockDel,
+    clear: mockClear,
   })),
 }));
 
@@ -55,13 +61,12 @@ describe('Cache System', () => {
         videos: [],
       };
 
-      const mockRedisCache = new RedisCache('course');
-      vi.mocked(mockRedisCache.get).mockResolvedValueOnce(mockCourse);
+      mockGet.mockResolvedValueOnce(mockCourse);
 
       const result = await getCachedCourse('course-1');
 
       expect(result).toEqual(mockCourse);
-      expect(mockRedisCache.get).toHaveBeenCalledWith('course:course-1');
+      expect(mockGet).toHaveBeenCalledWith('course:course-1');
 
       const stats = getCacheStats();
       expect(stats.hits).toBe(1);
@@ -81,15 +86,14 @@ describe('Cache System', () => {
         videos: [],
       };
 
-      const mockRedisCache = new RedisCache('course');
-      vi.mocked(mockRedisCache.get).mockResolvedValueOnce(null);
+      mockGet.mockResolvedValueOnce(null);
       vi.mocked(prisma.course.findUnique).mockResolvedValueOnce(mockDbCourse as any);
 
       const result = await getCachedCourse('course-1');
 
       expect(result).toBeDefined();
       expect(result?.id).toBe('course-1');
-      expect(mockRedisCache.set).toHaveBeenCalled();
+      expect(mockSet).toHaveBeenCalled();
 
       const stats = getCacheStats();
       expect(stats.misses).toBe(1);
@@ -121,14 +125,13 @@ describe('Cache System', () => {
         },
       ];
 
-      const mockRedisCache = new RedisCache('course');
-      vi.mocked(mockRedisCache.get).mockResolvedValueOnce(null);
+      mockGet.mockResolvedValueOnce(null);
       vi.mocked(prisma.course.findMany).mockResolvedValueOnce(mockCourses as any);
 
       const result = await getCachedCourses();
 
       expect(result).toHaveLength(2);
-      expect(mockRedisCache.set).toHaveBeenCalledWith(
+      expect(mockSet).toHaveBeenCalledWith(
         'courses:published',
         expect.any(Array),
         expect.any(Number)
@@ -148,8 +151,7 @@ describe('Cache System', () => {
         ],
       };
 
-      const mockRedisCache = new RedisCache('video');
-      vi.mocked(mockRedisCache.get).mockResolvedValueOnce(mockVideo);
+      mockGet.mockResolvedValueOnce(mockVideo);
 
       const result = await getCachedVideo('video-1');
 
@@ -170,12 +172,10 @@ describe('Cache System', () => {
 
       vi.mocked(prisma.video.findMany).mockResolvedValueOnce([mockVideo] as any);
 
-      const mockRedisCache = new RedisCache('course');
-
       await invalidateCourseCache('course-1');
 
-      expect(mockRedisCache.del).toHaveBeenCalledWith('course:course-1');
-      expect(mockRedisCache.del).toHaveBeenCalledWith('courses:published');
+      expect(mockDel).toHaveBeenCalledWith('course:course-1');
+      expect(mockDel).toHaveBeenCalledWith('courses:published');
     });
 
     it('should invalidate video cache on update', async () => {
@@ -189,13 +189,11 @@ describe('Cache System', () => {
 
       vi.mocked(prisma.video.findUnique).mockResolvedValueOnce(mockVideo as any);
 
-      const mockRedisCache = new RedisCache('video');
-
       await invalidateVideoCache('video-1');
 
-      expect(mockRedisCache.del).toHaveBeenCalledWith('video:video-1');
-      expect(mockRedisCache.del).toHaveBeenCalledWith('video:youtube:abc123');
-      expect(mockRedisCache.del).toHaveBeenCalledWith('videos:all');
+      expect(mockDel).toHaveBeenCalledWith('video:video-1');
+      expect(mockDel).toHaveBeenCalledWith('video:youtube:abc123');
+      expect(mockDel).toHaveBeenCalledWith('videos:all');
     });
   });
 
@@ -203,10 +201,8 @@ describe('Cache System', () => {
     it('should track cache hits and misses', async () => {
       resetCacheStats();
 
-      const mockRedisCache = new RedisCache('course');
-
       // Cache hit
-      vi.mocked(mockRedisCache.get).mockResolvedValueOnce({
+      mockGet.mockResolvedValueOnce({
         id: 'course-1',
         title: 'Test',
       });
@@ -217,7 +213,7 @@ describe('Cache System', () => {
       expect(stats.misses).toBe(0);
 
       // Cache miss
-      vi.mocked(mockRedisCache.get).mockResolvedValueOnce(null);
+      mockGet.mockResolvedValueOnce(null);
       const { prisma } = await import('../prisma');
       vi.mocked(prisma.course.findUnique).mockResolvedValueOnce({
         id: 'course-2',

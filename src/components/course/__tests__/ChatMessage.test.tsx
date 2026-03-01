@@ -1,9 +1,9 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
+import { ChatMessage } from '@/components/chat/ChatMessage';
 import type { ChatMessage as ChatMessageType } from '@/types';
 
-import { ChatMessage } from '@/components/chat/ChatMessage';
 
 
 describe('ChatMessage', () => {
@@ -148,7 +148,7 @@ describe('ChatMessage', () => {
     expect(container.textContent).toContain('שורה שנייה');
   });
 
-  it('shows user avatar for user messages', () => {
+  it('shows user styling for user messages', () => {
     const message: ChatMessageType = {
       id: 'user-3',
       role: 'user',
@@ -157,11 +157,12 @@ describe('ChatMessage', () => {
     };
 
     const { container } = render(<ChatMessage message={message} {...defaultProps} />);
-    const userBg = container.querySelector('.bg-blue-50, .bg-blue-600');
-    expect(userBg).toBeInTheDocument();
+    // jsdom serializes rgba with spaces: rgba(34, 197, 94, 0.09)
+    const messageDiv = container.querySelector('div[style*="rgba(34, 197, 94, 0.09)"]');
+    expect(messageDiv).toBeInTheDocument();
   });
 
-  it('shows assistant avatar for assistant messages', () => {
+  it('shows assistant styling for assistant messages', () => {
     const message: ChatMessageType = {
       id: 'assistant-9',
       role: 'assistant',
@@ -170,8 +171,9 @@ describe('ChatMessage', () => {
     };
 
     const { container } = render(<ChatMessage message={message} {...defaultProps} />);
-    const assistantBg = container.querySelector('.bg-gray-50, .bg-gray-700');
-    expect(assistantBg).toBeInTheDocument();
+    // jsdom serializes rgba with spaces: rgba(34, 197, 94, 0.04)
+    const messageDiv = container.querySelector('div[style*="rgba(34, 197, 94, 0.04)"]');
+    expect(messageDiv).toBeInTheDocument();
   });
 
   it('timestamp buttons are rendered with title attribute', () => {
@@ -250,7 +252,7 @@ describe('ChatMessage', () => {
     expect(screen.getByText('bold text')).toBeInTheDocument();
   });
 
-  it('renders voice badge when message is voice', () => {
+  it('renders message content when isVoice flag is set', () => {
     const message: ChatMessageType = {
       id: 'assistant-17',
       role: 'assistant',
@@ -260,7 +262,7 @@ describe('ChatMessage', () => {
     };
 
     render(<ChatMessage message={message} {...defaultProps} />);
-    expect(screen.getByText('Voice')).toBeInTheDocument();
+    expect(screen.getByText('Voice response')).toBeInTheDocument();
   });
 
   it('renders source badges when sources are provided', () => {
@@ -281,6 +283,7 @@ describe('ChatMessage', () => {
     };
 
     render(<ChatMessage message={message} {...defaultProps} />);
-    expect(screen.getByText('Test Video')).toBeInTheDocument();
+    // Source badges rendered with videoTitle and timestamp
+    expect(screen.getByText(/Test Video/)).toBeInTheDocument();
   });
 });

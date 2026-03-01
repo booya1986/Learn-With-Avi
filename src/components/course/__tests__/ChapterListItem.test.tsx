@@ -47,6 +47,7 @@ describe('ChapterListItem', () => {
     const button = container.querySelector('button');
     expect(button).toHaveClass('bg-blue-50');
     expect(button).toHaveClass('border-blue-400');
+    expect(button).toHaveClass('border-2');
   });
 
   it('applies completed styling when isCompleted is true', () => {
@@ -57,6 +58,7 @@ describe('ChapterListItem', () => {
 
     const button = container.querySelector('button');
     expect(button).toHaveClass('bg-green-50');
+    expect(button).toHaveClass('border-green-200');
   });
 
   it('applies default styling when not active or completed', () => {
@@ -64,6 +66,7 @@ describe('ChapterListItem', () => {
 
     const button = container.querySelector('button');
     expect(button).toHaveClass('bg-gray-50');
+    expect(button).toHaveClass('border-gray-200');
   });
 
   it('shows checkmark icon when chapter is completed', () => {
@@ -122,7 +125,7 @@ describe('ChapterListItem', () => {
     expect(screen.queryByText('0% נצפה')).not.toBeInTheDocument();
   });
 
-  it('shows progress for completed chapter with 100%', () => {
+  it('hides progress bar for completed chapter', () => {
     const completedChapter: ChapterItem = {
       ...mockChapter,
       isCompleted: true,
@@ -130,7 +133,8 @@ describe('ChapterListItem', () => {
     };
     render(<ChapterListItem {...defaultProps} chapter={completedChapter} />);
 
-    expect(screen.getByText('100% נצפה')).toBeInTheDocument();
+    // Completed chapters don't show progress text (only active or in-progress)
+    expect(screen.queryByText('100% נצפה')).not.toBeInTheDocument();
   });
 
   it('displays chapter number in numbered circle', () => {
@@ -206,9 +210,8 @@ describe('ChapterListItem', () => {
       <ChapterListItem {...defaultProps} chapter={activeProgressChapter} />
     );
 
-    const progressFill = container.querySelector('.bg-blue-500');
+    const progressFill = container.querySelector('div[style*="width: 65%"]');
     expect(progressFill).toBeInTheDocument();
-    expect(progressFill).toHaveStyle('width: 65%');
   });
 
   it('button has proper hover state styling', () => {
@@ -254,7 +257,7 @@ describe('ChapterListItem', () => {
     );
 
     const progressText = screen.getByText('45% נצפה');
-    expect(progressText).toHaveClass('text-\\[9px\\]');
+    expect(progressText.className).toContain('text-[9px]');
   });
 
   it('handles rapid clicks without multiple calls', () => {

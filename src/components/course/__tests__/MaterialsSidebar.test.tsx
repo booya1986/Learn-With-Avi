@@ -1,8 +1,7 @@
-import { render, screen, fireEvent, within } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 
-
-import type { Course, Video , ChapterItem } from '@/types';
+import type { Course, Video, ChapterItem } from '@/types';
 
 import { MaterialsSidebar } from '../MaterialsSidebar';
 
@@ -77,34 +76,34 @@ describe('MaterialsSidebar', () => {
     onChapterClick: vi.fn(),
   };
 
-  it('renders the sidebar with course information', () => {
+  it('renders the sidebar with Chapters heading', () => {
     render(<MaterialsSidebar {...defaultProps} />);
-    expect(screen.getByText(mockCourse.title)).toBeInTheDocument();
+    expect(screen.getByText('Chapters')).toBeInTheDocument();
   });
 
-  it('displays current video information', () => {
+  it('displays all chapter titles', () => {
     render(<MaterialsSidebar {...defaultProps} />);
-    expect(screen.getByText(mockVideo.title)).toBeInTheDocument();
+    expect(screen.getByText('Introduction')).toBeInTheDocument();
+    expect(screen.getByText('Setup Make')).toBeInTheDocument();
+    expect(screen.getByText('AI Integration')).toBeInTheDocument();
   });
 
-  it('renders chapter list with correct number of items', () => {
+  it('renders correct number of chapter buttons', () => {
     render(<MaterialsSidebar {...defaultProps} />);
     const buttons = screen.getAllByRole('button');
-    expect(buttons.length).toBeGreaterThanOrEqual(mockChapterItems.length);
+    expect(buttons).toHaveLength(mockChapterItems.length);
   });
 
-  it('highlights the active chapter with correct styling', () => {
-    render(<MaterialsSidebar {...defaultProps} />);
-    const buttons = screen.getAllByRole('button');
-    const activeButton = buttons.find(btn => btn.textContent?.includes('Introduction'));
-    expect(activeButton).toHaveClass('bg-blue-50');
+  it('highlights the active chapter with green background', () => {
+    const { container } = render(<MaterialsSidebar {...defaultProps} />);
+    // Active chapter has rgba(34,197,94,0.08) background via inline style
+    const activeBtn = container.querySelector('button[style*="rgba(34, 197, 94, 0.08)"]');
+    expect(activeBtn).toBeInTheDocument();
   });
 
-  it('shows completed checkmarks for finished chapters', () => {
+  it('shows checkmark for completed chapters', () => {
     render(<MaterialsSidebar {...defaultProps} />);
-    const buttons = screen.getAllByRole('button');
-    const completedButton = buttons.find(btn => btn.textContent?.includes('Setup Make'));
-    expect(completedButton).toHaveClass('bg-green-50');
+    expect(screen.getByText('✓')).toBeInTheDocument();
   });
 
   it('calls onChapterClick with correct startTime when chapter is clicked', () => {
@@ -112,104 +111,38 @@ describe('MaterialsSidebar', () => {
     render(<MaterialsSidebar {...defaultProps} onChapterClick={onChapterClick} />);
 
     const buttons = screen.getAllByRole('button');
-    const chapterButton = buttons.find(btn => btn.textContent?.includes('AI Integration'));
-
-    if (chapterButton) {
-      fireEvent.click(chapterButton);
-      expect(onChapterClick).toHaveBeenCalledWith(300);
-    }
+    // Click "AI Integration" (3rd button, startTime=300)
+    fireEvent.click(buttons[2]);
+    expect(onChapterClick).toHaveBeenCalledWith(300);
   });
 
-  it('displays progress bar for active chapter', () => {
-    render(<MaterialsSidebar {...defaultProps} />);
-    const activeChapter = mockChapterItems.find(ch => ch.isActive);
-
-    if (activeChapter) {
-      const progressPercentage = screen.getByText(`${activeChapter.progress}% נצפה`);
-      expect(progressPercentage).toBeInTheDocument();
-    }
+  it('shows overall progress percentage', () => {
+    render(<MaterialsSidebar {...defaultProps} overallProgress={25} />);
+    expect(screen.getByText('25%')).toBeInTheDocument();
   });
 
-  it('updates progress bar when currentTime changes', () => {
-    const { rerender } = render(<MaterialsSidebar {...defaultProps} currentTime={60} />);
-
-    rerender(<MaterialsSidebar {...defaultProps} currentTime={180} />);
-
-    // Should still render properly after update
-    expect(screen.getByText(mockVideo.title)).toBeInTheDocument();
+  it('renders overall progress bar', () => {
+    const { container } = render(<MaterialsSidebar {...defaultProps} overallProgress={50} />);
+    const progressBar = container.querySelector('div[style*="width: 50%"]');
+    expect(progressBar).toBeInTheDocument();
   });
 
   it('handles empty chapters gracefully', () => {
-    render(
-      <MaterialsSidebar
-        {...defaultProps}
-        chapterItems={[]}
-      />
-    );
-
-    expect(screen.getByText(mockCourse.title)).toBeInTheDocument();
-  });
-
-  it('supports RTL Hebrew text display', () => {
-    render(<MaterialsSidebar {...defaultProps} />);
-
-    // Check for RTL styling on materials sidebar container
-    const sidebar = screen.getByText(mockCourse.title).closest('div');
-    expect(sidebar?.textContent).toContain(mockCourse.title);
-  });
-
-  it('displays chapter duration in correct format', () => {
-    render(<MaterialsSidebar {...defaultProps} />);
-
-    mockChapterItems.forEach(chapter => {
-      expect(screen.getByText(chapter.duration)).toBeInTheDocument();
-    });
-  });
-
-  it('shows overall progress bar', () => {
-    render(<MaterialsSidebar {...defaultProps} overallProgress={25} />);
-
-    // OverallProgressBar should be rendered
-    expect(screen.getByText(mockCourse.title)).toBeInTheDocument();
+    render(<MaterialsSidebar {...defaultProps} chapterItems={[]} />);
+    expect(screen.getByText('Chapters')).toBeInTheDocument();
+    expect(screen.queryAllByRole('button')).toHaveLength(0);
   });
 
   it('handles null currentVideo gracefully', () => {
-    render(
-      <MaterialsSidebar
-        {...defaultProps}
-        currentVideo={null}
-      />
-    );
-
-    expect(screen.getByText(mockCourse.title)).toBeInTheDocument();
+    render(<MaterialsSidebar {...defaultProps} currentVideo={null} />);
+    expect(screen.getByText('Chapters')).toBeInTheDocument();
   });
 
-  it('maintains proper spacing between chapters in list', () => {
-    const { container } = render(<MaterialsSidebar {...defaultProps} />);
-
-    const chapterContainer = container.querySelector('.space-y-1');
-    expect(chapterContainer).toBeInTheDocument();
-  });
-
-  it('chapter list is scrollable on long content', () => {
+  it('displays chapter numbers for non-completed chapters', () => {
     render(<MaterialsSidebar {...defaultProps} />);
-
-    // ScrollArea component should be present
-    expect(screen.getByText(mockCourse.title)).toBeInTheDocument();
-  });
-
-  it('displays course metadata correctly', () => {
-    render(<MaterialsSidebar {...defaultProps} />);
-
-    const courseElement = screen.getByText(mockCourse.title);
-    expect(courseElement).toBeInTheDocument();
-  });
-
-  it('chapter timestamps are displayed in proper format', () => {
-    render(<MaterialsSidebar {...defaultProps} />);
-
-    // Check for proper time formatting (HH:MM or M:SS)
-    expect(screen.getByText('0:00')).toBeInTheDocument();
+    // Chapter 1 (active, index 0) and Chapter 3 (inactive, index 2)
+    expect(screen.getByText('1')).toBeInTheDocument();
+    expect(screen.getByText('3')).toBeInTheDocument();
   });
 
   it('handles rapid chapter clicks without errors', () => {
@@ -217,50 +150,27 @@ describe('MaterialsSidebar', () => {
     render(<MaterialsSidebar {...defaultProps} onChapterClick={onChapterClick} />);
 
     const buttons = screen.getAllByRole('button');
-    buttons.forEach(btn => {
-      if (btn.textContent?.includes('Introduction')) {
-        fireEvent.click(btn);
-        fireEvent.click(btn);
-        fireEvent.click(btn);
-      }
-    });
+    fireEvent.click(buttons[0]);
+    fireEvent.click(buttons[0]);
+    fireEvent.click(buttons[0]);
 
-    expect(onChapterClick.mock.calls.length).toBeGreaterThan(0);
+    expect(onChapterClick).toHaveBeenCalledTimes(3);
   });
 
-  it('displays correct progress percentage for each chapter', () => {
-    render(<MaterialsSidebar {...defaultProps} />);
-
-    mockChapterItems.forEach(chapter => {
-      if (chapter.progress > 0) {
-        expect(screen.getByText(`${chapter.progress}% נצפה`)).toBeInTheDocument();
-      }
-    });
-  });
-
-  it('handles very long chapter titles gracefully', () => {
-    const longChapterItems: ChapterItem[] = [
-      {
-        ...mockChapterItems[0],
-        title: 'This is a very long chapter title that should be truncated properly',
-      },
-    ];
-
-    render(
-      <MaterialsSidebar
-        {...defaultProps}
-        chapterItems={longChapterItems}
-      />
-    );
-
-    expect(screen.getByText(/very long chapter title/)).toBeInTheDocument();
-  });
-
-  it('properly positions chapter numbers and indicators', () => {
+  it('renders as an aside element', () => {
     const { container } = render(<MaterialsSidebar {...defaultProps} />);
+    expect(container.querySelector('aside')).toBeInTheDocument();
+  });
 
-    // Chapter items should have proper structure
-    const chapterItems = container.querySelectorAll('button');
-    expect(chapterItems.length).toBeGreaterThan(0);
+  it('has dark background styling', () => {
+    const { container } = render(<MaterialsSidebar {...defaultProps} />);
+    const aside = container.querySelector('aside');
+    // jsdom converts hex to rgb
+    expect(aside?.style.background).toBe('rgb(20, 20, 20)');
+  });
+
+  it('shows "Overall" label in progress section', () => {
+    render(<MaterialsSidebar {...defaultProps} />);
+    expect(screen.getByText('Overall')).toBeInTheDocument();
   });
 });

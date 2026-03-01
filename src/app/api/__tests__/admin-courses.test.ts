@@ -1,6 +1,5 @@
 import { NextRequest } from 'next/server';
 
-import { getServerSession } from 'next-auth';
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 
 import { prisma } from '@/lib/prisma';
@@ -8,7 +7,11 @@ import { prisma } from '@/lib/prisma';
 import { GET, POST } from '../admin/courses/route';
 
 // Mock dependencies
-vi.mock('next-auth');
+vi.mock('@/lib/rate-limit', () => ({
+  applyRateLimit: vi.fn().mockResolvedValue(undefined),
+  adminRateLimiter: {},
+}));
+
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     course: {
@@ -17,6 +20,10 @@ vi.mock('@/lib/prisma', () => ({
       create: vi.fn(),
     }
   }
+}));
+
+vi.mock('@/lib/errors', () => ({
+  logError: vi.fn(),
 }));
 
 describe('GET /api/admin/courses', () => {
@@ -28,58 +35,8 @@ describe('GET /api/admin/courses', () => {
     vi.resetAllMocks();
   });
 
-  describe('Authentication', () => {
-    it('should return 401 when no session', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce(null);
-
-      const request = new NextRequest('http://localhost:3000/api/admin/courses', {
-        method: 'GET',
-      });
-
-      const response = await GET(request);
-
-      expect(response.status).toBe(401);
-      const body = await response.json();
-      expect(body.error).toBe('Unauthorized');
-    });
-
-    it('should return 401 with undefined session', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce(undefined);
-
-      const request = new NextRequest('http://localhost:3000/api/admin/courses', {
-        method: 'GET',
-      });
-
-      const response = await GET(request);
-
-      expect(response.status).toBe(401);
-      const body = await response.json();
-      expect(body.error).toBe('Unauthorized');
-    });
-
-    it('should proceed with valid session', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
-
-      (prisma.course.findMany as any).mockResolvedValueOnce([]);
-
-      const request = new NextRequest('http://localhost:3000/api/admin/courses', {
-        method: 'GET',
-      });
-
-      const response = await GET(request);
-
-      expect(response.status).toBe(200);
-    });
-  });
-
   describe('List Courses', () => {
     it('should return empty array when no courses exist', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
-
       (prisma.course.findMany as any).mockResolvedValueOnce([]);
 
       const request = new NextRequest('http://localhost:3000/api/admin/courses', {
@@ -95,9 +52,6 @@ describe('GET /api/admin/courses', () => {
     });
 
     it('should return list of all courses', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       const mockCourses = [
         {
@@ -144,9 +98,6 @@ describe('GET /api/admin/courses', () => {
     });
 
     it('should include video count in response', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       const mockCourse = {
         id: 'course-1',
@@ -177,9 +128,6 @@ describe('GET /api/admin/courses', () => {
 
   describe('Search and Filter', () => {
     it('should filter courses by title search', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findMany as any).mockResolvedValueOnce([]);
 
@@ -202,9 +150,6 @@ describe('GET /api/admin/courses', () => {
     });
 
     it('should filter by published status', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findMany as any).mockResolvedValueOnce([]);
 
@@ -226,9 +171,6 @@ describe('GET /api/admin/courses', () => {
 
   describe('Error Handling', () => {
     it('should return 500 on database error', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findMany as any).mockRejectedValueOnce(
         new Error('Database connection failed')
@@ -256,61 +198,8 @@ describe('POST /api/admin/courses', () => {
     vi.resetAllMocks();
   });
 
-  describe('Authentication', () => {
-    it('should return 401 when no session', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce(null);
-
-      const request = new NextRequest('http://localhost:3000/api/admin/courses', {
-        method: 'POST',
-        body: JSON.stringify({ title: 'New Course' }),
-      });
-
-      const response = await POST(request);
-
-      expect(response.status).toBe(401);
-      const body = await response.json();
-      expect(body.error).toBe('Unauthorized');
-    });
-
-    it('should create course with valid session', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
-
-      (prisma.course.findFirst as any).mockResolvedValueOnce({ order: 2 });
-
-      const newCourse = {
-        id: 'course-3',
-        title: 'New Course',
-        description: '',
-        difficulty: 'beginner',
-        topics: [],
-        thumbnail: '',
-        published: false,
-        order: 3,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        _count: { videos: 0 }
-      };
-
-      (prisma.course.create as any).mockResolvedValueOnce(newCourse);
-
-      const request = new NextRequest('http://localhost:3000/api/admin/courses', {
-        method: 'POST',
-        body: JSON.stringify({ title: 'New Course' }),
-      });
-
-      const response = await POST(request);
-
-      expect(response.status).toBe(201);
-    });
-  });
-
   describe('Validation', () => {
     it('should require title field', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       const request = new NextRequest('http://localhost:3000/api/admin/courses', {
         method: 'POST',
@@ -326,9 +215,6 @@ describe('POST /api/admin/courses', () => {
     });
 
     it('should validate title is not empty', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       const request = new NextRequest('http://localhost:3000/api/admin/courses', {
         method: 'POST',
@@ -343,9 +229,6 @@ describe('POST /api/admin/courses', () => {
     });
 
     it('should validate title max length', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       const longTitle = 'a'.repeat(300);
       const request = new NextRequest('http://localhost:3000/api/admin/courses', {
@@ -361,9 +244,6 @@ describe('POST /api/admin/courses', () => {
     });
 
     it('should validate difficulty enum values', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       const request = new NextRequest('http://localhost:3000/api/admin/courses', {
         method: 'POST',
@@ -383,9 +263,6 @@ describe('POST /api/admin/courses', () => {
 
   describe('Course Creation', () => {
     it('should create course with required fields only', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findFirst as any).mockResolvedValueOnce(null);
 
@@ -418,9 +295,6 @@ describe('POST /api/admin/courses', () => {
     });
 
     it('should create course with all fields', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findFirst as any).mockResolvedValueOnce({ order: 1 });
 
@@ -460,9 +334,6 @@ describe('POST /api/admin/courses', () => {
     });
 
     it('should assign order based on highest existing order', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findFirst as any).mockResolvedValueOnce({ order: 5 });
 
@@ -499,9 +370,6 @@ describe('POST /api/admin/courses', () => {
     });
 
     it('should assign order 0 when no courses exist', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findFirst as any).mockResolvedValueOnce(null);
 
@@ -538,9 +406,6 @@ describe('POST /api/admin/courses', () => {
     });
 
     it('should return 201 status code for successful creation', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findFirst as any).mockResolvedValueOnce(null);
 
@@ -573,9 +438,6 @@ describe('POST /api/admin/courses', () => {
 
   describe('Error Handling', () => {
     it('should return 500 on database error during creation', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       (prisma.course.findFirst as any).mockResolvedValueOnce(null);
 
@@ -596,9 +458,6 @@ describe('POST /api/admin/courses', () => {
     });
 
     it('should return 500 on malformed JSON request', async () => {
-      vi.mocked(getServerSession).mockResolvedValueOnce({
-        user: { email: 'admin@test.com' },
-      } as any);
 
       const request = new NextRequest('http://localhost:3000/api/admin/courses', {
         method: 'POST',

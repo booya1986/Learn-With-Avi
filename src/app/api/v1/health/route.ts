@@ -13,9 +13,9 @@ import { type NextRequest, NextResponse } from 'next/server'
 
 import { getToken } from 'next-auth/jwt'
 
+import { getCacheStats } from '@/lib/cache'
 import { hasApiKey, getConfig } from '@/lib/config'
 import { getEmbeddingCacheStats } from '@/lib/embeddings'
-import { getCacheStats } from '@/lib/queries'
 import { getRedisHealth } from '@/lib/redis'
 
 interface ServiceStatus {

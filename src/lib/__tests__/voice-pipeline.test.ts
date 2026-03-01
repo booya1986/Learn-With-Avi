@@ -176,21 +176,24 @@ describe('generateTTSAudio()', () => {
   })
 
   it('returns audioUrl on successful TTS response', async () => {
+    const audioBytes = new Uint8Array([0x49, 0x44, 0x33]) // fake MP3 header
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ audioUrl: 'data:audio/mp3;base64,abc123' }),
-    } as Response)
+      headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+      arrayBuffer: async () => audioBytes.buffer,
+    } as unknown as Response)
 
     const result = await generateTTSAudio('Hello world', 'en')
     expect(result).toHaveProperty('audioUrl')
-    expect(result.audioUrl).toBe('data:audio/mp3;base64,abc123')
+    expect(result.audioUrl).toMatch(/^data:audio\/mpeg;base64,/)
   })
 
   it('returns empty object when TTS API returns non-ok response', async () => {
     global.fetch = vi.fn().mockResolvedValueOnce({
       ok: false,
       status: 500,
-    } as Response)
+      headers: new Headers(),
+    } as unknown as Response)
 
     const result = await generateTTSAudio('Hello world', 'en')
     expect(result).toEqual({})
@@ -203,16 +206,18 @@ describe('generateTTSAudio()', () => {
   })
 
   it('sends correct payload to TTS endpoint', async () => {
+    const audioBytes = new Uint8Array([0x49, 0x44, 0x33])
     const fetchMock = vi.fn().mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ audioUrl: 'data:audio/mp3;base64,test' }),
-    } as Response)
+      headers: new Headers({ 'Content-Type': 'audio/mpeg' }),
+      arrayBuffer: async () => audioBytes.buffer,
+    } as unknown as Response)
     global.fetch = fetchMock
 
     await generateTTSAudio('Test text', 'he')
 
     expect(fetchMock).toHaveBeenCalledWith(
-      expect.stringContaining('/api/voice/tts'),
+      expect.stringContaining('/api/v1/voice/tts'),
       expect.objectContaining({
         method: 'POST',
         headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
