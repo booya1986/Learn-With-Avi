@@ -1,5 +1,7 @@
 import { NextRequest } from 'next/server'
+
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+
 import { ValidationError, RateLimitError } from '@/lib/errors'
 import { applyRateLimit, voiceRateLimiter } from '@/lib/rate-limit'
 
@@ -272,15 +274,23 @@ describe('POST /api/v1/voice/tts', () => {
       expect(body.success).toBe(true)
     })
 
-    it('should accept elevenlabs provider', async () => {
+    it('should accept elevenlabs provider and return audio/mpeg stream', async () => {
       const mockApplyRateLimit = vi.mocked(applyRateLimit)
       mockApplyRateLimit.mockResolvedValueOnce(undefined)
 
-      // Mock fetch for ElevenLabs API
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(100)),
+      // Simulate ElevenLabs streaming response
+      const audioStream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new Uint8Array([0xff, 0xfb, 0x10]))
+          controller.close()
+        },
       })
+      global.fetch = vi.fn().mockResolvedValue(
+        new Response(audioStream, {
+          status: 200,
+          headers: { 'Content-Type': 'audio/mpeg' },
+        })
+      )
 
       const request = new NextRequest('http://localhost:3000/api/v1/voice/tts', {
         method: 'POST',
@@ -295,9 +305,9 @@ describe('POST /api/v1/voice/tts', () => {
       })
 
       const response = await POST(request)
-      const body = await response.json()
 
-      expect(body.provider).toBeDefined()
+      expect(response.status).toBe(200)
+      expect(response.headers.get('Content-Type')).toBe('audio/mpeg')
     })
   })
 
@@ -413,6 +423,23 @@ describe('POST /api/v1/voice/tts', () => {
   })
 
   describe('ElevenLabs Integration', () => {
+    /**
+     * Helper: build a mock streaming Response that simulates the ElevenLabs
+     * /stream endpoint returning audio/mpeg chunks.
+     */
+    function makeStreamingAudioResponse(bytes: Uint8Array = new Uint8Array([0xff, 0xfb, 0x10])): Response {
+      const stream = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(bytes)
+          controller.close()
+        },
+      })
+      return new Response(stream, {
+        status: 200,
+        headers: { 'Content-Type': 'audio/mpeg' },
+      })
+    }
+
     it('should fallback to browser TTS when ElevenLabs is not configured', async () => {
       const mockApplyRateLimit = vi.mocked(applyRateLimit)
       mockApplyRateLimit.mockResolvedValueOnce(undefined)
@@ -441,21 +468,17 @@ describe('POST /api/v1/voice/tts', () => {
       expect(body.provider).toBe('browser')
     })
 
-    it('should call ElevenLabs API when configured', async () => {
+    it('should stream audio/mpeg when ElevenLabs responds successfully', async () => {
       const mockApplyRateLimit = vi.mocked(applyRateLimit)
       mockApplyRateLimit.mockResolvedValueOnce(undefined)
 
-      // Mock fetch for ElevenLabs API
-      const mockFetch = vi.fn().mockResolvedValue({
-        ok: true,
-        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(100)),
-      })
-      global.fetch = mockFetch
+      // Simulate ElevenLabs /stream returning chunked audio/mpeg
+      global.fetch = vi.fn().mockResolvedValue(makeStreamingAudioResponse())
 
       const request = new NextRequest('http://localhost:3000/api/v1/voice/tts', {
         method: 'POST',
         body: JSON.stringify({
-          text: 'Hello',
+          text: 'שלום עולם',
           provider: 'elevenlabs',
         }),
         headers: {
@@ -466,22 +489,114 @@ describe('POST /api/v1/voice/tts', () => {
 
       const response = await POST(request)
 
-      expect(response.status).toBeDefined()
+      // The route must stream raw audio, not JSON
+      expect(response.status).toBe(200)
+      expect(response.headers.get('Content-Type')).toBe('audio/mpeg')
+      expect(response.headers.get('X-TTS-Provider')).toBe('elevenlabs')
     })
 
-    it('should fallback to browser TTS on ElevenLabs API error', async () => {
+    it('should include X-TTS-Provider header on successful ElevenLabs stream', async () => {
       const mockApplyRateLimit = vi.mocked(applyRateLimit)
       mockApplyRateLimit.mockResolvedValueOnce(undefined)
 
-      // Mock fetch that fails
-      global.fetch = vi.fn().mockRejectedValue(new Error('API error'))
+      global.fetch = vi.fn().mockResolvedValue(makeStreamingAudioResponse())
 
       const request = new NextRequest('http://localhost:3000/api/v1/voice/tts', {
         method: 'POST',
-        body: JSON.stringify({
-          text: 'Hello',
-          provider: 'elevenlabs',
-        }),
+        body: JSON.stringify({ text: 'Hello', provider: 'elevenlabs' }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-forwarded-for': '127.0.0.1',
+        },
+      })
+
+      const response = await POST(request)
+      expect(response.headers.get('X-TTS-Provider')).toBe('elevenlabs')
+    })
+
+    it('should use the /stream endpoint on ElevenLabs for low latency', async () => {
+      const mockApplyRateLimit = vi.mocked(applyRateLimit)
+      mockApplyRateLimit.mockResolvedValueOnce(undefined)
+
+      const mockFetch = vi.fn().mockResolvedValue(makeStreamingAudioResponse())
+      global.fetch = mockFetch
+
+      const request = new NextRequest('http://localhost:3000/api/v1/voice/tts', {
+        method: 'POST',
+        body: JSON.stringify({ text: 'Hello', provider: 'elevenlabs' }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-forwarded-for': '127.0.0.1',
+        },
+      })
+
+      await POST(request)
+
+      // Confirm the /stream variant is called
+      const calledUrl = (mockFetch.mock.calls[0] as [string, ...unknown[]])[0]
+      expect(calledUrl).toContain('/stream')
+    })
+
+    it('should fallback to browser TTS on ElevenLabs non-ok status', async () => {
+      const mockApplyRateLimit = vi.mocked(applyRateLimit)
+      mockApplyRateLimit.mockResolvedValueOnce(undefined)
+
+      global.fetch = vi.fn().mockResolvedValue(
+        new Response('{"detail": "quota_exceeded"}', {
+          status: 429,
+          headers: { 'Content-Type': 'application/json' },
+        })
+      )
+
+      const request = new NextRequest('http://localhost:3000/api/v1/voice/tts', {
+        method: 'POST',
+        body: JSON.stringify({ text: 'Hello', provider: 'elevenlabs' }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-forwarded-for': '127.0.0.1',
+        },
+      })
+
+      const response = await POST(request)
+      const body = await response.json()
+
+      expect(body.provider).toBe('browser')
+      expect(body.success).toBe(true)
+    })
+
+    it('should fallback to browser TTS on ElevenLabs network error', async () => {
+      const mockApplyRateLimit = vi.mocked(applyRateLimit)
+      mockApplyRateLimit.mockResolvedValueOnce(undefined)
+
+      global.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
+
+      const request = new NextRequest('http://localhost:3000/api/v1/voice/tts', {
+        method: 'POST',
+        body: JSON.stringify({ text: 'Hello', provider: 'elevenlabs' }),
+        headers: {
+          'Content-Type': 'application/json',
+          'x-forwarded-for': '127.0.0.1',
+        },
+      })
+
+      const response = await POST(request)
+      const body = await response.json()
+
+      expect(body.provider).toBe('browser')
+      expect(body.success).toBe(true)
+    })
+
+    it('should fallback to browser TTS on AbortController timeout', async () => {
+      const mockApplyRateLimit = vi.mocked(applyRateLimit)
+      mockApplyRateLimit.mockResolvedValueOnce(undefined)
+
+      const abortError = new Error('The operation was aborted')
+      abortError.name = 'AbortError'
+      global.fetch = vi.fn().mockRejectedValue(abortError)
+
+      const request = new NextRequest('http://localhost:3000/api/v1/voice/tts', {
+        method: 'POST',
+        body: JSON.stringify({ text: 'Hello', provider: 'elevenlabs' }),
         headers: {
           'Content-Type': 'application/json',
           'x-forwarded-for': '127.0.0.1',
@@ -494,33 +609,27 @@ describe('POST /api/v1/voice/tts', () => {
       expect(body.provider).toBe('browser')
     })
 
-    it('should return audio URL for successful ElevenLabs request', async () => {
+    it('should send eleven_multilingual_v2 model for Hebrew support', async () => {
       const mockApplyRateLimit = vi.mocked(applyRateLimit)
       mockApplyRateLimit.mockResolvedValueOnce(undefined)
 
-      // Mock fetch for ElevenLabs API
-      global.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(100)),
-      })
+      const mockFetch = vi.fn().mockResolvedValue(makeStreamingAudioResponse())
+      global.fetch = mockFetch
 
       const request = new NextRequest('http://localhost:3000/api/v1/voice/tts', {
         method: 'POST',
-        body: JSON.stringify({
-          text: 'Hello',
-          provider: 'elevenlabs',
-        }),
+        body: JSON.stringify({ text: 'שלום', provider: 'elevenlabs' }),
         headers: {
           'Content-Type': 'application/json',
           'x-forwarded-for': '127.0.0.1',
         },
       })
 
-      const response = await POST(request)
-      const body = await response.json()
+      await POST(request)
 
-      // Should have audioUrl or fallback
-      expect(body.success).toBe(true)
+      const fetchCall = mockFetch.mock.calls[0] as [string, RequestInit]
+      const requestBody = JSON.parse(fetchCall[1].body as string) as { model_id: string }
+      expect(requestBody.model_id).toBe('eleven_multilingual_v2')
     })
   })
 

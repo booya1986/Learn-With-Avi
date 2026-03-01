@@ -85,6 +85,10 @@ export function buildContextString(chunks: TranscriptChunk[]): string {
 /**
  * Generate TTS audio for a response text using ElevenLabs.
  *
+ * When ELEVENLABS_API_KEY is configured the TTS route streams raw audio/mpeg
+ * chunks. This function buffers those chunks into a base64 data URL so the
+ * voice-chat pipeline can embed the audio directly in its JSON response.
+ *
  * Falls back to `{}` (no audio) if ElevenLabs is not configured or fails —
  * the client is expected to use browser TTS in that case.
  *
@@ -102,7 +106,7 @@ export async function generateTTSAudio(
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
-    const response = await fetch(`${baseUrl}/api/voice/tts`, {
+    const response = await fetch(`${baseUrl}/api/v1/voice/tts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, provider: 'elevenlabs', language }),
@@ -112,7 +116,17 @@ export async function generateTTSAudio(
       return {}
     }
 
-    const data = await response.json()
+    const contentType = response.headers.get('Content-Type') ?? ''
+
+    // Streaming path: ElevenLabs returned raw audio/mpeg chunks — buffer them
+    if (contentType.includes('audio/')) {
+      const audioBuffer = await response.arrayBuffer()
+      const base64Audio = Buffer.from(audioBuffer).toString('base64')
+      return { audioUrl: `data:audio/mpeg;base64,${base64Audio}` }
+    }
+
+    // Fallback path: route returned a JSON response (e.g. browser TTS fallback)
+    const data = (await response.json()) as { audioUrl?: string }
     return { audioUrl: data.audioUrl }
   } catch (error) {
     logError('TTS generation error in voice chat', error)
