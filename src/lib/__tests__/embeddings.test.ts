@@ -5,8 +5,9 @@
  * Covers cache behavior, retry logic, error handling, and cost optimization
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { createHash } from 'crypto'
+
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 
 import {
   getEmbedding,
@@ -78,7 +79,7 @@ vi.mock('../config', () => ({
 vi.mock('../errors', () => ({
   logError: vi.fn(),
   sanitizeError: vi.fn((error) => {
-    if (error instanceof Error) return error.message
+    if (error instanceof Error) {return error.message}
     return String(error)
   }),
 }))

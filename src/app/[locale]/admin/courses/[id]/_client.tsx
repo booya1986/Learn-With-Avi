@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 "use client";
 
 import * as React from "react";
@@ -161,7 +162,7 @@ export default function CourseVideosPageClient() {
 
   React.useEffect(() => {
     fetchCourse();
-  }, [params.id]);
+  }, [params.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCourse = async () => {
     try {

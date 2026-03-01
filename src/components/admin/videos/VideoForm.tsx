@@ -126,7 +126,7 @@ export const VideoForm = ({ videoId, initialData }: VideoFormProps) => {
 
   React.useEffect(() => {
     fetchCourses()
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const fetchCourses = async () => {
     try {

@@ -17,11 +17,20 @@ import { useVideoState } from '../useVideoState'
 
 
 const mockVideo: Video = {
+  id: 'test-id',
   youtubeId: 'test-video-id',
   title: 'Test Video',
   description: 'Test description',
   duration: 3600,
-  chapters: ['Ch1', 'Ch2', 'Ch3'],
+  thumbnail: '',
+  topic: 'test',
+  courseId: 'course-1',
+  order: 0,
+  chapters: [
+    { title: 'Ch1', startTime: 0, endTime: 600 },
+    { title: 'Ch2', startTime: 600, endTime: 1200 },
+    { title: 'Ch3', startTime: 1200, endTime: 1800 },
+  ],
 }
 
 describe('useVideoState Hook', () => {
@@ -326,18 +335,28 @@ describe('useVideoState Hook', () => {
   describe('Video Prop Changes', () => {
     it('should work with different video objects', () => {
       const video1: Video = {
+        id: 'v1',
         youtubeId: 'video-1',
         title: 'Video 1',
         description: 'Desc 1',
         duration: 1800,
-        chapters: ['A'],
+        thumbnail: '',
+        topic: 'test',
+        courseId: 'course-1',
+        order: 0,
+        chapters: [{ title: 'A', startTime: 0, endTime: 1800 }],
       }
       const video2: Video = {
+        id: 'v2',
         youtubeId: 'video-2',
         title: 'Video 2',
         description: 'Desc 2',
         duration: 3600,
-        chapters: ['B'],
+        thumbnail: '',
+        topic: 'test',
+        courseId: 'course-1',
+        order: 1,
+        chapters: [{ title: 'B', startTime: 0, endTime: 3600 }],
       }
 
       const { result, rerender } = renderHook(
@@ -361,7 +380,7 @@ describe('useVideoState Hook', () => {
       const { result, rerender } = renderHook(
         ({ video }) => useVideoState(video),
         {
-          initialProps: { video: mockVideo },
+          initialProps: { video: mockVideo as Video | null },
         }
       )
 

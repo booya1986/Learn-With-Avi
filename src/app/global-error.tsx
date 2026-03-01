@@ -35,7 +35,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
   }, [error]);
 
   return (
-    <html>
+    <html lang="en">
       <body className="font-sans antialiased bg-white dark:bg-gray-950 text-gray-900 dark:text-white min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center justify-center gap-6 p-8">
           <div className="rounded-full bg-red-100 dark:bg-red-900/30 p-4">

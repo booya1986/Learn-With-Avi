@@ -1,8 +1,9 @@
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
-import { useChat } from '../useChat'
 import { type ChatMessage, type TranscriptChunk } from '@/types'
+
+import { useChat } from '../useChat'
 
 /**
  * Mock fetch globally for testing

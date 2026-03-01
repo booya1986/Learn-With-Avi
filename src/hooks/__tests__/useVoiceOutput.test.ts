@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+
 import {
   useVoiceOutput,
   findVoicesForLanguage,
@@ -267,7 +268,7 @@ describe('useVoiceOutput', () => {
       })
 
       // Get and trigger the utterance onstart
-      let utterance = mockSpeechSynthesis.speak.mock.calls[0]?.[0]
+      const utterance = mockSpeechSynthesis.speak.mock.calls[0]?.[0]
 
       if (utterance?.onstart) {
         act(() => {

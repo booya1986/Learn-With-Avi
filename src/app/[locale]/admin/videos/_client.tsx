@@ -49,7 +49,7 @@ export default function VideosPageClient() {
 
   React.useEffect(() => {
     fetchVideos();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   React.useEffect(() => {
     if (searchQuery) {

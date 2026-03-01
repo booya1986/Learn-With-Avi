@@ -317,7 +317,7 @@ export function useQuizState(videoId: string | undefined): UseQuizStateReturn {
     if (status !== 'idle') {
       resetQuiz()
     }
-  }, [videoId]) // Only depend on videoId, not status or resetQuiz to avoid loops
+  }, [videoId]) // eslint-disable-line react-hooks/exhaustive-deps -- Only depend on videoId to avoid loops
 
   return {
     status,

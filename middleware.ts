@@ -1,6 +1,8 @@
-import createMiddleware from 'next-intl/middleware';
 import { NextRequest, NextResponse } from 'next/server';
+
 import { getToken } from 'next-auth/jwt';
+import createMiddleware from 'next-intl/middleware';
+
 import { routing } from './src/i18n/routing';
 import { warnDeprecatedRoute } from './src/lib/api-version';
 

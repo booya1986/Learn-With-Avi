@@ -103,7 +103,7 @@ export function useQuizSession(videoId: string | undefined): UseQuizSessionRetur
         }
       }
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * Clear session from localStorage

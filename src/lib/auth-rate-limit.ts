@@ -12,8 +12,8 @@
  */
 
 import { RateLimitError } from './errors';
-import { rateLimitCache, isRedisConnected } from './redis';
 import { getRequestIdentifier } from './rate-limit-store';
+import { rateLimitCache, isRedisConnected } from './redis';
 
 interface RateLimitEntry {
   count: number;
