@@ -5,8 +5,9 @@
  * Covers validation, rate limiting, Claude integration, and error handling
  */
 
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { NextRequest } from 'next/server'
+
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 
 import { RateLimitError } from '@/lib/errors'
 import { applyRateLimit, quizGenerateRateLimiter } from '@/lib/rate-limit'

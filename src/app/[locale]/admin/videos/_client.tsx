@@ -251,14 +251,14 @@ export default function VideosPageClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Videos</h1>
-          <p className="mt-2 text-white/70">
+          <h1 className="text-2xl font-bold text-white md:text-3xl">Videos</h1>
+          <p className="mt-1 text-white/70 md:mt-2">
             Manage your video library and content
           </p>
         </div>
-        <Button asChild variant="orbyto-primary" size="orbyto">
+        <Button asChild variant="orbyto-primary" size="orbyto" className="self-start">
           <Link href={`/${locale}/admin/videos/new`}>
             <Plus className="me-2 h-4 w-4" />
             Add Video
@@ -266,7 +266,7 @@ export default function VideosPageClient() {
         </Button>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3 md:gap-4">
         <SearchInput
           value={searchQuery}
           onChange={setSearchQuery}

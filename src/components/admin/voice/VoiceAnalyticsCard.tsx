@@ -105,7 +105,8 @@ export const VoiceAnalyticsCard = () => {
 
   return (
     <GlassCard variant="dark" padding="none" className="col-span-2">
-      <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
+      {/* Card header — stacks on very small screens */}
+      <div className="flex flex-col gap-3 border-b border-white/10 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <div className="flex items-center gap-2">
           <div className="rounded-full bg-white/10 p-2">
             <Mic className="h-4 w-4 text-white" />
@@ -114,14 +115,14 @@ export const VoiceAnalyticsCard = () => {
         </div>
 
         {/* Period selector */}
-        <div className="flex gap-1 rounded-lg bg-white/5 p-1">
+        <div className="flex gap-1 rounded-lg bg-white/5 p-1 self-start sm:self-auto">
           {(Object.keys(periodLabels) as Period[]).map((p) => (
             <button
               key={p}
               type="button"
               onClick={() => setPeriod(p)}
               className={[
-                'rounded-md px-3 py-1 text-xs font-medium transition-colors',
+                'min-h-[36px] rounded-md px-3 py-1 text-xs font-medium transition-colors',
                 p === period
                   ? 'bg-green-500/20 text-green-400'
                   : 'text-white/50 hover:text-white/80',
@@ -133,7 +134,7 @@ export const VoiceAnalyticsCard = () => {
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-4 sm:p-6">
         {loading ? <div className="flex h-32 items-center justify-center text-sm text-white/40">
             Loading analytics...
           </div> : null}
@@ -142,7 +143,7 @@ export const VoiceAnalyticsCard = () => {
             {error}
           </div> : null}
 
-        {data && !loading ? <div className="grid gap-6 sm:grid-cols-3">
+        {data && !loading ? <div className="grid gap-4 sm:gap-6 sm:grid-cols-3">
             {/* Sessions count */}
             <div className="space-y-1">
               <p className="text-xs font-medium uppercase tracking-wider text-white/40">

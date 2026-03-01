@@ -68,10 +68,10 @@ describe('Progress', () => {
 
   it('has gradient fill styling', () => {
     const { container } = render(<Progress value={50} />)
-    const fillBar = container.querySelector('[role="progressbar"] > div')
-    expect(fillBar).toHaveClass('bg-gradient-to-r')
-    expect(fillBar).toHaveClass('from-blue-500')
-    expect(fillBar).toHaveClass('to-indigo-600')
+    const fillBar = container.querySelector('[role="progressbar"] > div') as HTMLElement
+    // Progress uses inline style with green gradient
+    expect(fillBar?.style.background).toContain('linear-gradient')
+    expect(fillBar?.style.background).toContain('#22c55e')
   })
 
   it('has transition animation', () => {

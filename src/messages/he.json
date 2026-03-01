@@ -34,7 +34,29 @@
     "courses": {
       "title": "הקורסים שלנו",
       "subtitle": "התחל ללמוד היום",
-      "available": "זמינים"
+      "available": "זמינים",
+      "search": {
+        "placeholder": "חיפוש קורסים...",
+        "clear": "נקה"
+      },
+      "filter": {
+        "all": "הכל",
+        "difficulty": "רמה",
+        "topics": "נושאים",
+        "beginner": "מתחיל",
+        "intermediate": "בינוני",
+        "advanced": "מתקדם"
+      },
+      "sort": {
+        "label": "מיין לפי",
+        "default": "ברירת מחדל",
+        "newest": "חדש ביותר",
+        "titleAZ": "כותרת א–ת"
+      },
+      "empty": {
+        "title": "לא נמצאו קורסים התואמים לסינון",
+        "clearFilters": "נקה סינון"
+      }
     },
     "about": {
       "title": "הצטרף לאלפי מפתחים שמשלטים ב-AI",
@@ -85,6 +107,27 @@
       "button": "התחל ניסיון בחינם",
       "trialTerms": "ניסיון 7 ימים בחינם • ביטול בכל עת • לא נדרש כרטיס אשראי"
     }
+  },
+  "dashboard": {
+    "greeting": "ברוך שובך, {name}!",
+    "subtitle": "עקוב אחר ההתקדמות שלך וחזור ממש מהיכן שעצרת.",
+    "statsLabel": "סטטיסטיקות למידה",
+    "statEnrolled": "קורסים רשומים",
+    "statCoursesCompleted": "קורסים שהושלמו",
+    "statCompleted": "סרטונים שהושלמו",
+    "statTotal": "סה\"כ סרטונים",
+    "continueLearning": "המשך ללמוד",
+    "allCourses": "הקורסים שלי",
+    "coursesCount": "קורסים",
+    "resume": "המשך",
+    "resumeCourse": "המשך קורס",
+    "videosCompleted": "{completed} מתוך {total} סרטונים הושלמו",
+    "discoverTitle": "מחפש עוד לחקור?",
+    "discoverSubtitle": "עיין בקטלוג המלא שלנו והירשם לקורסים חדשים.",
+    "browseCourses": "עיין בקורסים",
+    "emptyTitle": "עדיין אין קורסים",
+    "emptySubtitle": "לא נרשמת לאף קורס עדיין. עיין בקטלוג והתחל ללמוד היום!",
+    "retry": "נסה שנית"
   },
   "footer": {
     "tagline": "פלטפורמת למידה אינטראקטיבית מבוססת AI",

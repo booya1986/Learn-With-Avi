@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server';
 
-import { CourseCard } from "@/components/CourseCard";
+import { CourseCatalog } from "@/components/course/CourseCatalog";
 import { HeroCTAButtons } from "@/components/HeroCTAButtons";
 import { getCourses } from "@/data/courses";
 
@@ -17,9 +17,10 @@ export default async function Home({
   const t = await getTranslations({ locale, namespace: 'homepage' });
 
   return (
-    <div style={{ background: '#1b1b1b', minHeight: '100vh', color: '#e5e5e5' }}>
+    <main id="main-content" style={{ background: '#1b1b1b', minHeight: '100vh', color: '#e5e5e5' }}>
       {/* Hero Section */}
       <section
+        aria-label={t('hero.badge')}
         className="relative flex flex-col items-center justify-center text-center overflow-hidden"
         style={{
           minHeight: '75vh',
@@ -86,13 +87,14 @@ export default async function Home({
       </section>
 
       {/* Courses Section */}
-      <section id="courses" style={{ padding: '8px 40px 96px' }}>
+      <section id="courses" aria-labelledby="courses-heading" style={{ padding: '8px 40px 96px' }}>
         {/* Left-aligned heading matching Storybook */}
         <div
           className="flex items-baseline gap-4 mb-9"
           style={{ maxWidth: 1200, margin: '0 auto 36px' }}
         >
           <h2
+            id="courses-heading"
             style={{
               fontWeight: 700,
               color: '#e5e5e5',
@@ -116,15 +118,10 @@ export default async function Home({
           </span>
         </div>
 
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
-          style={{ maxWidth: 1200, margin: '0 auto' }}
-        >
-          {courses.map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <CourseCatalog courses={courses} />
         </div>
       </section>
-    </div>
+    </main>
   );
 }

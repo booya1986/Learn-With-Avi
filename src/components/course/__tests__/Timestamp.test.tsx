@@ -52,13 +52,13 @@ describe('Timestamp', () => {
   it('applies active state styling', () => {
     render(<Timestamp seconds={125} isActive />)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('bg-blue-500', 'text-white')
+    expect(button).toHaveClass('bg-green-500/20', 'border-green-500/40', 'text-green-300')
   })
 
   it('applies default state styling', () => {
     render(<Timestamp seconds={125} />)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('bg-gray-100', 'dark:bg-gray-800')
+    expect(button).toHaveClass('bg-white/5', 'border-white/10', 'text-white/60')
   })
 
   it('has correct ARIA label', () => {
@@ -119,7 +119,7 @@ describe('Timestamp', () => {
   it('has hover state when clickable', () => {
     render(<Timestamp seconds={125} onClick={() => {}} />)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('hover:bg-gray-200', 'dark:hover:bg-gray-700', 'cursor-pointer')
+    expect(button).toHaveClass('hover:bg-green-500/10', 'hover:border-green-500/25', 'cursor-pointer')
   })
 
   it('does not have hover state when not clickable', () => {
@@ -131,7 +131,7 @@ describe('Timestamp', () => {
   it('has focus-visible styles for accessibility', () => {
     render(<Timestamp seconds={125} onClick={() => {}} />)
     const button = screen.getByRole('button')
-    expect(button).toHaveClass('focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-blue-500')
+    expect(button).toHaveClass('focus-visible:outline-none', 'focus-visible:ring-2', 'focus-visible:ring-green-500')
   })
 
   it('forwards ref correctly', () => {

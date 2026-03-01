@@ -47,6 +47,12 @@ export type { UseRouteSyncReturn } from './course/useRouteSync'
 export { useCoursePageState } from './course/useCoursePageState'
 export type { UseCoursePageStateReturn } from './course/useCoursePageState'
 
+export { useProgressTracking } from './course/useProgressTracking'
+export type { UseProgressTrackingOptions, UseProgressTrackingReturn } from './course/useProgressTracking'
+
+export { useCourseProgress } from './course/useCourseProgress'
+export type { VideoProgressEntry, UseCourseProgressReturn } from './course/useCourseProgress'
+
 // Quiz Hooks
 export { useAdaptiveEngine, computeNextBloomLevel } from './quiz/useAdaptiveEngine'
 export type { AdaptiveResult, TopicMasteryData } from './quiz/useAdaptiveEngine'

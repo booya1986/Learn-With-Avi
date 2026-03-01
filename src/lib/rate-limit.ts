@@ -299,6 +299,16 @@ export const quizGenerateRateLimiter = createRateLimiter({
 })
 
 /**
+ * Rate limiter for quiz submit API: 10 requests per minute per IP
+ * (Submission is lightweight DB write — allow reasonable burst)
+ */
+export const quizSubmitRateLimiter = createRateLimiter({
+  maxRequests: 10,
+  windowMs: 60 * 1000, // 1 minute
+  message: 'יותר מדי שליחות חידון. אנא המתן כמה רגעים לפני שתנסה שוב.', // Too many quiz submissions
+})
+
+/**
  * Rate limiter for admin API: 30 requests per minute per IP
  * (Higher limit for admin but still protected against abuse)
  */
@@ -306,6 +316,16 @@ export const adminRateLimiter = createRateLimiter({
   maxRequests: 30,
   windowMs: 60 * 1000, // 1 minute
   message: 'Too many admin requests. Please wait before trying again.',
+})
+
+/**
+ * Rate limiter for progress API: 30 requests per minute per IP
+ * (Progress updates are frequent but inexpensive — allow reasonable bursts)
+ */
+export const progressRateLimiter = createRateLimiter({
+  maxRequests: 30,
+  windowMs: 60 * 1000, // 1 minute
+  message: 'Too many progress update requests. Please wait before trying again.',
 })
 
 /**

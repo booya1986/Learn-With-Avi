@@ -10,6 +10,7 @@ interface VideoPlayerSectionProps {
   currentChapter?: Chapter;
   onTimeUpdate: (time: number) => void;
   onDurationChange: (duration: number) => void;
+  onPause?: () => void;
   seekToTime?: number;
 }
 
@@ -18,6 +19,7 @@ export const VideoPlayerSection = ({
   currentVideo,
   onTimeUpdate,
   onDurationChange,
+  onPause,
   seekToTime,
 }: VideoPlayerSectionProps) => {
   return (
@@ -25,6 +27,7 @@ export const VideoPlayerSection = ({
       video={currentVideo}
       onTimeUpdate={onTimeUpdate}
       onDurationChange={onDurationChange}
+      onPause={onPause}
       seekToTime={seekToTime}
       className="w-full h-full"
     />

@@ -18,6 +18,7 @@ interface VideoPlayerProps {
   onTimeUpdate?: (time: number) => void
   onSeek?: (time: number) => void
   onDurationChange?: (duration: number) => void
+  onPause?: () => void
   seekToTime?: number
   className?: string
 }
@@ -27,6 +28,7 @@ export const VideoPlayer = ({
   onTimeUpdate,
   onSeek,
   onDurationChange,
+  onPause,
   seekToTime,
   className,
 }: VideoPlayerProps) => {
@@ -35,6 +37,7 @@ export const VideoPlayer = ({
     onTimeUpdate,
     onDurationChange,
     onSeek,
+    onPause,
   })
 
   const toggleMute = useCallback(() => {

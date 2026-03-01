@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 /**
  * Quiz State Hook
  *
@@ -7,13 +8,13 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 
-import { fetchJSON } from '@/lib/fetch-utils'
+import { fetchJSON, fetchWithTimeout } from '@/lib/fetch-utils'
 import { type QuizQuestion, type QuizAttemptRecord, type QuizSessionState } from '@/types'
 
 import { computeNextBloomLevel } from './useAdaptiveEngine'
 import { useQuizSession } from './useQuizSession'
 
-export type QuizStatus = 'idle' | 'loading' | 'question' | 'feedback' | 'complete'
+export type QuizStatus = 'idle' | 'loading' | 'question' | 'feedback' | 'submitting' | 'results' | 'complete'
 
 export interface QuizFeedbackData {
   isCorrect: boolean
@@ -23,6 +24,23 @@ export interface QuizFeedbackData {
   sourceTimeRange?: { start: number; end: number }
 }
 
+export interface QuizSubmitResult {
+  attemptId: string
+  score: number
+  correctCount: number
+  totalCount: number
+  nextBloomLevel: number
+}
+
+export interface QuizHistoryAttempt {
+  id: string
+  bloomLevel: number
+  score: number
+  questionsCount: number
+  correctCount: number
+  createdAt: string
+}
+
 export interface UseQuizStateReturn {
   status: QuizStatus
   currentQuestion: QuizQuestion | null
@@ -30,10 +48,17 @@ export interface UseQuizStateReturn {
   sessionState: QuizSessionState | null
   isLoading: boolean
   error: string | null
+  submitResult: QuizSubmitResult | null
+  historyAttempts: QuizHistoryAttempt[]
+  isLoadingHistory: boolean
   startQuiz: () => Promise<void>
   submitAnswer: (optionId: string) => void
   nextQuestion: () => Promise<void>
   resetQuiz: () => void
+  submitQuizToAPI: (videoId: string, courseId: string) => Promise<void>
+  fetchHistory: (videoId: string) => Promise<void>
+  retryQuiz: () => Promise<void>
+  startNextLevel: (bloomLevel: number) => Promise<void>
 }
 
 interface QuizGenerateRequest {
@@ -48,6 +73,21 @@ interface QuizGenerateResponse {
   questions: QuizQuestion[]
 }
 
+interface QuizSubmitAnswerPayload {
+  questionId: string
+  questionText: string
+  selectedOptionId: string
+  correctOptionId: string
+  isCorrect: boolean
+}
+
+interface QuizSubmitRequest {
+  videoId: string
+  courseId: string
+  bloomLevel: number
+  answers: QuizSubmitAnswerPayload[]
+}
+
 /**
  * Main quiz state management hook
  *
@@ -59,6 +99,9 @@ export function useQuizState(videoId: string | undefined): UseQuizStateReturn {
   const [error, setError] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<QuizFeedbackData | null>(null)
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion | null>(null)
+  const [submitResult, setSubmitResult] = useState<QuizSubmitResult | null>(null)
+  const [historyAttempts, setHistoryAttempts] = useState<QuizHistoryAttempt[]>([])
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
 
   // Session persistence
   const { sessionState, saveSession, clearSession, restoreSession } = useQuizSession(videoId)
@@ -143,6 +186,7 @@ export function useQuizState(videoId: string | undefined): UseQuizStateReturn {
 
       saveSession(newSession)
       setCurrentQuestion(questions[0])
+      setSubmitResult(null)
       setStatus('question')
     } catch (err) {
       console.error('Error starting quiz:', err)
@@ -293,6 +337,215 @@ export function useQuizState(videoId: string | undefined): UseQuizStateReturn {
   }, [sessionState, generateQuestions, saveSession])
 
   /**
+   * Submit a completed quiz session to the API for persistence.
+   * Gracefully skips persistence for unauthenticated users (401 response).
+   */
+  const submitQuizToAPI = useCallback(
+    async (vid: string, courseId: string) => {
+      if (!sessionState || sessionState.answers.length === 0) {return}
+
+      setStatus('submitting')
+      setError(null)
+
+      try {
+        // Build answer payload from session state + questions map
+        const questionsMap = new Map(sessionState.questions.map((q) => [q.id, q]))
+
+        const answers: QuizSubmitAnswerPayload[] = sessionState.answers.map((record) => {
+          const question = questionsMap.get(record.questionId)
+          return {
+            questionId: record.questionId,
+            questionText: question?.questionText ?? '',
+            selectedOptionId: record.answer,
+            correctOptionId: question?.correctAnswer ?? '',
+            isCorrect: record.isCorrect,
+          }
+        })
+
+        const requestBody: QuizSubmitRequest = {
+          videoId: vid,
+          courseId,
+          bloomLevel: sessionState.currentBloom,
+          answers,
+        }
+
+        const response = await fetchWithTimeout(
+          '/api/v1/quiz/submit',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody),
+          },
+          15000
+        )
+
+        if (response.status === 401) {
+          // Unauthenticated - compute results locally without persistence
+          const totalCount = sessionState.answers.length
+          const correctCount = sessionState.answers.filter((a) => a.isCorrect).length
+          const score = totalCount > 0 ? correctCount / totalCount : 0
+          const nextBloom = Math.min(
+            4,
+            Math.max(
+              1,
+              score >= 2 / 3
+                ? sessionState.currentBloom + 1
+                : score <= 1 / 3
+                  ? sessionState.currentBloom - 1
+                  : sessionState.currentBloom
+            )
+          )
+          setSubmitResult({
+            attemptId: 'local',
+            score,
+            correctCount,
+            totalCount,
+            nextBloomLevel: nextBloom,
+          })
+          setStatus('results')
+          return
+        }
+
+        if (!response.ok) {
+          throw new Error(`Submit failed: HTTP ${response.status}`)
+        }
+
+        const result = (await response.json()) as QuizSubmitResult
+        setSubmitResult(result)
+        setStatus('results')
+      } catch (err) {
+        console.error('Error submitting quiz:', err)
+        // Fall back to local scoring so the user still sees results
+        const totalCount = sessionState.answers.length
+        const correctCount = sessionState.answers.filter((a) => a.isCorrect).length
+        const score = totalCount > 0 ? correctCount / totalCount : 0
+        setSubmitResult({
+          attemptId: 'local',
+          score,
+          correctCount,
+          totalCount,
+          nextBloomLevel: sessionState.currentBloom,
+        })
+        setStatus('results')
+      }
+    },
+    [sessionState]
+  )
+
+  /**
+   * Fetch quiz history for the current video
+   */
+  const fetchHistory = useCallback(async (vid: string) => {
+    setIsLoadingHistory(true)
+    try {
+      const data = await fetchJSON<{ attempts: QuizHistoryAttempt[] }>(
+        `/api/v1/quiz/history?videoId=${encodeURIComponent(vid)}`,
+        undefined,
+        10000
+      )
+      setHistoryAttempts(data.attempts)
+    } catch (err) {
+      // History is non-critical; silently fail (unauthenticated users get 401)
+      console.error('Error fetching quiz history:', err)
+      setHistoryAttempts([])
+    } finally {
+      setIsLoadingHistory(false)
+    }
+  }, [])
+
+  /**
+   * Retry the quiz at the same bloom level
+   */
+  const retryQuiz = useCallback(async () => {
+    clearSession()
+    setCurrentQuestion(null)
+    setFeedback(null)
+    setError(null)
+    setSubmitResult(null)
+    setStatus('loading')
+
+    if (!videoId) {
+      setStatus('idle')
+      return
+    }
+
+    try {
+      const currentBloom = submitResult?.nextBloomLevel ?? 1
+      const questions = await generateQuestions(currentBloom)
+
+      if (!questions || questions.length === 0) {
+        throw new Error('No questions generated. Please try again.')
+      }
+
+      const newSession: QuizSessionState = {
+        videoId,
+        currentBloom,
+        questions,
+        currentIndex: 0,
+        answers: [],
+        topicMastery: {},
+        streak: 0,
+        bestStreak: 0,
+      }
+
+      saveSession(newSession)
+      setCurrentQuestion(questions[0])
+      setStatus('question')
+    } catch (err) {
+      console.error('Error retrying quiz:', err)
+      setError(err instanceof Error ? err.message : 'Failed to start quiz')
+      setStatus('idle')
+    }
+  }, [videoId, clearSession, generateQuestions, saveSession, submitResult])
+
+  /**
+   * Start next level quiz with suggested bloom level
+   */
+  const startNextLevel = useCallback(
+    async (bloomLevel: number) => {
+      clearSession()
+      setCurrentQuestion(null)
+      setFeedback(null)
+      setError(null)
+      setSubmitResult(null)
+      setStatus('loading')
+
+      if (!videoId) {
+        setStatus('idle')
+        return
+      }
+
+      try {
+        const questions = await generateQuestions(bloomLevel)
+
+        if (!questions || questions.length === 0) {
+          throw new Error('No questions generated. Please try again.')
+        }
+
+        const newSession: QuizSessionState = {
+          videoId,
+          currentBloom: bloomLevel,
+          questions,
+          currentIndex: 0,
+          answers: [],
+          topicMastery: {},
+          streak: 0,
+          bestStreak: 0,
+        }
+
+        saveSession(newSession)
+        setCurrentQuestion(questions[0])
+        setStatus('question')
+      } catch (err) {
+        console.error('Error starting next level quiz:', err)
+        setError(err instanceof Error ? err.message : 'Failed to start quiz')
+        setStatus('idle')
+      }
+    },
+    [videoId, clearSession, generateQuestions, saveSession]
+  )
+
+  /**
    * Reset quiz to idle state
    */
   const resetQuiz = useCallback(() => {
@@ -300,6 +553,7 @@ export function useQuizState(videoId: string | undefined): UseQuizStateReturn {
     setCurrentQuestion(null)
     setFeedback(null)
     setError(null)
+    setSubmitResult(null)
     setStatus('idle')
   }, [clearSession])
 
@@ -324,11 +578,18 @@ export function useQuizState(videoId: string | undefined): UseQuizStateReturn {
     currentQuestion,
     feedback,
     sessionState,
-    isLoading: status === 'loading',
+    isLoading: status === 'loading' || status === 'submitting',
     error,
+    submitResult,
+    historyAttempts,
+    isLoadingHistory,
     startQuiz,
     submitAnswer,
     nextQuestion,
     resetQuiz,
+    submitQuizToAPI,
+    fetchHistory,
+    retryQuiz,
+    startNextLevel,
   }
 }

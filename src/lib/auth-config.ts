@@ -5,6 +5,24 @@ import GoogleProvider from 'next-auth/providers/google'
 
 import { prisma } from '@/lib/prisma'
 
+/**
+ * Log warning if Google OAuth is not configured
+ * This helps identify missing environment variables at startup
+ */
+function validateGoogleOAuthConfig(): void {
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
+
+  if (!clientId || !clientSecret) {
+    console.warn(
+      'WARNING: Google OAuth not fully configured. ' +
+        'Student Google login will be unavailable. ' +
+        'Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET environment variables. ' +
+        'See docs/deployment/google-oauth-setup.md for setup instructions.'
+    )
+  }
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     // Google OAuth (students)
@@ -116,3 +134,6 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
 }
+
+// Validate Google OAuth configuration at module load time
+validateGoogleOAuthConfig()

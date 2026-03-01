@@ -116,6 +116,23 @@ function checkAPIKeys(): ServiceStatus[] {
 }
 
 /**
+ * Check Google OAuth configuration
+ */
+function checkGoogleOAuth(): ServiceStatus {
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim()
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim()
+  const isConfigured = Boolean(clientId && clientSecret)
+
+  return {
+    name: 'Google OAuth',
+    status: isConfigured ? 'healthy' : 'degraded',
+    message: isConfigured
+      ? 'Google OAuth configured'
+      : 'Google OAuth not configured - student Google login unavailable',
+  }
+}
+
+/**
  * Get embedding cache statistics
  */
 function getEmbeddingCacheStatus(): ServiceStatus {
@@ -221,14 +238,25 @@ async function getRedisStatus(): Promise<ServiceStatus> {
 
 /**
  * GET endpoint for health check
- * Unauthenticated: returns minimal { status: 'ok' } for load balancers
+ * Unauthenticated: returns minimal { status: 'ok' } with uptime, memory, timestamp for load balancers
  * Authenticated admin: returns full service details
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   // Return minimal response for unauthenticated requests (load balancer / uptime pings)
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
   if (!token) {
-    return NextResponse.json({ status: 'ok' })
+    // Include uptime, memory, and timestamp even for unauthenticated checks
+    const memUsage = process.memoryUsage()
+    return NextResponse.json({
+      status: 'ok',
+      uptime: process.uptime(),
+      memory: {
+        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024), // MB
+        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024), // MB
+        rss: Math.round(memUsage.rss / 1024 / 1024), // MB
+      },
+      timestamp: new Date().toISOString(),
+    })
   }
 
   
@@ -239,6 +267,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     // Check API keys
     services.push(...checkAPIKeys())
+
+    // Check Google OAuth
+    services.push(checkGoogleOAuth())
 
     // Check ChromaDB (async)
     const chromaStatus = await checkChromaDB()

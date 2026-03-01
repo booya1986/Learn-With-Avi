@@ -34,7 +34,29 @@
     "courses": {
       "title": "Our Courses",
       "subtitle": "Start Learning Today",
-      "available": "available"
+      "available": "available",
+      "search": {
+        "placeholder": "Search courses...",
+        "clear": "Clear"
+      },
+      "filter": {
+        "all": "All",
+        "difficulty": "Difficulty",
+        "topics": "Topics",
+        "beginner": "Beginner",
+        "intermediate": "Intermediate",
+        "advanced": "Advanced"
+      },
+      "sort": {
+        "label": "Sort by",
+        "default": "Default",
+        "newest": "Newest",
+        "titleAZ": "Title A–Z"
+      },
+      "empty": {
+        "title": "No courses match your filters",
+        "clearFilters": "Clear filters"
+      }
     },
     "about": {
       "title": "Join Thousands of Developers Mastering AI",
@@ -85,6 +107,27 @@
       "button": "Start Free Trial",
       "trialTerms": "7-day free trial • Cancel anytime • No credit card required"
     }
+  },
+  "dashboard": {
+    "greeting": "Welcome back, {name}!",
+    "subtitle": "Track your learning progress and continue where you left off.",
+    "statsLabel": "Learning stats",
+    "statEnrolled": "Courses enrolled",
+    "statCoursesCompleted": "Courses completed",
+    "statCompleted": "Videos completed",
+    "statTotal": "Total videos",
+    "continueLearning": "Continue Learning",
+    "allCourses": "My Courses",
+    "coursesCount": "courses",
+    "resume": "Resume",
+    "resumeCourse": "Resume course",
+    "videosCompleted": "{completed} of {total} videos completed",
+    "discoverTitle": "Looking for more to learn?",
+    "discoverSubtitle": "Browse our full catalog and enroll in new courses.",
+    "browseCourses": "Browse Courses",
+    "emptyTitle": "No courses yet",
+    "emptySubtitle": "You have not enrolled in any courses. Browse the catalog and start learning today!",
+    "retry": "Try again"
   },
   "footer": {
     "tagline": "AI-Powered Interactive Learning Platform",

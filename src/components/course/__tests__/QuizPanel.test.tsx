@@ -58,10 +58,17 @@ const makeQuizState = (overrides: Partial<UseQuizStateReturn>): UseQuizStateRetu
   sessionState: null,
   isLoading: false,
   error: null,
+  submitResult: null,
+  historyAttempts: [],
+  isLoadingHistory: false,
   startQuiz: vi.fn(),
   submitAnswer: vi.fn(),
   nextQuestion: vi.fn(),
   resetQuiz: vi.fn(),
+  submitQuizToAPI: vi.fn(),
+  fetchHistory: vi.fn(),
+  retryQuiz: vi.fn(),
+  startNextLevel: vi.fn(),
   ...overrides,
 })
 

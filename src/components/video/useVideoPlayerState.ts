@@ -9,6 +9,7 @@ interface UseVideoPlayerStateProps {
   onTimeUpdate?: ((time: number) => void) | undefined
   onDurationChange?: ((duration: number) => void) | undefined
   onSeek?: ((time: number) => void) | undefined
+  onPause?: (() => void) | undefined
 }
 
 export function useVideoPlayerState({
@@ -16,6 +17,7 @@ export function useVideoPlayerState({
   onTimeUpdate,
   onDurationChange,
   onSeek,
+  onPause,
 }: UseVideoPlayerStateProps) {
   const playerRef = useRef<YouTubePlayer | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -60,8 +62,12 @@ export function useVideoPlayerState({
 
   const handleStateChange = useCallback((event: { data: number }) => {
     // YouTube states: -1 unstarted, 0 ended, 1 playing, 2 paused, 3 buffering, 5 cued
-    setIsPlaying(event.data === 1)
-  }, [])
+    const playing = event.data === 1
+    setIsPlaying(playing)
+    if (event.data === 2) {
+      onPause?.()
+    }
+  }, [onPause])
 
   const togglePlay = useCallback(() => {
     if (!playerRef.current) {return}

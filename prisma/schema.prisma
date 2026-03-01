@@ -17,17 +17,18 @@ datasource db {
 // ==========================================
 
 model Course {
-  id          String   @id @default(cuid())
+  id          String             @id @default(cuid())
   title       String
-  description String   @db.Text
-  difficulty  String   // 'beginner' | 'intermediate' | 'advanced'
-  topics      String[] // Array of topic strings
+  description String             @db.Text
+  difficulty  String             // 'beginner' | 'intermediate' | 'advanced'
+  topics      String[]           // Array of topic strings
   thumbnail   String
-  order       Int      @default(0)
-  published   Boolean  @default(false)
+  order       Int                @default(0)
+  published   Boolean            @default(false)
   videos      Video[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  enrollments CourseEnrollment[]
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@index([published])
   @@index([order])
@@ -35,23 +36,24 @@ model Course {
 }
 
 model Video {
-  id          String   @id @default(cuid())
-  youtubeId   String   @unique
-  title       String
-  description String   @db.Text
-  duration    Int      // Duration in seconds
-  thumbnail   String
-  topic       String
-  tags        String[] // Array of tag strings
-  courseId    String
-  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  order       Int      @default(0)
-  chapters    Chapter[]
-  transcript  Transcript?
+  id           String         @id @default(cuid())
+  youtubeId    String         @unique
+  title        String
+  description  String         @db.Text
+  duration     Int            // Duration in seconds
+  thumbnail    String
+  topic        String
+  tags         String[]       // Array of tag strings
+  courseId     String
+  course       Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  order        Int            @default(0)
+  chapters     Chapter[]
+  transcript   Transcript?
   vectorChunks VectorChunk[]
-  published   Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  userProgress UserProgress[]
+  published    Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
   @@index([courseId])
   @@index([published])
@@ -135,13 +137,16 @@ model VectorChunk {
 // ==========================================
 
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  name         String
-  createdAt    DateTime  @default(now())
-  lastLogin    DateTime?
-  updatedAt    DateTime  @updatedAt
+  id            String             @id @default(cuid())
+  email         String             @unique
+  passwordHash  String
+  name          String
+  createdAt     DateTime           @default(now())
+  lastLogin     DateTime?
+  updatedAt     DateTime           @updatedAt
+  enrollments   CourseEnrollment[]
+  progress      UserProgress[]
+  quizAttempts  QuizAttempt[]
 
   @@index([email])
 }
@@ -185,4 +190,55 @@ model VoiceSession {
 
   @@index([createdAt])
   @@index([videoId])
+}
+
+// ==========================================
+// STUDENT PROGRESS TRACKING
+// ==========================================
+
+model CourseEnrollment {
+  id          String    @id @default(cuid())
+  userId      String
+  courseId    String
+  enrolledAt  DateTime  @default(now())
+  completedAt DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model UserProgress {
+  id             String   @id @default(cuid())
+  userId         String
+  videoId        String
+  courseId       String
+  watchedSeconds Int      @default(0)
+  totalSeconds   Int
+  isCompleted    Boolean  @default(false)
+  lastWatchedAt  DateTime @default(now()) @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  video          Video    @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, videoId])
+  @@index([userId, courseId])
+}
+
+model QuizAttempt {
+  id             String   @id @default(cuid())
+  userId         String
+  videoId        String
+  courseId       String
+  bloomLevel     Int
+  questionsCount Int
+  correctCount   Int
+  score          Float    // 0.0 to 1.0
+  answers        Json     // Array of { questionId, selectedOptionId, isCorrect }
+  createdAt      DateTime @default(now())
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, videoId])
+  @@index([createdAt])
 }
